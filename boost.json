@@ -1,0 +1,37 @@
+{
+    "agents": [
+        "copilot",
+        "cursor",
+        "gemini",
+        "claude_code"
+    ],
+    "guidelines": true,
+    "mcp": true,
+    "nightwatch_mcp": false,
+    "packages": [
+        "spatie/laravel-medialibrary",
+        "livewire/blaze",
+        "fruitcake/laravel-debugbar",
+        "joshcirre/tweakflux"
+    ],
+    "sail": false,
+    "skills": [
+        "folio-routing",
+        "fortify-development",
+        "laravel-best-practices",
+        "pulse-development",
+        "fluxui-development",
+        "livewire-development",
+        "pest-testing",
+        "tailwindcss-development",
+        "blaze-optimize",
+        "medialibrary-development",
+        "debug-using-debugbar",
+        "tweakflux-theme-generator",
+        "caveman",
+        "caveman-commit",
+        "caveman-compress",
+        "caveman-help",
+        "caveman-review"
+    ]
+}
