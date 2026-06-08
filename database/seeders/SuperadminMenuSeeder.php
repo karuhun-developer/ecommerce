@@ -44,10 +44,10 @@ class SuperadminMenuSeeder extends Seeder
         Menu::create([
             'role_id' => $this->role->id,
             'name' => 'Shops',
-            'url' => 'cms.shop.index',
+            'url' => 'cms.shop',
             'icon' => 'building-storefront',
             'order' => 100,
-            'active_pattern' => 'cms.shop.*',
+            'active_pattern' => 'cms.shop',
             'status' => 1,
         ]);
     }

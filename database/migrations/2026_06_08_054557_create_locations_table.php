@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignIdFor(Shop::class)->nullable()->constrained()->cascadeOnDelete();
             $table->string('biteship_location_id')->nullable()->index();
             $table->string('biteship_area_id')->nullable()->index();
+            $table->string('area_string')->nullable();
             $table->string('name')->nullable();
             $table->string('contact_name')->nullable();
             $table->string('contact_email')->nullable();

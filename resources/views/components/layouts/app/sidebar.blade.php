@@ -17,36 +17,42 @@
             </flux:sidebar.header>
 
             @php
-                function menuActive($activeRoute = []): bool {
-                    // Check if route name contains the active route
-                    foreach ($activeRoute as $route) {
-                        if(str_contains(request()->route()->getName(), $route) || request()->routeIs($route)) {
-                            return true;
-                            break;
+                if (! function_exists('menuActive')) {
+                    function menuActive($activeRoute = []): bool {
+                        // Check if route name contains the active route
+                        foreach ($activeRoute as $route) {
+                            if(str_contains(request()->route()->getName(), $route) || request()->routeIs($route)) {
+                                return true;
+                                break;
+                            }
                         }
-                    }
 
-                    return false;
+                        return false;
+                    }
                 }
 
-                // Show dropdown menu if the route is active
-                function showDropdown($activeRoute = []): bool {
-                    foreach ($activeRoute as $route) {
-                        if(str_contains(request()->route()->getName(), $route) || request()->routeIs($route)) {
-                            return true;
-                            break;
+                if (! function_exists('showDropdown')) {
+                    // Show dropdown menu if the route is active
+                    function showDropdown($activeRoute = []): bool {
+                        foreach ($activeRoute as $route) {
+                            if(str_contains(request()->route()->getName(), $route) || request()->routeIs($route)) {
+                                return true;
+                                break;
+                            }
                         }
-                    }
 
-                    return false;
+                        return false;
+                    }
                 }
 
-                // Echo route
-                function echoRoute($url) {
-                    try {
-                        return route($url);
-                    } catch (\Exception $e) {
-                        return '#';
+                if (! function_exists('echoRoute')) {
+                    // Echo route
+                    function echoRoute($url) {
+                        try {
+                            return route($url);
+                        } catch (\Exception $e) {
+                            return '#';
+                        }
                     }
                 }
 

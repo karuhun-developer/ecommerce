@@ -13,6 +13,7 @@ class Location extends Model
         'shop_id',
         'biteship_location_id',
         'biteship_area_id',
+        'area_string',
         'name',
         'contact_name',
         'contact_email',
