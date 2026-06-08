@@ -20,6 +20,9 @@ class SuperadminMenuSeeder extends Seeder
 
         // Create menu
         $this->dashboardMenu();
+        $this->shopMenu();
+        $this->productMenu();
+        $this->attributeMenu();
         $this->managementMenu();
     }
 
@@ -32,6 +35,61 @@ class SuperadminMenuSeeder extends Seeder
             'icon' => 'map',
             'order' => 1,
             'active_pattern' => 'cms.dashboard',
+            'status' => 1,
+        ]);
+    }
+
+    public function shopMenu()
+    {
+        Menu::create([
+            'role_id' => $this->role->id,
+            'name' => 'Shops',
+            'url' => 'cms.shop.index',
+            'icon' => 'building-storefront',
+            'order' => 100,
+            'active_pattern' => 'cms.shop.*',
+            'status' => 1,
+        ]);
+    }
+
+    public function productMenu()
+    {
+        Menu::create([
+            'role_id' => $this->role->id,
+            'name' => 'Products',
+            'url' => 'cms.product.index',
+            'icon' => 'inbox-stack',
+            'order' => 200,
+            'active_pattern' => 'cms.product',
+            'status' => 1,
+        ]);
+    }
+
+    public function attributeMenu()
+    {
+        $attribute = Menu::create([
+            'role_id' => $this->role->id,
+            'name' => 'Attributes',
+            'url' => '#',
+            'icon' => 'tag',
+            'order' => 300,
+            'active_pattern' => 'cms.attribute',
+            'status' => 1,
+        ]);
+        $attribute->subMenu()->create([
+            'role_id' => $this->role->id,
+            'name' => 'Attribute Group',
+            'url' => 'cms.attribute.group',
+            'order' => 1,
+            'active_pattern' => 'cms.attribute.group',
+            'status' => 1,
+        ]);
+        $attribute->subMenu()->create([
+            'role_id' => $this->role->id,
+            'name' => 'Attribute',
+            'url' => 'cms.attribute.attribute',
+            'order' => 2,
+            'active_pattern' => 'cms.attribute.attribute',
             'status' => 1,
         ]);
     }
