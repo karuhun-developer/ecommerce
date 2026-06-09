@@ -6,7 +6,7 @@
                 icon="plus"
                 @click="
                     $flux.modal('defaultModal').show();
-                    $wire.dispatch('set-action');
+                    $wire.dispatch('reset-form');
                 "
             >
                 Create
@@ -42,6 +42,7 @@
         <flux:table.columns>
             <flux:table.column>Actions</flux:table.column>
             <x-loop-th :$searchBy :$paginationOrder :$paginationOrderBy />
+            <flux:table.column>Shop</flux:table.column>
         </flux:table.columns>
         <flux:table.rows>
             @forelse($data as $d)
@@ -54,12 +55,9 @@
                                     <flux:menu.item
                                         variant="default"
                                         icon="pencil"
-                                        @click="
-                                            $flux.modal('defaultModal').show();
-                                            $wire.dispatch('set-action', {
-                                                id: '{{ $d->id }}',
-                                            });
-                                        ">
+                                        href="{{ route('cms.product.edit', ['product_id' => $d->id]) }}"
+                                        wire:navigate
+                                    >
                                         Update
                                     </flux:menu.item>
                                 @endcan
@@ -78,7 +76,8 @@
                         </flux:dropdown>
                     </flux:table.cell>
                     <flux:table.cell>{{ $d->name }}</flux:table.cell>
-                    <flux:table.cell>{{ Str::limit($d->description, 50) }}</flux:table.cell>
+                    <flux:table.cell>{{ ucfirst($d->type) }}</flux:table.cell>
+                    <flux:table.cell>{{ $d->shop->name ?? 'N/A' }}</flux:table.cell>
                 </flux:table.row>
             @empty
                 <flux:table.row>
@@ -90,5 +89,5 @@
         </flux:table.rows>
     </flux:table>
 
-    <livewire:cms.shop.create-update lazy />
+    <livewire:cms.product.create lazy />
 </div>

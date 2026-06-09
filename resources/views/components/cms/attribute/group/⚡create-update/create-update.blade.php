@@ -17,12 +17,14 @@
 
             <flux:field>
                 <flux:label badge="Required">Name</flux:label>
+                <flux:text>Group name, e.g. "Size", "Color"</flux:text>
                 <flux:input wire:model="name" type="text" />
                 <flux:error name="name" />
             </flux:field>
 
             <flux:field>
                 <flux:label>Description</flux:label>
+                <flux:text>Optional description for the attribute group.</flux:text>
                 <flux:textarea wire:model="description" />
                 <flux:error name="description" />
             </flux:field>

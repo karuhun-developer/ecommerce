@@ -4,6 +4,7 @@ use App\Actions\Cms\Shop\StoreShopAction;
 use App\Actions\Cms\Shop\UpdateShopAction;
 use App\Models\Shop\Shop;
 use App\Services\BiteshipService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Component;
 
@@ -147,6 +148,9 @@ new class extends Component
             $message = 'Shop created successfully.';
             $this->loadDefaultShop();
         }
+
+        // Forget default shop cache to reflect changes immediately
+        Cache::forget('default:shop');
 
         // Toast message
         $this->dispatch('toast',

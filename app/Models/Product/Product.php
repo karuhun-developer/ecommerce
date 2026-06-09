@@ -4,7 +4,9 @@ namespace App\Models\Product;
 
 use App\Models\Shop\Shop;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Sluggable\Attributes\Sluggable;
 
+#[Sluggable(from: 'name', to: 'slug')]
 class Product extends Model
 {
     protected $fillable = [
@@ -43,5 +45,15 @@ class Product extends Model
     public function shop()
     {
         return $this->belongsTo(Shop::class);
+    }
+
+    public function productFlats()
+    {
+        return $this->hasMany(ProductFlat::class);
+    }
+
+    public function productAttributeGroups()
+    {
+        return $this->hasMany(ProductAttributeGroup::class);
     }
 }

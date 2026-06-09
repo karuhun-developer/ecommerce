@@ -2,6 +2,7 @@
 
 use App\Enums\CommonStatusEnum;
 use App\Models\Menu\Menu;
+use App\Models\Shop\Shop;
 use Illuminate\Support\Facades\Cache;
 
 function numberToCurrency($value)
@@ -25,4 +26,11 @@ function getMenus()
         ->orderBy('order', 'asc')
         ->get()
     );
+}
+
+function getDefaultShop()
+{
+    return Cache::remember('default:shop', now()->addDay(), function () {
+        return Shop::with('media')->first();
+    });
 }

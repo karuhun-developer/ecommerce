@@ -7,11 +7,15 @@ use App\Models\Location\Location;
 use App\Models\Product\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Sluggable\Attributes\Sluggable;
 
 #[Sluggable(from: 'name', to: 'slug')]
-class Shop extends Model
+class Shop extends Model implements HasMedia
 {
+    use InteractsWithMedia;
+
     protected $fillable = [
         'user_id',
         'name',

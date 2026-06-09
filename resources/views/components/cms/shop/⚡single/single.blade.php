@@ -6,29 +6,13 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Shop Details -->
-            <div class="space-y-4">
-                <flux:heading size="md">General Information</flux:heading>
-                
-                <flux:field>
-                    <flux:label badge="Required">Shop Name</flux:label>
-                    <flux:input wire:model="name" type="text" />
-                    <flux:error name="name" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>Description</flux:label>
-                    <flux:textarea wire:model="description" />
-                    <flux:error name="description" />
-                </flux:field>
-            </div>
-
             <!-- Location Details -->
             <div class="space-y-4">
                 <flux:heading size="md">Location Information</flux:heading>
                 
                 <flux:field>
                     <flux:label badge="Required">Location / Branch Name</flux:label>
+                    <flux:text>Name of the specific shop location or branch, e.g. "Apotek Gambir Branch"</flux:text>
                     <flux:input wire:model="location_name" type="text" placeholder="e.g. Apotek Gambir" />
                     <flux:error name="location_name" />
                 </flux:field>
@@ -36,11 +20,13 @@
                 <div class="grid grid-cols-2 gap-4">
                     <flux:field>
                         <flux:label badge="Required">Contact Name</flux:label>
+                        <flux:text>Name of the contact person for this shop location.</flux:text>
                         <flux:input wire:model="contact_name" type="text" />
                         <flux:error name="contact_name" />
                     </flux:field>
                     <flux:field>
                         <flux:label badge="Required">Contact Phone</flux:label>
+                        <flux:text>Phone number of the contact person for this shop location.</flux:text>
                         <flux:input wire:model="contact_phone" type="text" />
                         <flux:error name="contact_phone" />
                     </flux:field>
@@ -48,14 +34,35 @@
 
                 <flux:field>
                     <flux:label badge="Required">Address</flux:label>
+                    <flux:text>Full address of the shop location.</flux:text>
                     <flux:textarea wire:model="address" />
                     <flux:error name="address" />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>Note (Patokan)</flux:label>
+                    <flux:text>Additional note or reference for the shop location, e.g. "Near Gambir Station"</flux:text>
                     <flux:input wire:model="note" type="text" />
                     <flux:error name="note" />
+                </flux:field>
+            </div>
+
+            <!-- Shop Details -->
+            <div class="space-y-4">
+                <flux:heading size="md">General Information</flux:heading>
+                
+                <flux:field>
+                    <flux:label badge="Required">Shop Name</flux:label>
+                    <flux:text>Name of the shop, e.g. "Apotek Gambir"</flux:text>
+                    <flux:input wire:model="name" type="text" />
+                    <flux:error name="name" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>Description</flux:label>
+                    <flux:text>Optional description for the shop.</flux:text>
+                    <flux:textarea wire:model="description" />
+                    <flux:error name="description" />
                 </flux:field>
             </div>
         </div>
@@ -71,6 +78,7 @@
                 <div class="space-y-4">
                     <flux:field>
                         <flux:label badge="Required">Search Area</flux:label>
+                        <flux:text>Search district or area using Biteship API to get accurate location data.</flux:text>
                         <div class="flex gap-2">
                             <flux:input wire:model="searchArea" type="text" placeholder="e.g. Gambir" class="flex-1" />
                             <flux:button wire:click="searchBiteshipArea" type="button" icon="magnifying-glass">Search</flux:button>
@@ -202,6 +210,7 @@
                     });
                 ">
                     <flux:label badge="Required" class="mb-2">Pinpoint Location</flux:label>
+                    <flux:text class="mb-2">Drag the marker or click on the map to set the shop's location.</flux:text>
                     <div x-ref="mapContainer" wire:ignore class="h-64 w-full rounded-lg shadow-sm border border-gray-300 z-0"></div>
                     <div class="mt-2 text-sm text-gray-500 flex justify-between">
                         <span>Lat: <span x-text="lat"></span></span>
