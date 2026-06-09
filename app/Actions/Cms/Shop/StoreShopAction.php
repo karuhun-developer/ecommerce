@@ -9,18 +9,24 @@ use Illuminate\Support\Facades\DB;
 
 class StoreShopAction
 {
+    public function __construct(
+        public readonly BiteshipService $biteshipService,
+    ) {}
+
+    /**
+     * Handle the action.
+     */
     public function handle(array $data): Shop
     {
         return DB::transaction(function () use ($data) {
             $shop = Shop::create([
                 'user_id' => auth()->id(),
                 'name' => $data['name'],
-                'slug' => \Str::slug($data['name']),
                 'description' => $data['description'] ?? null,
             ]);
 
-            $biteshipService = new BiteshipService;
-            $biteshipLocation = $biteshipService->createLocation([
+            // Create location in Biteship and local database
+            $biteshipLocation = $this->biteshipService->createLocation([
                 'name' => $data['location_name'],
                 'contact_name' => $data['contact_name'],
                 'contact_phone' => $data['contact_phone'],

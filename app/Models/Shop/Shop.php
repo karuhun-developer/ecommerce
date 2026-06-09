@@ -7,7 +7,9 @@ use App\Models\Location\Location;
 use App\Models\Product\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Sluggable\Attributes\Sluggable;
 
+#[Sluggable(from: 'name', to: 'slug')]
 class Shop extends Model
 {
     protected $fillable = [
@@ -36,9 +38,9 @@ class Shop extends Model
         return $this->hasMany(Product::class);
     }
 
-    public function locations()
+    public function location()
     {
-        return $this->hasMany(Location::class);
+        return $this->hasOne(Location::class);
     }
 
     public function attributes()

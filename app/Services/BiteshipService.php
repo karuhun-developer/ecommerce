@@ -115,6 +115,7 @@ class BiteshipService
     public function getMapsAreas(array $query)
     {
         $query['type'] = 'single';
+
         return $this->sendRequest('GET', '/maps/areas', $query);
     }
 

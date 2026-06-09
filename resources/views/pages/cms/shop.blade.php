@@ -5,7 +5,7 @@ use Illuminate\View\View;
 use function Laravel\Folio\name;
 use function Laravel\Folio\render;
 
-name('cms.shop.index');
+name('cms.shop');
 
 // Page title and breadcrumbs
 render(function (View $view) {
@@ -46,10 +46,10 @@ render(function (View $view) {
             </flux:text>
         </div>
         
-        {{-- @if(config('shop.single_shop')) --}}
+        @if(config('shop.single_shop'))
             <livewire:cms.shop.single />
-        {{-- @else
+        @else
             <livewire:cms.shop.table />
-        @endif --}}
+        @endif
     </div>
 </x-layouts.app>

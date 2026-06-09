@@ -8,8 +8,10 @@ use Livewire\Attributes\On;
 
 new class extends BaseComponent
 {
+    // Model instance
     public $modelInstance = Shop::class;
 
+    // Pagination and Search
     public $searchBy = [
         [
             'name' => 'Name',
@@ -23,6 +25,9 @@ new class extends BaseComponent
 
     public function mount()
     {
+        Gate::authorize('view'.$this->modelInstance);
+
+        // Set default order by
         $this->paginationOrderBy = 'name';
     }
 
@@ -49,8 +54,16 @@ new class extends BaseComponent
     #[On('delete')]
     public function delete($id, DeleteShopAction $deleteAction)
     {
-        $deleteAction->handle(Shop::findOrFail($id));
+        Gate::authorize('delete'.$this->modelInstance);
 
-        $this->dispatch('toast', type: 'success', message: 'Shop and its location deleted successfully.');
+        $deleteAction->handle(
+            shop: Shop::findOrFail($id),
+        );
+
+        // Toast message
+        $this->dispatch('toast',
+            type: 'success',
+            message: 'Shop and its location deleted successfully.',
+        );
     }
 };
