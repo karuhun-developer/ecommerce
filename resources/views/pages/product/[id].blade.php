@@ -96,7 +96,7 @@ name('product.detail');
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <button @click="$store.cart.add({...product, qty: qty}); cartOpen = true" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl transition">
+                        <button @click="$store.cart.add({...product, qty: qty}); $flux.modal('cartModal').show()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl transition">
                             + Keranjang
                         </button>
                         <a href="/checkout" class="w-full border border-green-600 text-green-600 hover:bg-green-50 font-bold py-2.5 rounded-xl transition text-center">

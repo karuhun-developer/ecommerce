@@ -16,7 +16,7 @@ name('payment.index');
             this.processing = true;
             setTimeout(() => {
                 // Mock clear cart and redirect
-                $store.cart.items = [];
+                $store.cart.clear();
                 window.location.href = '/orders/INV-2026-001?success=true';
             }, 1500);
         }

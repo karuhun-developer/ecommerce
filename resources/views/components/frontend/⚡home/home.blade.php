@@ -86,7 +86,7 @@
 
                         <!-- Add to Cart Button (Visible on hover on desktop, always on mobile) -->
                         <div class="mt-3">
-                            <button @click="$store.cart.add(product); cartOpen = true" class="w-full bg-white border border-green-600 text-green-600 font-bold py-1.5 rounded-lg text-xs hover:bg-green-50 transition">
+                            <button @click="$store.cart.add(product); $flux.modal('cartModal').show()" class="w-full bg-white border border-green-600 text-green-600 font-bold py-1.5 rounded-lg text-xs hover:bg-green-50 transition">
                                 + Keranjang
                             </button>
                         </div>

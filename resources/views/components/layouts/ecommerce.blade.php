@@ -9,11 +9,21 @@
     <!-- Alpine JS Store for Mock Cart -->
     <script>
         document.addEventListener('alpine:init', () => {
+            const defaultItems = [
+                { id: 1, name: 'Logitech G Pro X Superlight', price: 1500000, qty: 1, image: 'https://images.unsplash.com/photo-1527443154391-42075928d114?auto=format&fit=crop&q=80&w=200&h=200' },
+                { id: 2, name: 'Keychron K2 Wireless Mechanical Keyboard', price: 1200000, qty: 1, image: 'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=200&h=200' }
+            ];
+            
+            const savedCart = localStorage.getItem('nexa_cart');
+            const initialItems = savedCart ? JSON.parse(savedCart) : defaultItems;
+
             Alpine.store('cart', {
-                items: [
-                    { id: 1, name: 'Logitech G Pro X Superlight', price: 1500000, qty: 1, image: 'https://images.unsplash.com/photo-1527443154391-42075928d114?auto=format&fit=crop&q=80&w=200&h=200' },
-                    { id: 2, name: 'Keychron K2 Wireless Mechanical Keyboard', price: 1200000, qty: 1, image: 'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=200&h=200' }
-                ],
+                items: initialItems,
+
+                save() {
+                    localStorage.setItem('nexa_cart', JSON.stringify(this.items));
+                },
+
                 get count() {
                     return this.items.reduce((total, item) => total + item.qty, 0);
                 },
@@ -23,19 +33,26 @@
                 add(product) {
                     let existing = this.items.find(i => i.id === product.id);
                     if(existing) {
-                        existing.qty++;
+                        existing.qty += (product.qty || 1);
                     } else {
-                        this.items.push({...product, qty: 1});
+                        this.items.push({...product, qty: product.qty || 1});
                     }
+                    this.save();
                 },
                 remove(id) {
                     this.items = this.items.filter(i => i.id !== id);
+                    this.save();
                 },
                 updateQty(id, qty) {
                     let item = this.items.find(i => i.id === id);
                     if(item) {
                         item.qty = Math.max(1, qty);
+                        this.save();
                     }
+                },
+                clear() {
+                    this.items = [];
+                    this.save();
                 }
             });
         });
@@ -80,7 +97,7 @@
 
             <!-- Actions -->
             <div class="flex items-center gap-1 md:gap-3 shrink-0">
-                <button @click="cartOpen = true" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition relative">
+                <button @click="$flux.modal('cartModal').show()" class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition relative">
                     <flux:icon.shopping-cart class="w-6 h-6" />
                     <!-- Badge -->
                     <span x-show="$store.cart.count > 0" x-text="$store.cart.count" class="absolute top-0.5 right-0.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white"></span>
@@ -165,96 +182,68 @@
         </div>
     </footer>
 
-    <!-- Cart Slide-over (Alpine.js) -->
-    <div x-show="cartOpen" class="relative z-[100]" aria-labelledby="slide-over-title" role="dialog" aria-modal="true" style="display: none;">
-        <!-- Backdrop -->
-        <div x-show="cartOpen" x-transition.opacity class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="cartOpen = false"></div>
+    <!-- Cart Slide-over (Flux Modal Flyout) -->
+    <flux:modal name="cartModal" flyout>
+        <div class="flex h-full flex-col bg-white">
+            <div class="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
+                <div class="flex items-start justify-between">
+                    <h2 class="text-lg font-bold text-gray-900" id="slide-over-title">Keranjang Belanja</h2>
+                </div>
 
-        <div class="fixed inset-0 overflow-hidden">
-            <div class="absolute inset-0 overflow-hidden">
-                <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-                    <!-- Slide-over panel -->
-                    <div 
-                        x-show="cartOpen" 
-                        x-transition:enter="transform transition ease-in-out duration-300 sm:duration-500" 
-                        x-transition:enter-start="translate-x-full" 
-                        x-transition:enter-end="translate-x-0" 
-                        x-transition:leave="transform transition ease-in-out duration-300 sm:duration-500" 
-                        x-transition:leave-start="translate-x-0" 
-                        x-transition:leave-end="translate-x-full" 
-                        class="pointer-events-auto w-screen max-w-md"
-                    >
-                        <div class="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
-                            <div class="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
-                                <div class="flex items-start justify-between">
-                                    <h2 class="text-lg font-bold text-gray-900" id="slide-over-title">Keranjang Belanja</h2>
-                                    <div class="ml-3 flex h-7 items-center">
-                                        <button @click="cartOpen = false" type="button" class="relative -m-2 p-2 text-gray-400 hover:text-gray-500">
-                                            <span class="absolute -inset-0.5"></span>
-                                            <span class="sr-only">Tutup panel</span>
-                                            <flux:icon.x-mark class="h-6 w-6" />
-                                        </button>
+                <div class="mt-8">
+                    <div class="flow-root">
+                        <template x-if="$store.cart.items.length === 0">
+                            <div class="text-center py-12">
+                                <flux:icon.shopping-bag class="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                                <p class="text-gray-500 font-medium">Keranjangmu kosong.</p>
+                                <button @click="$flux.modal('cartModal').close()" class="mt-4 text-green-600 font-bold hover:text-green-700">Mulai Belanja</button>
+                            </div>
+                        </template>
+                        
+                        <ul role="list" class="-my-6 divide-y divide-gray-200">
+                            <template x-for="item in $store.cart.items" :key="item.id">
+                                <li class="flex py-6">
+                                    <div class="h-24 w-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
+                                        <img :src="item.image" alt="Product image" class="h-full w-full object-cover object-center">
                                     </div>
-                                </div>
 
-                                <div class="mt-8">
-                                    <div class="flow-root">
-                                        <template x-if="$store.cart.items.length === 0">
-                                            <div class="text-center py-12">
-                                                <flux:icon.shopping-bag class="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                                                <p class="text-gray-500 font-medium">Keranjangmu kosong.</p>
-                                                <button @click="cartOpen = false" class="mt-4 text-green-600 font-bold hover:text-green-700">Mulai Belanja</button>
+                                    <div class="ml-4 flex flex-1 flex-col">
+                                        <div>
+                                            <div class="flex justify-between text-sm font-medium text-gray-900">
+                                                <h3 class="line-clamp-2"><a href="#" x-text="item.name"></a></h3>
                                             </div>
-                                        </template>
-                                        
-                                        <ul role="list" class="-my-6 divide-y divide-gray-200">
-                                            <template x-for="item in $store.cart.items" :key="item.id">
-                                                <li class="flex py-6">
-                                                    <div class="h-24 w-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
-                                                        <img :src="item.image" alt="Product image" class="h-full w-full object-cover object-center">
-                                                    </div>
+                                            <p class="mt-1 text-sm font-bold text-orange-500" x-text="'Rp ' + item.price.toLocaleString('id-ID')"></p>
+                                        </div>
+                                        <div class="flex flex-1 items-end justify-between text-sm">
+                                            <div class="flex items-center border rounded-lg">
+                                                <button @click="$store.cart.updateQty(item.id, item.qty - 1)" class="px-2 py-1 text-gray-500 hover:bg-gray-100 rounded-l-lg">-</button>
+                                                <span class="px-2 text-gray-700 font-medium" x-text="item.qty"></span>
+                                                <button @click="$store.cart.updateQty(item.id, item.qty + 1)" class="px-2 py-1 text-gray-500 hover:bg-gray-100 rounded-r-lg">+</button>
+                                            </div>
 
-                                                    <div class="ml-4 flex flex-1 flex-col">
-                                                        <div>
-                                                            <div class="flex justify-between text-sm font-medium text-gray-900">
-                                                                <h3 class="line-clamp-2"><a href="#" x-text="item.name"></a></h3>
-                                                            </div>
-                                                            <p class="mt-1 text-sm font-bold text-orange-500" x-text="'Rp ' + item.price.toLocaleString('id-ID')"></p>
-                                                        </div>
-                                                        <div class="flex flex-1 items-end justify-between text-sm">
-                                                            <div class="flex items-center border rounded-lg">
-                                                                <button @click="$store.cart.updateQty(item.id, item.qty - 1)" class="px-2 py-1 text-gray-500 hover:bg-gray-100 rounded-l-lg">-</button>
-                                                                <span class="px-2 text-gray-700 font-medium" x-text="item.qty"></span>
-                                                                <button @click="$store.cart.updateQty(item.id, item.qty + 1)" class="px-2 py-1 text-gray-500 hover:bg-gray-100 rounded-r-lg">+</button>
-                                                            </div>
-
-                                                            <div class="flex">
-                                                                <button @click="$store.cart.remove(item.id)" type="button" class="font-medium text-red-500 hover:text-red-600">Hapus</button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </li>
-                                            </template>
-                                        </ul>
+                                            <div class="flex">
+                                                <button @click="$store.cart.remove(item.id)" type="button" class="font-medium text-red-500 hover:text-red-600">Hapus</button>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-
-                            <div class="border-t border-gray-200 px-4 py-6 sm:px-6" x-show="$store.cart.items.length > 0">
-                                <div class="flex justify-between text-base font-bold text-gray-900 mb-4">
-                                    <p>Total Harga</p>
-                                    <p x-text="'Rp ' + $store.cart.total.toLocaleString('id-ID')"></p>
-                                </div>
-                                <div class="mt-6">
-                                    <a href="/cart" class="flex items-center justify-center rounded-xl border border-transparent bg-green-600 px-6 py-3 text-base font-bold text-white shadow-sm hover:bg-green-700">Lihat Keranjang</a>
-                                </div>
-                            </div>
-                        </div>
+                                </li>
+                            </template>
+                        </ul>
                     </div>
                 </div>
             </div>
+
+            <div class="border-t border-gray-200 px-4 py-6 sm:px-6" x-show="$store.cart.items.length > 0">
+                <div class="flex justify-between text-base font-bold text-gray-900 mb-4">
+                    <p>Total Harga</p>
+                    <p x-text="'Rp ' + $store.cart.total.toLocaleString('id-ID')"></p>
+                </div>
+                <div class="mt-6">
+                    <a href="/cart" class="flex items-center justify-center rounded-xl border border-transparent bg-green-600 px-6 py-3 text-base font-bold text-white shadow-sm hover:bg-green-700">Lihat Keranjang</a>
+                </div>
+            </div>
         </div>
-    </div>
+    </flux:modal>
 
     @fluxScripts
 </body>
