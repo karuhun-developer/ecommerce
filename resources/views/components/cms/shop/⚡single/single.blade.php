@@ -61,7 +61,10 @@
                 <flux:field>
                     <flux:label>Description</flux:label>
                     <flux:text>Optional description for the shop.</flux:text>
-                    <flux:textarea wire:model="description" />
+                    <livewire:jodit-text-editor
+                        wire:model="description"
+                        :buttons="['bold', 'italic', 'underline', 'strikeThrough']"
+                    />
                     <flux:error name="description" />
                 </flux:field>
             </div>

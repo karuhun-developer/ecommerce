@@ -59,7 +59,6 @@
                 <!-- Shop Details -->
                 <div class="space-y-4">
                     <flux:heading size="md">General Information</flux:heading>
-                    
                     <flux:field>
                         <flux:label badge="Required">Shop Name</flux:label>
                         <flux:text>Name of the shop, e.g. "Apotek Gambir"</flux:text>
@@ -70,7 +69,10 @@
                     <flux:field>
                         <flux:label>Description</flux:label>
                         <flux:text>Optional description for the shop.</flux:text>
-                        <flux:textarea wire:model="description" />
+                        <livewire:jodit-text-editor
+                            wire:model="description"
+                            :buttons="['bold', 'italic', 'underline', 'strikeThrough']"
+                        />
                         <flux:error name="description" />
                     </flux:field>
                 </div>
@@ -81,7 +83,6 @@
             <!-- Area & Map -->
             <div class="space-y-4">
                 <flux:heading size="md">Biteship Area & Map Location</flux:heading>
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Area Search -->
                     <div class="space-y-4">

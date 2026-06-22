@@ -81,6 +81,9 @@ new class extends Component
             $this->biteship_area_id = $record->location->biteship_area_id;
             $this->area_string = $record->location->area_string;
         }
+
+        // Set jodit content
+        $this->dispatch('update-jodit-content', $this->description);
     }
 
     // Biteship area search

@@ -85,6 +85,9 @@ new class extends Component
             $this->area_string = $record->location->area_string;
             $this->searchArea = $record->location->area_string;
         }
+
+        // Set jodit content
+        $this->dispatch('update-jodit-content', $this->description);
     }
 
     public function resetRecordData()
@@ -97,6 +100,9 @@ new class extends Component
         $this->latitude = null;
         $this->longitude = null;
         $this->areas = [];
+
+        // Set jodit content
+        $this->dispatch('update-jodit-content', '');
     }
 
     // Biteship area search
