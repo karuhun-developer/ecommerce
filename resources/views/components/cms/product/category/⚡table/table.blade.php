@@ -99,7 +99,7 @@
                     </flux:table.cell>
                     <flux:table.cell>
                         @if ($d->is_featured)
-                            <flux:badge color="success" size="sm">Yes</flux:badge>
+                            <flux:badge color="green" size="sm">Yes</flux:badge>
                         @else
                             <flux:badge color="red" size="sm">No</flux:badge>
                         @endif

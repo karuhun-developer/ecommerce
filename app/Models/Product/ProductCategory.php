@@ -2,7 +2,6 @@
 
 namespace App\Models\Product;
 
-use App\Models\Shop\Shop;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;

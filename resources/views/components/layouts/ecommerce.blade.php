@@ -28,60 +28,7 @@
     </div>
 
     <!-- Header -->
-    <header class="bg-white border-b sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between gap-4 md:gap-8">
-            <!-- Logo -->
-            <a href="/" class="text-2xl md:text-3xl font-black text-green-600 tracking-tight shrink-0" wire:navigate>
-                {{ config('app.name', 'Nexa') }}
-                <span class="text-gray-800">.</span>
-            </a>
-
-            <!-- Search -->
-            <div class="hidden md:flex flex-1 items-center max-w-3xl relative">
-                <flux:input
-                    icon="magnifying-glass"
-                    placeholder="Cari barang, merek, atau toko..."
-                    class="w-full rounded-xl"
-                />
-            </div>
-
-            <!-- Actions -->
-            <div class="flex items-center gap-1 md:gap-3 shrink-0">
-                <div class="relative">
-                    <flux:button @click="$flux.modal('cartModal').show()" variant="subtle" icon="shopping-cart" />
-                    <!-- Badge -->
-                    <span x-show="$store.cart.count > 0" x-text="$store.cart.count" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white pointer-events-none"></span>
-                </div>
-                <flux:separator vertical class="hidden md:block mx-2 h-6" />
-                <flux:button href="{{ route('login') }}" variant="primary" color="green" class="hidden md:flex font-semibold px-6 rounded-lg" wire:navigate>
-                    Masuk
-                </flux:button>
-                <flux:button href="{{ route('register') }}" variant="outline" class="hidden md:flex font-semibold px-6 rounded-lg" wire:navigate>
-                    Daftar
-                </flux:button>
-            </div>
-        </div>
-
-        <!-- Mobile Search (Visible on small screens) -->
-        <div class="md:hidden px-4 pb-3">
-             <flux:input 
-                placeholder="Cari di Nexa..." 
-                icon="magnifying-glass"
-                class="w-full rounded-xl"
-            />
-        </div>
-
-        <!-- Categories Menu -->
-        <flux:navbar class="hidden md:flex max-w-7xl mx-auto px-6 py-2 gap-6">
-            <flux:navbar.item href="#">Elektronik</flux:navbar.item>
-            <flux:navbar.item href="#">Komputer & Laptop</flux:navbar.item>
-            <flux:navbar.item href="#">Handphone & Tablet</flux:navbar.item>
-            <flux:navbar.item href="#">Pakaian Pria</flux:navbar.item>
-            <flux:navbar.item href="#">Pakaian Wanita</flux:navbar.item>
-            <flux:navbar.item href="#">Kecantikan</flux:navbar.item>
-            <flux:navbar.item href="#">Rumah Tangga</flux:navbar.item>
-        </flux:navbar>
-    </header>
+    <livewire:ecommerce.component.header lazy />
 
     <main class="min-h-[70vh]">
         {{ $slot }}

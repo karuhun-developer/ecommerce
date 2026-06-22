@@ -2,10 +2,10 @@
 
 use function Laravel\Folio\name;
 
-name('home');
+name('explore.index');
 
 ?>
 
 <x-layouts.ecommerce>
-    <livewire:ecommerce.home />
+    <livewire:ecommerce.explore />
 </x-layouts.ecommerce>

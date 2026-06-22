@@ -79,7 +79,7 @@ new class extends Component
     {
         return Shop::all();
     }
-    
+
     #[Computed]
     public function categories()
     {
