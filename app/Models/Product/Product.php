@@ -10,6 +10,7 @@ use Spatie\Sluggable\Attributes\Sluggable;
 class Product extends Model
 {
     protected $fillable = [
+        'product_category_id',
         'shop_id',
         'type',
         'name',
@@ -45,6 +46,11 @@ class Product extends Model
     public function shop()
     {
         return $this->belongsTo(Shop::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(ProductCategory::class, 'product_category_id');
     }
 
     public function productFlats()

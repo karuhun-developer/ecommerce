@@ -5,19 +5,19 @@ use Illuminate\View\View;
 use function Laravel\Folio\name;
 use function Laravel\Folio\render;
 
-name('cms.product.index');
+name('cms.product.category');
 
 // Page title and breadcrumbs
 render(function (View $view) {
-    $title = 'Product Management';
-    $description = 'Manage your products and variations.';
+    $title = 'Product Category';
+    $description = 'Manage your products categories, including adding, editing, and deleting categories as needed.';
     $breadcrumbs = [
         [
             'label' => 'Product',
             'url' => '#'
         ],
         [
-            'label' => 'Management',
+            'label' => 'Product Category',
             'url' => null
         ],
     ];
@@ -46,6 +46,6 @@ render(function (View $view) {
             </flux:text>
         </div>
         
-        <livewire:cms.product.product.table />
+        <livewire:cms.product.category.table />
     </div>
 </x-layouts.app>

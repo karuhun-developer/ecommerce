@@ -54,13 +54,29 @@ class SuperadminMenuSeeder extends Seeder
 
     public function productMenu()
     {
-        Menu::create([
+        $product = Menu::create([
             'role_id' => $this->role->id,
             'name' => 'Products',
-            'url' => 'cms.product',
+            'url' => '#',
             'icon' => 'inbox-stack',
             'order' => 200,
             'active_pattern' => 'cms.product',
+            'status' => 1,
+        ]);
+        $product->subMenu()->create([
+            'role_id' => $this->role->id,
+            'name' => 'Product Category',
+            'url' => 'cms.product.category',
+            'order' => 1,
+            'active_pattern' => 'cms.product.category',
+            'status' => 1,
+        ]);
+        $product->subMenu()->create([
+            'role_id' => $this->role->id,
+            'name' => 'Product',
+            'url' => 'cms.product.index',
+            'order' => 2,
+            'active_pattern' => 'cms.product.index,cms.product.edit',
             'status' => 1,
         ]);
     }

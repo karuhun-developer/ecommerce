@@ -9,12 +9,11 @@
         <form wire:submit="submit">
             <div class="space-y-6" x-data="{ type: $wire.entangle('type') }">
                 <flux:heading size="lg">Create Product</flux:heading>
-                
                 @if (!config('shop.single_shop'))
                     <flux:field>
                         <flux:label badge="Required">Shop</flux:label>
                         <flux:text>Select the shop this product belongs to.</flux:text>
-                        <flux:select wire:model="shop_id">
+                        <flux:select wire:model.live="shop_id" @change="$wire.product_category_id = null">
                             <flux:select.option value="">--Select Shop--</flux:select.option>
                             @foreach($this->shops as $shop)
                                 <flux:select.option value="{{ $shop->id }}">{{ $shop->name }}</flux:select.option>
@@ -23,6 +22,18 @@
                         <flux:error name="shop_id" />
                     </flux:field>
                 @endif
+
+                <flux:field>
+                    <flux:label badge="Required">Category</flux:label>
+                    <flux:text>Select the category this product belongs to.</flux:text>
+                    <flux:select wire:model="product_category_id">
+                        <flux:select.option value="">--Select Category--</flux:select.option>
+                        @foreach($this->categories as $category)
+                            <flux:select.option value="{{ $category->id }}">{{ $category->name }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:error name="product_category_id" />
+                </flux:field>
 
                 <flux:field>
                     <flux:radio.group wire:model="type" label="Product Type" description="Choose whether this product is simple or variable.">
@@ -42,13 +53,16 @@
                 <flux:field>
                     <flux:label>Description</flux:label>
                     <flux:text>Provide a detailed description of the product.</flux:text>
-                    <flux:textarea wire:model="description" />
+                    <livewire:jodit-text-editor
+                        wire:model="description"
+                        :buttons="['bold', 'italic', 'underline', 'strikeThrough']"
+                    />
                     <flux:error name="description" />
                 </flux:field>
 
                 <flux:separator />
                 <flux:heading size="md">Product Details</flux:heading>
-                
+
                 <flux:field>
                     <flux:label badge="Required">Price</flux:label>
                     <flux:text>Set the price of the product.</flux:text>
@@ -87,7 +101,6 @@
 
                 <div x-show="type === 'variable'" class="mt-6 border-t pt-4" style="display: none;">
                     <flux:heading size="md" class="mb-4">Select Attributes</flux:heading>
-                    
                     @foreach($this->attributeGroups as $group)
                         <div class="mb-4">
                             <flux:label>{{ $group->name }}</flux:label>

@@ -4,6 +4,13 @@ import {
 } from "../../vendor/livewire/livewire/dist/livewire.esm";
 import TomSelect from "tom-select";
 
+// Jodit Editor
+import "jodit/esm/plugins/resizer/resizer";
+import "jodit/esm/plugins/video/video";
+import { Jodit } from "jodit";
+
+window.Jodit = Jodit;
+
 window.TomSelect = TomSelect;
 window.debounce = (callback, wait) => {
     let timeoutId = null;
@@ -26,18 +33,19 @@ Livewire.on("alert", (params) => {
 
 // Livewire confirmation dialog
 Livewire.on("confirm", (params) => {
-    Flux.modal('confirm').show();
+    Flux.modal("confirm").show();
 
-    const titleElement = document.getElementById('confirm-title');
-    const messageElement = document.getElementById('confirm-message');
-    const buttonElement = document.getElementById('confirm-button');
+    const titleElement = document.getElementById("confirm-title");
+    const messageElement = document.getElementById("confirm-message");
+    const buttonElement = document.getElementById("confirm-button");
 
     // Update modal content
     if (titleElement) {
         titleElement.textContent = params.title ?? "Are you sure?";
     }
     if (messageElement) {
-        messageElement.textContent = params.message ?? `You won't be able to revert this`;
+        messageElement.textContent =
+            params.message ?? `You won't be able to revert this`;
     }
     if (buttonElement) {
         buttonElement.textContent = params.confirmText ?? "Yes";
@@ -46,7 +54,7 @@ Livewire.on("confirm", (params) => {
     // Dispatch Livewire event when button is clicked
     buttonElement.onclick = () => {
         Livewire.dispatch(params.function, { id: params.id });
-        Flux.modal('confirm').close();
+        Flux.modal("confirm").close();
     };
 });
 

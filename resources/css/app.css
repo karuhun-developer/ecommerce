@@ -1,6 +1,7 @@
-@import 'tom-select/dist/css/tom-select.css';
-@import 'tailwindcss';
-@import '../../vendor/livewire/flux/dist/flux.css';
+@import "tom-select/dist/css/tom-select.css";
+@import "tailwindcss";
+@import "../../vendor/livewire/flux/dist/flux.css";
+@import "jodit/es2021/jodit";
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -10,7 +11,10 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans:
+        "Instrument Sans", ui-sans-serif, system-ui, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
 
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
@@ -30,14 +34,23 @@
 
     --animate-marquee: marquee 20s linear infinite;
     @keyframes marquee {
-        0% { transform: translateX(0%); }
-        100% { transform: translateX(-50%); }
+        0% {
+            transform: translateX(0%);
+        }
+        100% {
+            transform: translateX(-50%);
+        }
     }
 
     --animate-gradient: gradient 8s ease infinite;
     @keyframes gradient {
-        0%, 100% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
+        0%,
+        100% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
     }
 }
 
@@ -50,7 +63,6 @@
 }
 
 @layer base {
-
     *,
     ::after,
     ::before,
@@ -65,7 +77,7 @@
 }
 
 [data-flux-label] {
-    @apply  !mb-0 !leading-tight;
+    @apply !mb-0 !leading-tight;
 }
 
 input:focus[data-flux-control],

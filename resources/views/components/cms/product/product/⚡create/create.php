@@ -3,10 +3,11 @@
 use App\Actions\Cms\Product\StoreProductAction;
 use App\Models\Attribute\AttributeGroup;
 use App\Models\Product\Product;
+use App\Models\Product\ProductCategory;
 use App\Models\Shop\Shop;
 use Flux\Flux;
-use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -22,10 +23,12 @@ new class extends Component
 
         $this->reset([
             'shop_id',
+            'product_category_id',
             'name',
             'description',
         ]);
 
+        $this->shop_id = config('shop.single_shop') ? getDefaultShop()?->id : null;
         $this->price = 0;
         $this->weight = 0;
         $this->length = 0;
@@ -38,6 +41,8 @@ new class extends Component
         foreach ($groups as $group) {
             $this->selectedAttributes[$group->id] = $group->attributes->pluck('id')->toArray();
         }
+
+        $this->dispatch('update-jodit-content', '');
     }
 
     #[Computed]
@@ -52,8 +57,16 @@ new class extends Component
         return Shop::all();
     }
 
+    #[Computed]
+    public function categories()
+    {
+        return ProductCategory::where('shop_id', $this->shop_id)->get();
+    }
+
     // Record data
     public $shop_id;
+
+    public $product_category_id;
 
     public $name;
 
@@ -83,6 +96,7 @@ new class extends Component
 
         $this->validate([
             'shop_id' => 'required|exists:shops,id',
+            'product_category_id' => 'required|exists:product_categories,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'type' => 'required|in:simple,variable',

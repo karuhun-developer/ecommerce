@@ -22,6 +22,8 @@ class UpdateProductAction
     {
         return DB::transaction(function () use ($product, $data, $imagesData) {
             $product->update([
+                'shop_id' => $data['shop_id'],
+                'product_category_id' => $data['product_category_id'],
                 'name' => $data['name'],
                 'description' => $data['description'] ?? $product->description,
                 'price' => $data['price'] ?? $product->price,

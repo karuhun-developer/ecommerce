@@ -1,13 +1,13 @@
 <div>
     <form wire:submit="submit">
         <div class="space-y-6">
-            <div class="bg-white border rounded-xl p-6 shadow-sm space-y-6">
+            <div class="space-y-6">
                 <flux:heading size="lg" class="mb-4">General Information</flux:heading>
                 @if (!config('shop.single_shop'))
                     <flux:field>
                         <flux:label badge="Required">Shop</flux:label>
                         <flux:text>Select the shop this product belongs to.</flux:text>
-                        <flux:select wire:model="shop_id">
+                        <flux:select wire:model.live="shop_id" @change="$wire.product_category_id = null">
                             <flux:select.option value="">--Select Shop--</flux:select.option>
                             @foreach($this->shops as $shop)
                                 <flux:select.option value="{{ $shop->id }}">{{ $shop->name }}</flux:select.option>
@@ -16,6 +16,18 @@
                         <flux:error name="shop_id" />
                     </flux:field>
                 @endif
+
+                <flux:field>
+                    <flux:label badge="Required">Category</flux:label>
+                    <flux:text>Select the category this product belongs to.</flux:text>
+                    <flux:select wire:model="product_category_id">
+                        <flux:select.option value="">--Select Category--</flux:select.option>
+                        @foreach($this->categories as $category)
+                            <flux:select.option value="{{ $category->id }}">{{ $category->name }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                    <flux:error name="product_category_id" />
+                </flux:field>
 
                 <flux:field>
                     <flux:label badge="Required">Name</flux:label>
@@ -27,7 +39,10 @@
                 <flux:field>
                     <flux:label>Description</flux:label>
                     <flux:text>Provide a detailed description of the product.</flux:text>
-                    <flux:textarea wire:model="description" />
+                    <livewire:jodit-text-editor
+                        wire:model="description"
+                        :buttons="['bold', 'italic', 'underline', 'strikeThrough']"
+                    />
                     <flux:error name="description" />
                 </flux:field>
 
@@ -69,10 +84,9 @@
             </div>
 
             @if($product->type === 'variable')
-                <div class="bg-white border rounded-xl p-6 shadow-sm">
+                <div class="p-6">
                     <flux:heading size="lg" class="mb-4">Variables & Attributes</flux:heading>
                     <flux:text class="mb-4 text-sm text-gray-500">Select the attributes for this variable product. If you add or remove attributes, flats will be synchronized automatically.</flux:text>
-                    
                     @foreach($this->attributeGroups as $group)
                         <div class="mb-6">
                             <flux:label class="font-bold">{{ $group->name }}</flux:label>
@@ -91,13 +105,14 @@
                 </div>
             @endif
 
-            <div class="bg-white border rounded-xl p-6 shadow-sm">
+            <flux:separator />
+
+            <div class="space-y-6 mt-6">
                 <flux:heading size="lg" class="mb-4">Product Variants (Flats) & Media</flux:heading>
                 <flux:text class="mb-4 text-sm text-gray-500">Upload up to 8 images for each product variant. Max file size is 5MB. Allowed types: jpg, jpeg, png, webp</flux:text>
-                
                 <div class="space-y-8">
                     @foreach($this->flats as $flat)
-                        <div class="border rounded-lg p-4 bg-gray-50">
+                        <div class="border rounded-lg p-4">
                             <flux:heading size="md" class="mb-2">{{ $flat->name }}</flux:heading>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                                 @for($i = 0; $i < 8; $i++)

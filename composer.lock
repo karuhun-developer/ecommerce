@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f8fd9a82f53695c49081eee5189caa47",
+    "content-hash": "1d2eccdeb3ad091499df174fe4381872",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3004,6 +3004,67 @@
                 }
             ],
             "time": "2026-04-11T18:38:28+00:00"
+        },
+        {
+            "name": "mantix/livewire-jodit-text-editor",
+            "version": "v1.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Mantix/livewire-jodit-text-editor.git",
+                "reference": "cad645a793f079d353372ec00ef1fee392f644fc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Mantix/livewire-jodit-text-editor/zipball/cad645a793f079d353372ec00ef1fee392f644fc",
+                "reference": "cad645a793f079d353372ec00ef1fee392f644fc",
+                "shasum": ""
+            },
+            "require": {
+                "livewire/livewire": "^3.0|^4.0",
+                "php": "^8.1",
+                "spatie/laravel-package-tools": "^1.16"
+            },
+            "require-dev": {
+                "larastan/larastan": "^2.0",
+                "laravel/pint": "^1.13",
+                "orchestra/testbench": "^8.0",
+                "pestphp/pest": "^2.30"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Mantix\\LivewireJoditTextEditor\\LivewireJoditTextEditorServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Mantix\\LivewireJoditTextEditor\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Pieter Naber",
+                    "email": "Pieter@Mantix.nl",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A powerful Livewire rich text editor (WYSIWYG) component built top of Jodit Editor.",
+            "keywords": [
+                "editor",
+                "livewire",
+                "wysiwyg"
+            ],
+            "support": {
+                "issues": "https://github.com/Mantix/livewire-jodit-text-editor/issues",
+                "source": "https://github.com/Mantix/livewire-jodit-text-editor/tree/v1.9"
+            },
+            "time": "2026-01-22T16:24:58+00:00"
         },
         {
             "name": "monolog/monolog",

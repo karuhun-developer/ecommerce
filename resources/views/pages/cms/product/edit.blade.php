@@ -18,7 +18,7 @@ render(function (View $view) {
     $breadcrumbs = [
         [
             'label' => 'Product',
-            'url' => route('cms.product')
+            'url' => route('cms.product.index')
         ],
         [
             'label' => 'Edit',
@@ -34,7 +34,7 @@ render(function (View $view) {
         <div class="flex justify-between items-center mb-5">
             <div class="flex items-center gap-4">
                 <flux:button
-                    href="{{ route('cms.product') }}"
+                    href="{{ route('cms.product.index') }}"
                     size="sm"
                     variant="primary"
                     icon="arrow-left"
@@ -59,6 +59,6 @@ render(function (View $view) {
             </flux:text>
         </div>
         
-        <livewire:cms.product.edit :$product />
+        <livewire:cms.product.product.edit :$product />
     </div>
 </x-layouts.app>

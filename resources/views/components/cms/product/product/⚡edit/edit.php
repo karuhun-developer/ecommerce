@@ -3,6 +3,7 @@
 use App\Actions\Cms\Product\UpdateProductAction;
 use App\Models\Attribute\AttributeGroup;
 use App\Models\Product\Product;
+use App\Models\Product\ProductCategory;
 use App\Models\Shop\Shop;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -14,7 +15,7 @@ new class extends Component
 
     // Model instance
     public $modelInstance = Product::class;
-    
+
     public Product $product;
 
     public function mount()
@@ -38,8 +39,9 @@ new class extends Component
                 'is_unlimited_stock',
             ])
         );
+        $this->dispatch('update-jodit-content', $this->description);
         $this->price = numberToCurrency($this->product->price);
-        
+
         // Initialize selected attributes array with empty arrays for each group
         foreach ($this->attributeGroups as $group) {
             $this->selectedAttributes[$group->id] = [];
@@ -51,15 +53,15 @@ new class extends Component
             foreach ($existingGroups as $group) {
                 $attrIds = $group->productAttributes()
                     ->pluck('attribute_id')
-                    ->map(fn($id) => (string) $id)
+                    ->map(fn ($id) => (string) $id)
                     ->unique()
                     ->toArray();
-                    
+
                 $this->selectedAttributes[$group->attribute_group_id] = array_values($attrIds);
             }
         }
     }
-    
+
     #[Computed]
     public function attributeGroups()
     {
@@ -71,16 +73,24 @@ new class extends Component
     {
         return $this->product->productFlats;
     }
-    
+
     #[Computed]
     public function shops()
     {
         return Shop::all();
     }
+    
+    #[Computed]
+    public function categories()
+    {
+        return ProductCategory::where('shop_id', $this->shop_id)->get();
+    }
 
     // Record data
     public $shop_id;
-    
+
+    public $product_category_id;
+
     public $name;
 
     public $description;
@@ -122,6 +132,8 @@ new class extends Component
 
         $this->price = currencyToNumber($this->price);
         $this->validate([
+            'shop_id' => 'required|exists:shops,id',
+            'product_category_id' => 'required|exists:product_categories,id',
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'weight' => 'required|numeric|min:0',
@@ -166,6 +178,7 @@ new class extends Component
             }
         }
 
+        // Call the action to update the product with all data
         $updateAction->handle(
             product: $this->product,
             data: [
