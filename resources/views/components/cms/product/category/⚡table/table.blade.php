@@ -43,7 +43,9 @@
             <flux:table.column>
                 Actions
             </flux:table.column>
-            <flux:table.column>Shop</flux:table.column>
+            <flux:table.column>
+                Image
+            </flux:table.column>
             <x-loop-th :$searchBy :$paginationOrder :$paginationOrderBy />
         </flux:table.columns>
         <flux:table.rows>
@@ -81,13 +83,26 @@
                         </flux:dropdown>
                     </flux:table.cell>
                     <flux:table.cell>
-                        {{ $d->shop->name ?? '-' }}
+                        @if ($d->getFirstMediaUrl('image') !== '')
+                            <img src="{{ $d->getFirstMediaUrl('image') }}" alt="{{ $d->name }}" class="w-12 h-12 object-cover rounded" />
+                        @else
+                            <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                                <flux:icon.photo class="w-6 h-6 text-gray-400" />
+                            </div>
+                        @endif
                     </flux:table.cell>
                     <flux:table.cell>
                         {{ $d->name }}
                     </flux:table.cell>
                     <flux:table.cell>
                         {{ $d->description }}
+                    </flux:table.cell>
+                    <flux:table.cell>
+                        @if ($d->is_featured)
+                            <flux:badge color="success" size="sm">Yes</flux:badge>
+                        @else
+                            <flux:badge color="red" size="sm">No</flux:badge>
+                        @endif
                     </flux:table.cell>
                 </flux:table.row>
             @empty

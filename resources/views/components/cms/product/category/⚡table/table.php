@@ -21,6 +21,10 @@ new class extends BaseComponent
             'name' => 'Description',
             'field' => 'description',
         ],
+        [
+            'name' => 'Is Featured',
+            'field' => 'is_featured',
+        ],
     ];
 
     public function mount()
@@ -39,7 +43,7 @@ new class extends BaseComponent
 
         // Query data with filters
         $data = $this->getDataWithFilter(
-            model: new ProductCategory,
+            model: ProductCategory::with(['media']),
             searchBy: $this->searchBy,
             orderBy: $this->paginationOrderBy,
             order: $this->paginationOrder,

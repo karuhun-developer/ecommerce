@@ -14,10 +14,10 @@ return new class extends Migration
     {
         Schema::create('product_categories', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Shop::class)->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
+            $table->boolean('is_featured')->default(false);
             $table->timestamps();
         });
     }

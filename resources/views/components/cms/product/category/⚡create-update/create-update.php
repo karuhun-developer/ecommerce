@@ -3,10 +3,8 @@
 use App\Actions\Cms\Product\Category\StoreCategoryAction;
 use App\Actions\Cms\Product\Category\UpdateCategoryAction;
 use App\Models\Product\ProductCategory;
-use App\Models\Shop\Shop;
 use Flux\Flux;
 use Illuminate\Support\Facades\Gate;
-use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -35,21 +33,15 @@ new class extends Component
     // Record data
     public $id;
 
-    public $shop_id;
-
     public $name;
 
     public $description;
 
+    public $is_featured;
+
     public $oldImage;
 
     public $image;
-
-    #[Computed]
-    public function shops()
-    {
-        return Shop::orderBy('name')->get();
-    }
 
     // Get record data
     public function getRecordData($id)
@@ -60,9 +52,9 @@ new class extends Component
         $this->fill(
             $record->only(
                 'id',
-                'shop_id',
                 'name',
                 'description',
+                'is_featured',
             )
         );
         $this->oldImage = $record->getFirstMediaUrl('image');
@@ -73,13 +65,12 @@ new class extends Component
     {
         $this->reset([
             'id',
-            'shop_id',
             'name',
             'description',
             'image',
             'oldImage',
         ]);
-        $this->shop_id = config('shop.single_shop') ? getDefaultShop()?->id : null;
+        $this->is_featured = false;
     }
 
     // Handle form submit
@@ -88,9 +79,9 @@ new class extends Component
         Gate::authorize(($this->isUpdate ? 'update' : 'create').$this->modelInstance);
 
         $this->validate([
-            'shop_id' => 'required|exists:shops,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'is_featured' => 'boolean',
             'image' => 'nullable|image|max:2048',
         ]);
 

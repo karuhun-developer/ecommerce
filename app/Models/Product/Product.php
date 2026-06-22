@@ -58,6 +58,11 @@ class Product extends Model
         return $this->hasMany(ProductFlat::class);
     }
 
+    public function mainProductFlat()
+    {
+        return $this->hasOne(ProductFlat::class)->orderBy('id', 'asc');
+    }
+
     public function productAttributeGroups()
     {
         return $this->hasMany(ProductAttributeGroup::class);

@@ -14,16 +14,15 @@ class ProductCategory extends Model implements HasMedia
     use InteractsWithMedia;
 
     protected $fillable = [
-        'shop_id',
         'name',
         'slug',
         'description',
+        'is_featured',
     ];
 
-    public function shop()
-    {
-        return $this->belongsTo(Shop::class);
-    }
+    protected $casts = [
+        'is_featured' => 'boolean',
+    ];
 
     public function products()
     {

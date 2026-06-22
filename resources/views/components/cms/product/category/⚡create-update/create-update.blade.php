@@ -15,20 +15,6 @@
                 </flux:text>
             </div>
 
-            @if (!config('shop.single_shop'))
-                <flux:field>
-                    <flux:label badge="Required">Shop</flux:label>
-                    <flux:text>Select the shop this category belongs to.</flux:text>
-                    <flux:select wire:model="shop_id">
-                        <flux:select.option value="">-- Select Shop --</flux:select.option>
-                        @foreach($this->shops as $shop)
-                            <flux:select.option value="{{ $shop->id }}">{{ $shop->name }}</flux:select.option>
-                        @endforeach
-                    </flux:select>
-                    <flux:error name="shop_id" />
-                </flux:field>
-            @endif
-
             <flux:field>
                 <flux:label>Image</flux:label>
                 <flux:text>Optional image for the category. Accepted formats: JPEG, PNG. Max size: 2MB.</flux:text>
@@ -51,6 +37,7 @@
                 <flux:error name="description" />
             </flux:field>
 
+            <flux:switch wire:model="is_featured" label="Is Featured" description="Mark this category as featured. Featured categories may be highlighted in the app." />
 
             <div class="flex">
                 <flux:spacer />

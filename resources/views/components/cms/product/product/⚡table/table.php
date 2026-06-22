@@ -38,7 +38,7 @@ new class extends BaseComponent
         }
 
         $data = $this->getDataWithFilter(
-            model: Product::with(['shop', 'category']),
+            model: Product::with(['shop', 'category', 'mainProductFlat.media']),
             searchBy: $this->searchBy,
             orderBy: $this->paginationOrderBy,
             order: $this->paginationOrder,

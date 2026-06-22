@@ -60,7 +60,7 @@ new class extends Component
     #[Computed]
     public function categories()
     {
-        return ProductCategory::where('shop_id', $this->shop_id)->get();
+        return ProductCategory::all();
     }
 
     // Record data
