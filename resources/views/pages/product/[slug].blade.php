@@ -1,11 +1,13 @@
 <?php
 
 use function Laravel\Folio\name;
+
 name('product.detail');
+
 ?>
 <x-layouts.ecommerce>
     <div class="max-w-7xl mx-auto px-4 md:px-6 py-8" x-data="{
-        id: {{ $id }},
+        id: {{ $slug }},
         qty: 1,
         activeImage: 0,
         images: [
@@ -14,7 +16,7 @@ name('product.detail');
             'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&q=80&w=800&h=800'
         ],
         product: {
-            id: {{ $id }},
+            id: {{ $slug }},
             name: 'Logitech G Pro X Superlight Wireless Gaming Mouse',
             price: 1500000,
             original_price: 1800000,
@@ -25,6 +27,13 @@ name('product.detail');
             image: 'https://images.unsplash.com/photo-1527443154391-42075928d114?auto=format&fit=crop&q=80&w=400&h=400'
         }
     }">
+        <div class="mb-4">
+            <a href="{{ route('explore.index') }}" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition" wire:navigate>
+                <flux:icon.arrow-left class="w-4 h-4" />
+                Kembali
+            </a>
+        </div>
+
         <div class="bg-white rounded-2xl shadow-sm border p-6 flex flex-col md:flex-row gap-8">
             <!-- Product Images -->
             <div class="w-full md:w-1/3 flex flex-col gap-4">

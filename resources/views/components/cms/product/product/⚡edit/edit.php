@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\Cms\Product\UpdateProductAction;
+use App\Actions\Cms\Product\Product\UpdateProductAction;
 use App\Models\Attribute\AttributeGroup;
 use App\Models\Product\Product;
 use App\Models\Product\ProductCategory;

@@ -80,8 +80,8 @@
                     <flux:table.cell>{{ $d->shop->name ?? 'N/A' }}</flux:table.cell>
                     <flux:table.cell>{{ $d->category->name ?? 'N/A' }}</flux:table.cell>
                     <flux:table.cell>
-                        @if ($d->mainProductFlat->getFirstMediaUrl('image') !== '')
-                            <img src="{{ $d->mainProductFlat->getFirstMediaUrl('image') }}" alt="{{ $d->name }}" class="w-12 h-12 object-cover rounded" />
+                        @if ($d->mainProductFlat->getFirstMediaUrl('image_slot_0') !== '')
+                            <img src="{{ $d->mainProductFlat->getFirstMediaUrl('image_slot_0') }}" alt="{{ $d->name }}" class="w-12 h-12 object-cover rounded" />
                         @else
                             <div class="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
                                 <flux:icon.photo class="w-6 h-6 text-gray-400" />

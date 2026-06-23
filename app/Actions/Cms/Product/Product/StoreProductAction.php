@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions\Cms\Product;
+namespace App\Actions\Cms\Product\Product;
 
 use App\Models\Attribute\Attribute;
 use App\Models\Product\Product;

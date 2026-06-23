@@ -69,13 +69,12 @@
             </div>
 
             <!-- Actions -->
-            <div class="flex items-center gap-1 md:gap-3 shrink-0">
+            <div class="flex items-center gap-2 md:gap-3 shrink-0">
                 <div class="relative">
                     <flux:button @click="$flux.modal('cartModal').show()" variant="subtle" icon="shopping-cart" />
-                    <!-- Badge -->
-                    <span x-show="$store.cart.count > 0" x-text="$store.cart.count" class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white pointer-events-none"></span>
+                    <flux:badge x-show="$store.cart.count > 0" x-text="$store.cart.count" color="red" class="absolute -top-1 -right-1 text-[10px] font-bold px-1.5" />
                 </div>
-                <flux:separator vertical class="hidden md:block mx-2 h-6" />
+                <flux:separator vertical class="hidden md:block mx-2" />
                 <flux:button href="{{ route('login') }}" variant="primary" color="green" class="hidden md:flex font-semibold px-6 rounded-lg" wire:navigate>
                     Masuk
                 </flux:button>

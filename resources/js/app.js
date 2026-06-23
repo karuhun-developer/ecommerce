@@ -8,6 +8,7 @@ import TomSelect from "tom-select";
 import "jodit/esm/plugins/resizer/resizer";
 import "jodit/esm/plugins/video/video";
 import { Jodit } from "jodit";
+import "./cart";
 
 window.Jodit = Jodit;
 

@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\Cms\Product\DeleteProductAction;
+use App\Actions\Cms\Product\Product\DeleteProductAction;
 use App\Livewire\BaseComponent;
 use App\Models\Product\Product;
 use Illuminate\Support\Facades\Gate;
