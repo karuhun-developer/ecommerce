@@ -115,7 +115,7 @@
                         <div class="border rounded-lg p-4">
                             <flux:heading size="md" class="mb-2">{{ $flat->name }}</flux:heading>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                                @for($i = 0; $i < 8; $i++)
+                                @for($i = 0; $i < 4; $i++)
                                     @php
                                         $existingUrl = $flat->getFirstMediaUrl("image_slot_{$i}");
                                         $isDeleted = isset($deletedImages[$flat->id][$i]) && $deletedImages[$flat->id][$i];

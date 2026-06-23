@@ -166,7 +166,7 @@ new class extends Component
         $imagesData = [];
         foreach ($this->product->productFlats as $flat) {
             $slots = [];
-            for ($i = 0; $i < 8; $i++) {
+            for ($i = 0; $i < 4; $i++) {
                 if (isset($this->images[$flat->id][$i])) {
                     $slots[$i] = $this->images[$flat->id][$i];
                 } elseif (isset($this->deletedImages[$flat->id][$i]) && $this->deletedImages[$flat->id][$i] === true) {
