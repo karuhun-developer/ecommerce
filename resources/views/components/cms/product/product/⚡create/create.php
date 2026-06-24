@@ -125,7 +125,7 @@ new class extends Component
             }
         }
 
-        $storeAction->handle(
+        $product = $storeAction->handle(
             data: [
                 ...$this->all(),
                 'attributes' => $attributesData,
@@ -138,10 +138,7 @@ new class extends Component
             message: 'Product created successfully!',
         );
 
-        // Reset data table
-        $this->dispatch('reset-parent-page');
-
-        // Close modal
-        Flux::modal('defaultModal')->close();
+        // Redirect to edit page
+        $this->redirectRoute('cms.product.edit', ['product_id' => $$product->id], navigate: true);
     }
 };
