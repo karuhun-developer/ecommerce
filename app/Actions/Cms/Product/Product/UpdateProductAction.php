@@ -24,31 +24,13 @@ class UpdateProductAction
             $product->update([
                 'shop_id' => $data['shop_id'],
                 'product_category_id' => $data['product_category_id'],
-                'name' => $data['name'],
-                'description' => $data['description'] ?? $product->description,
-                'price' => $data['price'] ?? $product->price,
-                'weight' => $data['weight'] ?? $product->weight,
-                'length' => $data['length'] ?? $product->length,
-                'width' => $data['width'] ?? $product->width,
-                'height' => $data['height'] ?? $product->height,
-                'is_unlimited_stock' => $data['is_unlimited_stock'] ?? $product->is_unlimited_stock,
                 'status' => $data['status'] ?? $product->status,
             ]);
 
             if ($product->type === 'simple') {
                 $flat = $product->productFlats()->first();
                 if ($flat) {
-                    $flat->update([
-                        'name' => $product->name,
-                        'description' => $product->description,
-                        'price' => $product->price,
-                        'weight' => $product->weight,
-                        'length' => $product->length,
-                        'width' => $product->width,
-                        'height' => $product->height,
-                        'is_unlimited_stock' => $product->is_unlimited_stock,
-                        'status' => $product->status,
-                    ]);
+                    $flat->update($data['productFlats'][$flat->id]);
 
                     $this->processImages($flat, $imagesData[$flat->id] ?? []);
                 }
@@ -112,17 +94,7 @@ class UpdateProductAction
                         $attrNames = collect($newComboData[$key])->map(fn ($c) => $c['attribute']->name)->join(', ');
                         $flatName = $product->name.' - '.$attrNames;
 
-                        $flat->update([
-                            'name' => $flatName,
-                            'description' => $product->description,
-                            'price' => $product->price,
-                            'weight' => $product->weight,
-                            'length' => $product->length,
-                            'width' => $product->width,
-                            'height' => $product->height,
-                            'is_unlimited_stock' => $product->is_unlimited_stock,
-                            'status' => $product->status,
-                        ]);
+                        $flat->update($data['productFlats'][$flat->id]);
                         $existingComboKeys[] = $key;
 
                         $this->processImages($flat, $imagesData[$flat->id] ?? []);

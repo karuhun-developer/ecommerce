@@ -28,59 +28,6 @@
                     </flux:select>
                     <flux:error name="product_category_id" />
                 </flux:field>
-
-                <flux:field>
-                    <flux:label badge="Required">Name</flux:label>
-                    <flux:text>Enter the name of the product.</flux:text>
-                    <flux:input wire:model="name" />
-                    <flux:error name="name" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label>Description</flux:label>
-                    <flux:text>Provide a detailed description of the product.</flux:text>
-                    <livewire:jodit-text-editor
-                        wire:model="description"
-                        :buttons="['bold', 'italic', 'underline', 'strikeThrough']"
-                    />
-                    <flux:error name="description" />
-                </flux:field>
-
-                <flux:field>
-                    <flux:label badge="Required">Price</flux:label>
-                    <flux:text>Set the price of the product.</flux:text>
-                    <flux:input mask:dynamic="$money($input, ',')" wire:model="price" />
-                    <flux:error name="price" />
-                </flux:field>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <flux:field>
-                        <flux:label badge="Required">Weight (gram)</flux:label>
-                        <flux:text>Set the weight of the product in grams.</flux:text>
-                        <flux:input wire:model="weight" type="number" step="0.01" />
-                        <flux:error name="weight" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label badge="Required">Length (cm)</flux:label>
-                        <flux:text>Set the length of the product in centimeters.</flux:text>
-                        <flux:input wire:model="length" type="number" step="0.01" />
-                        <flux:error name="length" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label badge="Required">Width (cm)</flux:label>
-                        <flux:text>Set the width of the product in centimeters.</flux:text>
-                        <flux:input wire:model="width" type="number" step="0.01" />
-                        <flux:error name="width" />
-                    </flux:field>
-                    <flux:field>
-                        <flux:label badge="Required">Height (cm)</flux:label>
-                        <flux:text>Set the height of the product in centimeters.</flux:text>
-                        <flux:input wire:model="height" type="number" step="0.01" />
-                        <flux:error name="height" />
-                    </flux:field>
-                </div>
-
-                <flux:switch wire:model="is_unlimited_stock" label="Unlimited Stock" description="Enable this if the product has unlimited stock. This is useful for digital products or services." />
             </div>
 
             @if($product->type === 'variable')
@@ -110,9 +57,9 @@
             <div class="space-y-6 mt-6">
                 <flux:heading size="lg" class="mb-4">Product Variants (Flats) & Media</flux:heading>
                 <flux:text class="mb-4 text-sm text-gray-500">Upload up to 8 images for each product variant. Max file size is 5MB. Allowed types: jpg, jpeg, png, webp</flux:text>
-                <div class="space-y-8">
+                <div class="grid grid-cols-1 {{ $product->type === 'variable' ? 'md:grid-cols-2' : '' }} gap-6">
                     @foreach($this->flats as $flat)
-                        <div class="border rounded-lg p-4">
+                        <div class="border rounded-lg p-4 space-y-4">
                             <flux:heading size="md" class="mb-2">{{ $flat->name }}</flux:heading>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                                 @for($i = 0; $i < 4; $i++)
@@ -149,6 +96,59 @@
                                     </div>
                                 @endfor
                             </div>
+                            <flux:field>
+                                <flux:label badge="Required">Name</flux:label>
+                                <flux:text>Enter the name of this flat product.</flux:text>
+                                <flux:input wire:model="productFlats.{{ $flat->id }}.name" />
+                                <flux:error name="productFlats.{{ $flat->id }}.name" />
+                            </flux:field>
+
+                            <flux:field>
+                                <flux:label>Description</flux:label>
+                                <flux:text>Provide a detailed description of this flat product.</flux:text>
+                                <livewire:jodit-text-editor
+                                    wire:model="productFlats.{{ $flat->id }}.description"
+                                    identifier="description-{{ $flat->id }}"
+                                    :buttons="['bold', 'italic', 'underline', 'strikeThrough']"
+                                />
+                                <flux:error name="productFlats.{{ $flat->id }}.description" />
+                            </flux:field>
+
+                            <flux:field>
+                                <flux:label badge="Required">Price</flux:label>
+                                <flux:text>Set the price of this flat product.</flux:text>
+                                <flux:input mask:dynamic="$money($input, ',')" wire:model="productFlats.{{ $flat->id }}.price" />
+                                <flux:error name="productFlats.{{ $flat->id }}.price" />
+                            </flux:field>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <flux:field>
+                                    <flux:label badge="Required">Weight (gram)</flux:label>
+                                    <flux:text>Set the weight of this flat product in grams.</flux:text>
+                                    <flux:input wire:model="productFlats.{{ $flat->id }}.weight" type="number" step="0.01" />
+                                    <flux:error name="productFlats.{{ $flat->id }}.weight" />
+                                </flux:field>
+                                <flux:field>
+                                    <flux:label badge="Required">Length (cm)</flux:label>
+                                    <flux:text>Set the length of this flat product in centimeters.</flux:text>
+                                    <flux:input wire:model="productFlats.{{ $flat->id }}.length" type="number" step="0.01" />
+                                    <flux:error name="productFlats.{{ $flat->id }}.length" />
+                                </flux:field>
+                                <flux:field>
+                                    <flux:label badge="Required">Width (cm)</flux:label>
+                                    <flux:text>Set the width of this flat product in centimeters.</flux:text>
+                                    <flux:input wire:model="productFlats.{{ $flat->id }}.width" type="number" step="0.01" />
+                                    <flux:error name="productFlats.{{ $flat->id }}.width" />
+                                </flux:field>
+                                <flux:field>
+                                    <flux:label badge="Required">Height (cm)</flux:label>
+                                    <flux:text>Set the height of this flat product in centimeters.</flux:text>
+                                    <flux:input wire:model="productFlats.{{ $flat->id }}.height" type="number" step="0.01" />
+                                    <flux:error name="productFlats.{{ $flat->id }}.height" />
+                                </flux:field>
+                            </div>
+
+                            <flux:switch wire:model="productFlats.{{ $flat->id }}.is_unlimited_stock" label="Unlimited Stock" description="Enable this if this flat product has unlimited stock." />
                         </div>
                     @endforeach
                 </div>

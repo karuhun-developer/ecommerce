@@ -30,17 +30,27 @@ new class extends Component
         $this->fill(
             $this->product->only([
                 'shop_id',
-                'name',
-                'description',
-                'weight',
-                'length',
-                'width',
-                'height',
-                'is_unlimited_stock',
+                'product_category_id',
             ])
         );
-        $this->dispatch('update-jodit-content', $this->description);
-        $this->price = numberToCurrency($this->product->price);
+
+        // Initialize flats array with product flat data
+        foreach ($this->product->productFlats as $flat) {
+            $this->productFlats[$flat->id] = [
+                'id' => $flat->id,
+                'name' => $flat->name,
+                'price' => numberToCurrency($flat->price),
+                'weight' => $flat->weight,
+                'length' => $flat->length,
+                'width' => $flat->width,
+                'height' => $flat->height,
+                'is_unlimited_stock' => $flat->is_unlimited_stock,
+            ];
+            $this->dispatch('update-jodit-content', [
+                'description-'.$flat->id,
+                $flat->description,
+            ]);
+        }
 
         // Initialize selected attributes array with empty arrays for each group
         foreach ($this->attributeGroups as $group) {
@@ -91,21 +101,7 @@ new class extends Component
 
     public $product_category_id;
 
-    public $name;
-
-    public $description;
-
-    public $price;
-
-    public $weight;
-
-    public $length;
-
-    public $width;
-
-    public $height;
-
-    public $is_unlimited_stock;
+    public $productFlats = [];
 
     public $selectedAttributes;
 
@@ -130,17 +126,22 @@ new class extends Component
     {
         Gate::authorize('update'.$this->modelInstance);
 
-        $this->price = currencyToNumber($this->price);
+        foreach ($this->productFlats as $index => $flat) {
+            $this->productFlats[$index]['price'] = currencyToNumber($flat['price']);
+        }
+
         $this->validate([
             'shop_id' => 'required|exists:shops,id',
             'product_category_id' => 'required|exists:product_categories,id',
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'weight' => 'required|numeric|min:0',
-            'length' => 'required|numeric|min:0',
-            'width' => 'required|numeric|min:0',
-            'height' => 'required|numeric|min:0',
-            'is_unlimited_stock' => 'required|boolean',
+            'productFlats.*.id' => 'required|exists:product_flats,id',
+            'productFlats.*.name' => 'required|string|max:255',
+            'productFlats.*.description' => 'nullable|string',
+            'productFlats.*.price' => 'required|numeric|min:0',
+            'productFlats.*.weight' => 'required|numeric|min:0',
+            'productFlats.*.length' => 'required|numeric|min:0',
+            'productFlats.*.width' => 'required|numeric|min:0',
+            'productFlats.*.height' => 'required|numeric|min:0',
+            'productFlats.*.is_unlimited_stock' => 'required|boolean',
             'images.*.*' => 'nullable|image|max:2048', // Validate each uploaded image
             'deletedImages.*.*' => 'nullable|boolean', // Validate deleted images flags
         ]);
@@ -196,5 +197,8 @@ new class extends Component
 
         // Reset images
         $this->images = [];
+
+        // Reset page
+        $this->redirectRoute('cms.product.edit', ['product_id' => $this->product->id], navigate: true);
     }
 };
