@@ -45,6 +45,7 @@ new class extends Component
                 'width' => $flat->width,
                 'height' => $flat->height,
                 'is_unlimited_stock' => $flat->is_unlimited_stock,
+                'stock' => $flat->stock,
             ];
             $this->dispatch('update-jodit-content', [
                 'description-'.$flat->id,
@@ -141,6 +142,7 @@ new class extends Component
             'productFlats.*.length' => 'required|numeric|min:0',
             'productFlats.*.width' => 'required|numeric|min:0',
             'productFlats.*.height' => 'required|numeric|min:0',
+            'productFlats.*.stock' => 'required|integer|min:0',
             'productFlats.*.is_unlimited_stock' => 'required|boolean',
             'images.*.*' => 'nullable|image|max:2048', // Validate each uploaded image
             'deletedImages.*.*' => 'nullable|boolean', // Validate deleted images flags

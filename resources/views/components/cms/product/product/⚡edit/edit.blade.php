@@ -146,9 +146,15 @@
                                     <flux:input wire:model="productFlats.{{ $flat->id }}.height" type="number" step="0.01" />
                                     <flux:error name="productFlats.{{ $flat->id }}.height" />
                                 </flux:field>
+                                <flux:field>
+                                    <flux:label badge="Required">Stock</flux:label>
+                                    <flux:text>Set the stock quantity of this flat product.</flux:text>
+                                    <flux:input wire:model="productFlats.{{ $flat->id }}.stock" type="number" step="1" />
+                                    <flux:error name="productFlats.{{ $flat->id }}.stock" />
+                                </flux:field>
+                                <flux:switch wire:model="productFlats.{{ $flat->id }}.is_unlimited_stock" label="Unlimited Stock" description="Enable this if this flat product has unlimited stock." />
                             </div>
 
-                            <flux:switch wire:model="productFlats.{{ $flat->id }}.is_unlimited_stock" label="Unlimited Stock" description="Enable this if this flat product has unlimited stock." />
                         </div>
                     @endforeach
                 </div>
