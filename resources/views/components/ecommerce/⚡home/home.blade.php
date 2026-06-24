@@ -83,56 +83,6 @@
                     </div>
                 </div>
             @endforeach
-            <template x-for="product in products" :key="product.id">
-                <div class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col h-full overflow-hidden relative group">
-                    
-                    <!-- Discount Badge -->
-                    <template x-if="product.discount">
-                        <div class="absolute top-2 left-2 z-10 bg-red-100 text-red-600 text-[10px] font-bold px-2 py-1 rounded">
-                            <span x-text="product.discount + '%'"></span>
-                        </div>
-                    </template>
-
-                    <!-- Product Image -->
-                    <a :href="'/product/' + product.id" class="block aspect-square overflow-hidden bg-gray-50 relative">
-                        <img :src="product.image" :alt="product.name" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-                        <div class="absolute inset-0 bg-black/5 group-hover:bg-transparent transition duration-300"></div>
-                    </a>
-
-                    <!-- Product Details -->
-                    <div class="p-3 flex flex-col flex-1">
-                        <a :href="'/product/' + product.id" class="text-sm text-gray-800 line-clamp-2 mb-2 hover:text-green-600 transition" x-text="product.name"></a>
-                        
-                        <div class="mt-auto">
-                            <div class="font-bold text-gray-900 leading-tight mb-1" x-text="'Rp' + product.price.toLocaleString('id-ID')"></div>
-                            
-                            <!-- Original Price -->
-                            <template x-if="product.original_price">
-                                <div class="text-[10px] text-gray-400 line-through mb-1" x-text="'Rp' + product.original_price.toLocaleString('id-ID')"></div>
-                            </template>
-                            
-                            <!-- Location & Rating -->
-                            <div class="flex items-center gap-1 text-gray-500 text-[10px] mt-2 mb-1">
-                                <flux:icon.map-pin class="w-3 h-3" />
-                                <span class="truncate" x-text="product.location"></span>
-                            </div>
-                            <div class="flex items-center gap-1 text-[10px] text-gray-500">
-                                <flux:icon.star class="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                                <span x-text="product.rating"></span>
-                                <span>|</span>
-                                <span x-text="'Terjual ' + product.sold"></span>
-                            </div>
-                        </div>
-
-                        <!-- Add to Cart Button (Visible on hover on desktop, always on mobile) -->
-                        <div class="mt-3">
-                            <button @click="$store.cart.add(product); $flux.modal('cartModal').show()" class="w-full bg-white border border-green-600 text-green-600 font-bold py-1.5 rounded-lg text-xs hover:bg-green-50 transition">
-                                + Keranjang
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </template>
         </div>
     </div>
 </div>
