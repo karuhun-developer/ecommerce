@@ -40,7 +40,7 @@
                     <div class="flex gap-2 overflow-x-auto pb-2 hide-scrollbar flex-nowrap items-center overscroll-contain">
                         <template x-for="(img, index) in images" :key="index">
                             <div @click="activeImage = index; activeFlatProduct = img.id"
-                                :class="{'border-green-500 ring-2 ring-green-500': activeImage === index, 'border-gray-200 opacity-70': activeImage !== index}"
+                                :class="{'border-green-500 ring-2 ring-green-500': activeImage == index, 'border-gray-200 opacity-70': activeImage !== index}"
                                 class="w-16 h-16 rounded-xl overflow-hidden border cursor-pointer hover:opacity-100 transition shrink-0">
                                 <img :src="img.url" alt="Thumbnail" class="w-full h-full object-cover" lazy>
                             </div>
@@ -52,7 +52,7 @@
             <!-- Middle: Product Info -->
             <div class="w-full lg:w-[45%] flex flex-col gap-6">
                 @foreach ($product->productFlats as $flat)
-                    <div x-show="activeFlatProduct === {{ $flat->id }}" x-cloak>
+                    <div x-show="activeFlatProduct == {{ $flat->id }}" x-cloak>
                         <h1 class="text-2xl font-bold text-gray-900 leading-tight mb-2">
                             {{ $flat->name }}
                         </h1>
@@ -110,8 +110,8 @@
                 <div>
                     <div class="border-b mb-4">
                         <nav class="flex gap-6 text-sm font-bold">
-                            <button @click="activeTab = 'description'" :class="{'text-green-600 border-b-2 border-green-600 pb-3': activeTab === 'description', 'text-gray-500 hover:text-green-600 pb-3': activeTab !== 'description'}">Detail</button>
-                            <button @click="activeTab = 'specification'" :class="{'text-green-600 border-b-2 border-green-600 pb-3': activeTab === 'specification', 'text-gray-500 hover:text-green-600 pb-3': activeTab !== 'specification'}">Spesifikasi</button>
+                            <button @click="activeTab = 'description'" :class="{'text-green-600 border-b-2 border-green-600 pb-3': activeTab == 'description', 'text-gray-500 hover:text-green-600 pb-3': activeTab !== 'description'}">Detail</button>
+                            <button @click="activeTab = 'specification'" :class="{'text-green-600 border-b-2 border-green-600 pb-3': activeTab == 'specification', 'text-gray-500 hover:text-green-600 pb-3': activeTab !== 'specification'}">Spesifikasi</button>
                         </nav>
                     </div>
 
@@ -122,7 +122,7 @@
                                 <div x-show="activeTab == 'description'" x-cloak>
                                     {!! $flat->description !!}
                                 </div>
-                                <div x-show="activeTab === 'specification'" x-cloak class="flex flex-col gap-3">
+                                <div x-show="activeTab == 'specification'" x-cloak class="flex flex-col gap-3">
                                     <div class="flex">
                                         <span class="w-36 text-gray-500">Berat</span>
                                         <span class="font-medium text-gray-900">{{ $flat->weight }} gram</span>
@@ -175,7 +175,7 @@
             <!-- Right: Action Box -->
             <div class="w-full lg:w-[25%]">
                 @foreach ($product->productFlats as $flat)
-                    <div class="border rounded-2xl p-4 shadow-sm sticky top-24 bg-white" x-show="activeFlatProduct === {{ $flat->id }}" x-cloak>
+                    <div class="border rounded-2xl p-4 shadow-sm sticky top-24 bg-white" x-show="activeFlatProduct == {{ $flat->id }}" x-cloak>
                         <h3 class="font-bold text-gray-900 mb-4 text-base">Atur jumlah dan catatan</h3>
                         <div class="flex items-center gap-3 mb-5">
                             <div class="flex items-center border rounded-xl overflow-hidden">
