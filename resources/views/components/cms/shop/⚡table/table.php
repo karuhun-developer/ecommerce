@@ -17,10 +17,6 @@ new class extends BaseComponent
             'name' => 'Name',
             'field' => 'name',
         ],
-        [
-            'name' => 'Description',
-            'field' => 'description',
-        ],
     ];
 
     public function mount()

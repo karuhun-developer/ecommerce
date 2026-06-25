@@ -18,7 +18,6 @@
                 <!-- Location Details -->
                 <div class="space-y-4">
                     <flux:heading size="md">Location Information</flux:heading>
-                    
                     <flux:field>
                         <flux:label badge="Required">Location / Branch Name</flux:label>
                         <flux:text>Name of the specific location or branch, e.g. "Gambir Branch"</flux:text>

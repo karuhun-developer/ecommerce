@@ -2,14 +2,14 @@
 
 namespace App\Actions\Cms\Shop;
 
+use App\Actions\Ecommerce\Location\UpdateLocationAction;
 use App\Models\Shop\Shop;
-use App\Services\BiteshipService;
 use Illuminate\Support\Facades\DB;
 
 class UpdateShopAction
 {
     public function __construct(
-        public readonly BiteshipService $biteshipService,
+        public readonly UpdateLocationAction $updateLocationAction,
     ) {}
 
     /**
@@ -23,32 +23,8 @@ class UpdateShopAction
                 'description' => $data['description'] ?? null,
             ]);
 
-            if ($shop->location) {
-                $this->biteshipService->updateLocation($shop->location->biteship_location_id, [
-                    'name' => $data['location_name'],
-                    'contact_name' => $data['contact_name'],
-                    'contact_phone' => $data['contact_phone'],
-                    'address' => $data['address'],
-                    'note' => $data['note'] ?? '',
-                    'postal_code' => (int) $data['postal_code'],
-                    'latitude' => (float) $data['latitude'],
-                    'longitude' => (float) $data['longitude'],
-                    'type' => 'origin',
-                ]);
-            }
-
-            $shop->location->update([
-                'biteship_area_id' => $data['biteship_area_id'],
-                'area_string' => $data['area_string'],
-                'name' => $data['location_name'],
-                'contact_name' => $data['contact_name'],
-                'contact_phone' => $data['contact_phone'],
-                'address' => $data['address'],
-                'note' => $data['note'] ?? null,
-                'postal_code' => $data['postal_code'],
-                'latitude' => $data['latitude'],
-                'longitude' => $data['longitude'],
-            ]);
+            // Update the location for the shop
+            $this->updateLocationAction->handle($shop->location, $data);
 
             return $shop->fresh();
         });

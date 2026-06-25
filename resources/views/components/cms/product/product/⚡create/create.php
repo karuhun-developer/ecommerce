@@ -5,7 +5,6 @@ use App\Models\Attribute\AttributeGroup;
 use App\Models\Product\Product;
 use App\Models\Product\ProductCategory;
 use App\Models\Shop\Shop;
-use Flux\Flux;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;

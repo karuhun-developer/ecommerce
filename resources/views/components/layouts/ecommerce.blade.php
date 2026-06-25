@@ -40,6 +40,13 @@
     <!-- Cart Slide-over (Flux Modal Flyout) -->
     <livewire:ecommerce.component.cart-flyout />
 
+
+    <x-confirm-modal />
+
+    @persist('toast')
+        <flux:toast position="top end" />
+    @endpersist
+
     @livewireScriptConfig
     @fluxScripts
 </body>

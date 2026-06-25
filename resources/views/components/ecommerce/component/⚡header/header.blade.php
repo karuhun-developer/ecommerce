@@ -96,7 +96,7 @@
         <!-- Categories Menu -->
         <flux:navbar class="hidden md:flex max-w-7xl mx-auto px-6 py-2 gap-6">
             @foreach ($this->featuredCategories as $category)
-                <flux:navbar.item href="#" wire:navigate>
+                <flux:navbar.item href="{{ route('explore.category', ['category' => $category->slug]) }}" wire:navigate>
                     {{ $category->name }}
                 </flux:navbar.item>
             @endforeach

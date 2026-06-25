@@ -198,18 +198,25 @@
                         </div>
 
                         <div class="flex flex-col gap-2">
-                            <button @click="$store.cart.add({
-                                id: {{ $flat->id }},
-                                name: '{{ $flat->name }}',
-                                price: {{ $flat->price }},
-                                image: '{{ $flat->getFirstMediaUrl('image_slot_0') }}',
-                                qty: qty,
-                            }); $flux.modal('cartModal').show()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl transition text-sm">
+                            <flux:button
+                                variant="primary"
+                                color="green"
+                                type="button"
+                                class="cursor-pointer"
+                                @click="$store.cart.add({
+                                    id: {{ $flat->id }},
+                                    shop_id: {{ $product->shop->id }},
+                                    shop_name: '{{ $product->shop->name }}',
+                                    name: '{{ $flat->name }}',
+                                    price: {{ $flat->price }},
+                                    image: '{{ $flat->getFirstMediaUrl('image_slot_0') }}',
+                                    qty: qty,
+                                }); $flux.modal('cartModal').show()">
                                 + Keranjang
-                            </button>
-                            <a href="/checkout" class="w-full border border-green-600 text-green-600 hover:bg-green-50 font-bold py-2.5 rounded-xl transition text-center text-sm">
-                                Beli Langsung
-                            </a>
+                            </flux:button>
+                            <flux:button href="{{ route('checkout') }}" class="cursor-pointer">
+                                Beli Sekarang
+                            </flux:button>
                         </div>
                         <!-- Chat | Wishlist | Share -->
                         <div class="flex items-center justify-between mt-5 pt-4 border-t text-sm font-bold text-gray-600">

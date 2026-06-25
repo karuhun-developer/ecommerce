@@ -373,12 +373,7 @@
                                     {{-- Add to Cart --}}
                                     <div class="mt-3">
                                         <button
-                                            @click="$store.cart.add({
-                                                id: {{ $product->id }},
-                                                name: '{{ addslashes($product->name) }}',
-                                                price: {{ $product->price }},
-                                                image: '{{ $product->mainProductFlat?->getFirstMediaUrl('images') ?: '' }}'
-                                            }); $flux.modal('cartModal').show()"
+                                            @click=""
                                             class="w-full bg-white border border-green-600 text-green-600 font-bold py-1.5 rounded-lg text-xs hover:bg-green-50 transition"
                                         >
                                             + Keranjang

@@ -78,7 +78,6 @@
                         </flux:dropdown>
                     </flux:table.cell>
                     <flux:table.cell>{{ $d->name }}</flux:table.cell>
-                    <flux:table.cell>{{ Str::limit($d->description, 50) }}</flux:table.cell>
                 </flux:table.row>
             @empty
                 <flux:table.row>
