@@ -1,11 +1,13 @@
 <?php
 
+use Sqids\Sqids;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 new class extends Component
 {
-    public string $selectedIds;
+    // Selected product flat ids to checkout
+    public $selectedIds;
 
     /**
      * Resolved per-shop groups populated by resolveShopGroups().
@@ -25,16 +27,21 @@ new class extends Component
     public $totalShippingCost = 0;
 
     /**
+     * Selected location ID from the shipping list.
+     */
+    public $selectedLocationId = null;
+
+    /**
      * Parsed array of selected IDs.
      */
     public function getSelectedIdsArrayProperty()
     {
-        if (blank($this->selectedIds)) {
-            return [];
-        }
+        // Decode selectedIds using Sqids
+        $sqids = new Sqids();
+        $selectedIds = blank($this->selectedIds) ? [] : $sqids->decode($this->selectedIds);
 
-        return array_values(array_filter(
-            array_map('intval', explode(',', $this->selectedIds))
+        return  array_values(array_filter(
+            array_map('intval', $selectedIds)
         ));
     }
 
@@ -90,5 +97,39 @@ new class extends Component
 
         // Calculate total shipping cost from all selected rates
         $this->totalShippingCost = (int) collect($this->shopRates)->sum('price');
+    }
+
+    #[On('shipping-address-selected')]
+    public function onAddressSelected($locationId)
+    {
+        $this->selectedLocationId = $locationId;
+    }
+
+    /**
+     * Submit checkout
+     */
+    public function submit(array $checkoutItems, $guestAddress = null)
+    {
+        $locationId = $this->selectedLocationId;
+
+        // Auto-resolve location_id if authenticated and not selected yet
+        if (auth()->check() && ! $locationId) {
+            $locationId = \App\Models\Location\Location::where('user_id', auth()->id())
+                ->where('type', 'destination')
+                ->latest()
+                ->first()?->id;
+        }
+
+        $data = [
+            'is_authenticated' => auth()->check(),
+            'location_id' => $locationId,
+            'guest_address' => !auth()->check() ? $guestAddress : null,
+            'checkout_items' => $checkoutItems,
+            'shop_groups' => $this->shopGroups,
+            'shop_rates' => $this->shopRates,
+            'total_shipping_cost' => $this->totalShippingCost,
+        ];
+
+        dd($data);
     }
 };

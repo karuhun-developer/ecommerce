@@ -34,3 +34,8 @@ function getDefaultShop()
         return Shop::with('media')->first();
     });
 }
+
+function isSingleShop()
+{
+    return config('shop.single_shop', true);
+}

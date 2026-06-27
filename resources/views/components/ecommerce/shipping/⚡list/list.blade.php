@@ -76,7 +76,7 @@
             @endforelse
         </div>
 
-        <livewire:ecommerce.checkout.shipping-create-update lazy />
+        <livewire:ecommerce.shipping.create-update lazy />
     @else
         <div
             class="px-6 pt-5 pb-4 border-b"
@@ -85,15 +85,15 @@
 
                 save() {
                     localStorage.setItem(this.lsKey, JSON.stringify({
-                        contact_name:     $wire.guest_contact_name,
-                        contact_phone:    $wire.guest_contact_phone,
-                        address:          $wire.guest_address,
-                        note:             $wire.guest_note,
-                        postal_code:      $wire.guest_postal_code,
-                        area_string:      $wire.guest_area_string,
+                        contact_name: $wire.guest_contact_name,
+                        contact_phone: $wire.guest_contact_phone,
+                        address: $wire.guest_address,
+                        note: $wire.guest_note,
+                        postal_code: $wire.guest_postal_code,
+                        area_string: $wire.guest_area_string,
                         biteship_area_id: $wire.guest_biteship_area_id,
-                        latitude:         $wire.guest_latitude,
-                        longitude:        $wire.guest_longitude,
+                        latitude: $wire.guest_latitude,
+                        longitude: $wire.guest_longitude,
                     }));
                 },
 
@@ -110,13 +110,13 @@
             }"
             x-init="
                 restore();
-                $watch('$wire.guest_contact_name',     () => save());
-                $watch('$wire.guest_contact_phone',    () => save());
-                $watch('$wire.guest_address',          () => save());
-                $watch('$wire.guest_note',             () => save());
+                $watch('$wire.guest_contact_name', () => save());
+                $watch('$wire.guest_contact_phone', () => save());
+                $watch('$wire.guest_address', () => save());
+                $watch('$wire.guest_note', () => save());
                 $watch('$wire.guest_biteship_area_id', () => save());
-                $watch('$wire.guest_latitude',         () => save());
-                $watch('$wire.guest_longitude',        () => save());
+                $watch('$wire.guest_latitude', () => save());
+                $watch('$wire.guest_longitude', () => save());
             "
         >
             <h2 class="font-bold text-gray-900">Alamat Pengiriman</h2>
@@ -136,25 +136,25 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <flux:field>
                     <flux:label badge="Wajib">Nama Penerima</flux:label>
-                    <flux:input wire:model.live="guest_contact_name" type="text" placeholder="Nama lengkap" />
+                    <flux:input wire:model="guest_contact_name" type="text" placeholder="Nama lengkap" />
                     <flux:error name="guest_contact_name" />
                 </flux:field>
                 <flux:field>
                     <flux:label badge="Wajib">Nomor HP</flux:label>
-                    <flux:input wire:model.live="guest_contact_phone" type="text" placeholder="08xxxxxxxxxx" />
+                    <flux:input wire:model="guest_contact_phone" type="text" placeholder="08xxxxxxxxxx" />
                     <flux:error name="guest_contact_phone" />
                 </flux:field>
             </div>
 
             <flux:field>
                 <flux:label badge="Wajib">Alamat Lengkap</flux:label>
-                <flux:textarea wire:model.live="guest_address" placeholder="Jl., Blok, No. Rumah, RT/RW" rows="3" />
+                <flux:textarea wire:model="guest_address" placeholder="Jl., Blok, No. Rumah, RT/RW" rows="3" />
                 <flux:error name="guest_address" />
             </flux:field>
 
             <flux:field>
                 <flux:label>Catatan / Patokan</flux:label>
-                <flux:input wire:model.live="guest_note" type="text" placeholder="Dekat Indomaret, rumah cat kuning" />
+                <flux:input wire:model="guest_note" type="text" placeholder="Dekat Indomaret, rumah cat kuning" />
             </flux:field>
 
             <!-- Biteship area search -->

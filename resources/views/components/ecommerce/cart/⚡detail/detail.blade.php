@@ -23,23 +23,6 @@
                 return this.checked.length > 0;
             },
 
-            // Group items by shop
-            get groupedByShop() {
-                const groups = {};
-                $store.cart.items.forEach(item => {
-                    const shopId = item.shop_id ?? 'unknown';
-                    if (!groups[shopId]) {
-                        groups[shopId] = {
-                            shop_id: shopId,
-                            shop_name: item.shop_name ?? 'Toko',
-                            items: [],
-                        };
-                    }
-                    groups[shopId].items.push(item);
-                });
-                return Object.values(groups);
-            },
-
             // Per-shop check helpers
             shopItemIds(shopId) {
                 return $store.cart.items
@@ -122,13 +105,13 @@
                 <div class="bg-white border rounded-2xl shadow-sm p-6">
                     <!-- Header: Pilih Semua -->
                     <div class="flex items-center gap-4 border-b pb-4 mb-4">
-                        <input
-                            type="checkbox"
-                            class="w-5 h-5 text-green-600 rounded border-gray-300 focus:ring-green-500 cursor-pointer"
-                            :checked="isAllChecked"
-                            :indeterminate="isIndeterminate"
+                        <flux:checkbox 
+                            x-bind:checked="isAllChecked"
+                            x-bind:indeterminate="isIndeterminate"
+                            x-bind:data-checked="isAllChecked"
+                            x-bind:data-indeterminate="isIndeterminate"
                             @change="toggleAll()"
-                        >
+                        />
                         <span class="font-bold text-gray-800">Pilih Semua Item</span>
                         <flux:button
                             x-show="isSomeChecked"
@@ -155,17 +138,17 @@
 
                     <!-- Grouped by shop -->
                     <div class="space-y-6">
-                        <template x-for="group in groupedByShop" :key="group.shop_id">
+                        <template x-for="group in $store.cart.groupedByShop" :key="group.shop_id">
                             <div class="border rounded-xl overflow-hidden">
                                 <!-- Shop header -->
                                 <div class="flex items-center gap-3 bg-gray-50 px-4 py-3 border-b">
-                                    <input
-                                        type="checkbox"
-                                        class="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500 cursor-pointer"
-                                        :checked="isShopAllChecked(group.shop_id)"
-                                        :indeterminate="isShopIndeterminate(group.shop_id)"
+                                    <flux:checkbox
+                                        x-bind:checked="isShopAllChecked(group.shop_id)"
+                                        x-bind:indeterminate="isShopIndeterminate(group.shop_id)"
+                                        x-bind:data-checked="isShopAllChecked(group.shop_id)"
+                                        x-bind:data-indeterminate="isShopIndeterminate(group.shop_id)"
                                         @change="toggleShop(group.shop_id)"
-                                    >
+                                    />
                                     <flux:icon.building-storefront class="w-4 h-4 text-gray-500" />
                                     <span class="font-semibold text-sm text-gray-800" x-text="group.shop_name"></span>
                                 </div>
@@ -174,12 +157,12 @@
                                 <div class="divide-y">
                                     <template x-for="item in group.items" :key="item.id">
                                         <div class="flex gap-4 p-4">
-                                            <input
-                                                type="checkbox"
-                                                class="w-5 h-5 mt-2 text-green-600 rounded border-gray-300 focus:ring-green-500 cursor-pointer shrink-0"
-                                                :checked="isChecked(item.id)"
+                                            <flux:checkbox
+                                                x-bind:checked="isChecked(item.id)"
+                                                x-bind:data-checked="isChecked(item.id)"
                                                 @change="toggleItem(item.id)"
-                                            >
+                                                class="shrink-0"
+                                            />
                                             <img :src="item.image" alt="Product" class="w-20 h-20 rounded-xl object-cover border shrink-0" x-show="item.image != ''" />
                                             <div class="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center border shrink-0" x-show="item.image == ''">
                                                 <flux:icon.photo class="w-8 h-8 text-gray-400" />
@@ -234,7 +217,7 @@
                     </div>
 
                     <flux:button
-                        x-bind:href="'{{ route('checkout') }}?items=' + checked.join(',')"
+                        x-bind:href="'{{ route('checkout') }}?items=' + window.Sqids.encode(checked)"
                         variant="primary"
                         color="green"
                         class="w-full cursor-pointer"

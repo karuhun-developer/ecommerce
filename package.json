@@ -12,6 +12,7 @@
         "concurrently": "^9.0.1",
         "jodit": "^4.12.22",
         "laravel-vite-plugin": "^3.1.0",
+        "sqids": "^0.3.0",
         "tailwindcss": "^4.3.0",
         "tom-select": "^2.6.1",
         "vite": "^8.0.12"

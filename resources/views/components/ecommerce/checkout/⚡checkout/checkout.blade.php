@@ -25,6 +25,15 @@
             await $wire.resolveShopGroups($store.cart.items);
             this.ready = true;
         },
+
+        async submitOrder() {
+            let guestAddress = null;
+            if (!{{ auth()->check() ? 'true' : 'false' }}) {
+                guestAddress = JSON.parse(localStorage.getItem('checkout_guest_address') || '{}');
+            }
+            
+            await $wire.submit(this.checkoutItems, guestAddress);
+        }
     }"
 >
     <div class="bg-gray-50 min-h-screen py-8">
@@ -34,17 +43,7 @@
             <div class="flex flex-col lg:flex-row gap-8">
                 <div class="w-full lg:w-2/3 space-y-6">
                     <!-- Shipping Address -->
-                    <livewire:ecommerce.checkout.shipping />
-
-                    <!-- Items grouped by shop (resolved from Alpine cart) -->
-                    <template x-if="!ready">
-                        {{-- Loading skeleton --}}
-                        <div class="bg-white border rounded-2xl shadow-sm p-6 animate-pulse space-y-4">
-                            <div class="h-4 w-32 bg-gray-200 rounded"></div>
-                            <div class="h-3 w-full bg-gray-100 rounded"></div>
-                            <div class="h-3 w-3/4 bg-gray-100 rounded"></div>
-                        </div>
-                    </template>
+                    <livewire:ecommerce.shipping.list />
 
                     <!-- Empty cart -->
                     <template x-if="ready && checkoutItems.length === 0">
@@ -98,7 +97,7 @@
                                 </div>
 
                                 <!-- Shipping rates for this shop -->
-                                <livewire:ecommerce.checkout.shipping-rates
+                                <livewire:ecommerce.shipping.rates
                                     :shopId="$group['shop_id']"
                                     :items="$group['items']"
                                     :key="'rates-'.$group['shop_id']"
@@ -155,11 +154,11 @@
                         </div>
 
                         <flux:button
-                            href="/payment"
                             variant="primary"
                             color="green"
                             class="w-full"
                             x-bind:disabled="checkoutItems.length === 0 || {{ count($shopGroups) > 0 && count($shopRates) < count($shopGroups) ? 'true' : 'false' }}"
+                            x-on:click="submitOrder"
                         >
                             Pilih Pembayaran
                         </flux:button>

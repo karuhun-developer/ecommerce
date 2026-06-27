@@ -9,7 +9,7 @@
         <form wire:submit="submit">
             <div class="space-y-6" x-data="{ type: $wire.entangle('type') }">
                 <flux:heading size="lg">Create Product</flux:heading>
-                @if (!config('shop.single_shop'))
+                @if (!isSingleShop())
                     <flux:field>
                         <flux:label badge="Required">Shop</flux:label>
                         <flux:text>Select the shop this product belongs to.</flux:text>

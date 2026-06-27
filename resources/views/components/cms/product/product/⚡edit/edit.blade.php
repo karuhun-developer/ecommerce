@@ -3,7 +3,7 @@
         <div class="space-y-6">
             <div class="space-y-6">
                 <flux:heading size="lg" class="mb-4">General Information</flux:heading>
-                @if (!config('shop.single_shop'))
+                @if (!isSingleShop())
                     <flux:field>
                         <flux:label badge="Required">Shop</flux:label>
                         <flux:text>Select the shop this product belongs to.</flux:text>

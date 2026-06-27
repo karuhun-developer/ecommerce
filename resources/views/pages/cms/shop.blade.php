@@ -46,7 +46,7 @@ render(function (View $view) {
             </flux:text>
         </div>
         
-        @if(config('shop.single_shop'))
+        @if(isSingleShop())
             <livewire:cms.shop.single />
         @else
             <livewire:cms.shop.table />

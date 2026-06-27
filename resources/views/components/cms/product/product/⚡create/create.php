@@ -27,7 +27,7 @@ new class extends Component
             'description',
         ]);
 
-        $this->shop_id = config('shop.single_shop') ? getDefaultShop()?->id : null;
+        $this->shop_id = isSingleShop() ? getDefaultShop()?->id : null;
         $this->price = 0;
         $this->weight = 0;
         $this->length = 0;

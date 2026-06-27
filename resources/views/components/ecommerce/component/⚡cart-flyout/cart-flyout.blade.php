@@ -24,27 +24,8 @@
 
                         <!-- Grouped by shop -->
                         <template x-if="$store.cart.items.length > 0">
-                            <div
-                                x-data="{
-                                    get groupedByShop() {
-                                        const groups = {};
-                                        $store.cart.items.forEach(item => {
-                                            const shopId = item.shop_id ?? 'unknown';
-                                            if (!groups[shopId]) {
-                                                groups[shopId] = {
-                                                    shop_id: shopId,
-                                                    shop_name: item.shop_name ?? 'Toko',
-                                                    items: [],
-                                                };
-                                            }
-                                            groups[shopId].items.push(item);
-                                        });
-                                        return Object.values(groups);
-                                    },
-                                }"
-                                class="space-y-4"
-                            >
-                                <template x-for="group in groupedByShop" :key="group.shop_id">
+                            <div class="space-y-4">
+                                <template x-for="group in $store.cart.groupedByShop" :key="group.shop_id">
                                     <div class="border rounded-xl overflow-hidden">
                                         <!-- Shop header -->
                                         <div class="flex items-center gap-2 bg-gray-50 px-4 py-2.5 border-b">

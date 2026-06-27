@@ -3,6 +3,7 @@ import {
     Alpine,
 } from "../../vendor/livewire/livewire/dist/livewire.esm";
 import TomSelect from "tom-select";
+import Sqids from "sqids";
 
 // Jodit Editor
 import "jodit/esm/plugins/resizer/resizer";
@@ -11,6 +12,7 @@ import { Jodit } from "jodit";
 import "./cart";
 
 window.Jodit = Jodit;
+window.Sqids = new Sqids();
 
 window.TomSelect = TomSelect;
 window.debounce = (callback, wait) => {

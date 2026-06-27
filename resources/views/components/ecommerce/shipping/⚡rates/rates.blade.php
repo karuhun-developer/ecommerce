@@ -57,7 +57,7 @@
         @endif
 
         {{-- Loading skeleton --}}
-        <div wire:loading wire:target="fetchRates" class="space-y-2">
+        <div wire:loading wire:target="fetchRates" class="space-y-2 w-full">
             @foreach(range(1, 3) as $_)
                 <div class="border rounded-xl p-3 animate-pulse flex justify-between items-center">
                     <div class="space-y-1.5">

@@ -18,6 +18,21 @@ document.addEventListener("alpine:init", () => {
                 0,
             );
         },
+        get groupedByShop() {
+            const groups = {};
+            this.items.forEach((item) => {
+                const shopId = item.shop_id ?? "unknown";
+                if (!groups[shopId]) {
+                    groups[shopId] = {
+                        shop_id: shopId,
+                        shop_name: item.shop_name ?? "Toko",
+                        items: [],
+                    };
+                }
+                groups[shopId].items.push(item);
+            });
+            return Object.values(groups);
+        },
         add(product) {
             let existing = this.items.find((i) => i.id === product.id);
             if (existing) {
