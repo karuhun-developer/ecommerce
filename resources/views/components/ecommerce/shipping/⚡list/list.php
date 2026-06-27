@@ -155,5 +155,7 @@ new class extends Component
         $this->guest_postal_code = $postalCode;
         $this->guest_searchArea = $name;
         $this->guest_areas = [];
+
+        $this->dispatch('guest-address-updated', areaId: $id, postalCode: $postalCode);
     }
 };

@@ -102,6 +102,7 @@ new class extends Component
      * wire:init="setGuestDestination(@js($guestData))" won't work cross-component,
      * so we expose this as a public action callable from x-init.
      */
+    #[On('guest-address-updated')]
     public function setGuestDestination(string $areaId, string $postalCode): void
     {
         $this->destinationAreaId = $areaId;
@@ -158,12 +159,18 @@ new class extends Component
         $this->loading = true;
 
         try {
-            $response = $biteshipService->getRates([
+            $requestPayload = [
                 'origin_area_id' => $shop->location->biteship_area_id,
                 'destination_area_id' => $this->destinationAreaId,
                 'couriers' => self::COURIERS,
                 'items' => $biteshipItems,
-            ]);
+            ];
+
+            $cacheKey = 'biteship_rates_' . md5(json_encode($requestPayload));
+
+            $response = cache()->remember($cacheKey, now()->addHours(24), function () use ($biteshipService, $requestPayload) {
+                return $biteshipService->getRates($requestPayload);
+            });
 
             $this->rates = collect($response['pricing'] ?? [])
                 ->filter(fn ($rate) => ($rate['available'] ?? true) && ! ($rate['error'] ?? false))
