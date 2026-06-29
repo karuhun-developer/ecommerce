@@ -1,6 +1,7 @@
 
 <div
     x-data="{
+        lsKey: 'checkout_guest_address',
         ready: false,
 
         get checkoutItems() {
@@ -18,7 +19,7 @@
         },
 
         get grandTotal() {
-            return this.subtotal + {{ $totalShippingCost }} + 2500 + 1000;
+            return this.subtotal + {{ $totalShippingCost }} + {{ $this->asuransiPengiriman }} + {{ $this->jasaAplikasi }};
         },
 
         async init() {
@@ -27,12 +28,23 @@
         },
 
         async submitOrder() {
-            let guestAddress = null;
+            let guestData = {};
             if (!{{ auth()->check() ? 'true' : 'false' }}) {
-                guestAddress = JSON.parse(localStorage.getItem('checkout_guest_address') || '{}');
+                const localStorageData = JSON.parse(localStorage.getItem(this.lsKey) || '{}');
+                guestData = {
+                    contact_name: localStorageData.contact_name,
+                    contact_phone: localStorageData.contact_phone,
+                    address: localStorageData.address,
+                    note: localStorageData.note,
+                    postal_code: localStorageData.postal_code,
+                    area_string: localStorageData.area_string,
+                    biteship_area_id: localStorageData.biteship_area_id,
+                    latitude: localStorageData.latitude,
+                    longitude: localStorageData.longitude,
+                }
             }
-            
-            await $wire.submit(this.checkoutItems, guestAddress);
+
+            await $wire.submit(this.checkoutItems, guestData);
         }
     }"
 >
@@ -138,11 +150,11 @@
 
                             <div class="flex justify-between text-gray-600">
                                 <span>Asuransi Pengiriman</span>
-                                <span>Rp2.500</span>
+                                <span>{{ $this->asuransiPengiriman }}</span>
                             </div>
                             <div class="flex justify-between text-gray-600">
                                 <span>Biaya Jasa Aplikasi</span>
-                                <span>Rp1.000</span>
+                                <span>{{ $this->jasaAplikasi }}</span>
                             </div>
                         </div>
 

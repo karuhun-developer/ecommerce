@@ -1,11 +1,16 @@
 <?php
 
-use Sqids\Sqids;
+use App\Models\Product\ProductFlat;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Sqids\Sqids;
 
 new class extends Component
 {
+    // CONSTANTS
+    public $asuransiPengiriman = 2500;
+    public $jasaAplikasi = 1000;
+
     // Selected product flat ids to checkout
     public $selectedIds;
 
@@ -37,10 +42,10 @@ new class extends Component
     public function getSelectedIdsArrayProperty()
     {
         // Decode selectedIds using Sqids
-        $sqids = new Sqids();
+        $sqids = new Sqids;
         $selectedIds = blank($this->selectedIds) ? [] : $sqids->decode($this->selectedIds);
 
-        return  array_values(array_filter(
+        return array_values(array_filter(
             array_map('intval', $selectedIds)
         ));
     }
@@ -108,28 +113,76 @@ new class extends Component
     /**
      * Submit checkout
      */
-    public function submit(array $checkoutItems, $guestAddress = null)
+    public function submit(array $checkoutItems, ?array $guestData)
     {
-        $locationId = $this->selectedLocationId;
-
-        // Auto-resolve location_id if authenticated and not selected yet
-        if (auth()->check() && ! $locationId) {
-            $locationId = \App\Models\Location\Location::where('user_id', auth()->id())
-                ->where('type', 'destination')
-                ->latest()
-                ->first()?->id;
+        // Check if user is authenticated and no location is selected
+        if (auth()->check() && !$this->selectedLocationId) {
+            // Toast message
+            $this->dispatch([
+                'type' => 'error',
+                'message' => 'Silakan pilih alamat tujuan pengiriman terlebih dahulu.',
+            ]);
+            return;
         }
 
-        $data = [
-            'is_authenticated' => auth()->check(),
-            'location_id' => $locationId,
-            'guest_address' => !auth()->check() ? $guestAddress : null,
-            'checkout_items' => $checkoutItems,
-            'shop_groups' => $this->shopGroups,
-            'shop_rates' => $this->shopRates,
-            'total_shipping_cost' => $this->totalShippingCost,
-        ];
+        // Check if guest data is provided for guest checkout
+        if (!auth()->check() && !$guestData) {
+            $this->dispatch([
+                'type' => 'error',
+                'message' => 'Silakan lengkapi data pengiriman terlebih dahulu.',
+            ]);
+            return;
+        }
 
-        dd($data);
+        // Validate the data before proceeding
+        $this->validate([
+            'selectedLocationId' => 'nullable|integer|exists:locations,id',
+            'shopRates' => 'required|array',
+            'shopRates.*.courier_code' => 'required|string',
+            'shopRates.*.courier_service_code' => 'required|string',
+            'shopRates.*.price' => 'required|integer|min:0',
+            'shopRates.*.name' => 'required|string',
+            'shopRates.*.etd' => 'nullable|string',
+            'shopGroups' => 'required|array',
+            'shopGroups.*.shop_id' => 'required|integer|exists:shops,id',
+            'shopGroups.*.items' => 'required|array',
+            'shopGroups.*.items.*' => 'required|integer|min:1', // value is qty, key is product_flat_id
+        ]);
+
+        // Validate that each shop in shopGroups has a corresponding rate in shopRates
+        $totalCheckout = 0;
+        $totalRates = 0;
+
+        foreach ($this->shopGroups as $group) {
+            $shopId = $group['shop_id'];
+            if (!isset($this->shopRates[$shopId])) {
+                $this->dispatch([
+                    'type' => 'error',
+                    'message' => "Silakan pilih ongkos kirim untuk toko {$group['shop_name']} terlebih dahulu.",
+                ]);
+                return;
+            }
+
+            // Validate the items in the group against the checkoutItems
+            $totalCheckoutShop = 0;
+            foreach ($group['items'] as $productFlatId => $qty) {
+                $productFlat = ProductFlat::findOrFail($productFlatId);
+                $totalCheckoutShop += $productFlat->price * $qty;
+            }
+
+            // Get shop rate for this shop
+            $shopRate = $this->shopRates[$shopId];
+
+            $totalCheckout += $totalCheckoutShop;
+            $totalRates += $shopRate['price'];
+        }
+
+        dd(
+            $totalCheckout,
+            $totalCheckoutShop,
+            $totalRates,
+            $this->shopRates,
+            $totalCheckout + $totalRates + $this->asuransiPengiriman + $this->jasaAplikasi,
+        );
     }
 };

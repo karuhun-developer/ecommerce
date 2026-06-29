@@ -166,7 +166,7 @@ new class extends Component
                 'items' => $biteshipItems,
             ];
 
-            $cacheKey = 'biteship_rates_' . md5(json_encode($requestPayload));
+            $cacheKey = 'biteship_rates_'.md5(json_encode($requestPayload));
 
             $response = cache()->remember($cacheKey, now()->addHours(24), function () use ($biteshipService, $requestPayload) {
                 return $biteshipService->getRates($requestPayload);
