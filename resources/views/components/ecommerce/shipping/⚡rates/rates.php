@@ -1,9 +1,7 @@
 <?php
 
+use App\Actions\Ecommerce\Shipping\GetShippingRatesAction;
 use App\Models\Location\Location;
-use App\Models\Product\ProductFlat;
-use App\Models\Shop\Shop;
-use App\Services\BiteshipService;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -115,74 +113,32 @@ new class extends Component
     /**
      * Fetch rates from Biteship for this shop → destination pair.
      */
-    public function fetchRates(BiteshipService $biteshipService): void
+    public function fetchRates(GetShippingRatesAction $getShippingRatesAction): void
     {
         $this->error = '';
         $this->rates = [];
 
-        // --- Origin: shop location ---
-        $shop = Shop::with('location')->find($this->shopId);
-
-        if (! $shop || ! $shop->location || ! $shop->location->biteship_area_id) {
-            $this->error = 'Informasi lokasi toko belum lengkap.';
-
-            return;
-        }
-
-        // --- Destination ---
-        if (blank($this->destinationAreaId)) {
-            $this->error = 'Pilih alamat pengiriman terlebih dahulu.';
-
-            return;
-        }
-
-        // --- Items: load weight/dimensions from ProductFlat ---
-        $itemIds = collect($this->items)->keys()->toArray();
-        $flats = ProductFlat::whereIn('id', $itemIds)->get()->keyBy('id');
-
-        if ($flats->isEmpty()) {
-            $this->error = 'Item tidak ditemukan.';
-
-            return;
-        }
-
-        $biteshipItems = $flats->map(fn ($flat) => [
-            'name' => $flat->name,
-            'value' => (int) $flat->price,
-            'quantity' => $this->items[$flat->id], // Get quantity from $this->items array
-            'weight' => max(1, (int) ($flat->weight ?? 1)),
-            'length' => max(1, (int) ($flat->length ?? 1)),
-            'width' => max(1, (int) ($flat->width ?? 1)),
-            'height' => max(1, (int) ($flat->height ?? 1)),
-        ])->values()->toArray();
-
         $this->loading = true;
-
         try {
-            $requestPayload = [
-                'origin_area_id' => $shop->location->biteship_area_id,
-                'destination_area_id' => $this->destinationAreaId,
-                'couriers' => self::COURIERS,
-                'items' => $biteshipItems,
+            $this->rates = $getShippingRatesAction->handle(
+                shopId: $this->shopId,
+                destinationAreaId: $this->destinationAreaId,
+                items: $this->items,
+            );
+        } catch (Exception $e) {
+            // Check if it's a known error message from the action
+            $knownErrors = [
+                'Informasi lokasi toko belum lengkap.',
+                'Pilih alamat pengiriman terlebih dahulu.',
+                'Item tidak ditemukan.',
+                'Tidak ada layanan kurir yang tersedia untuk rute ini.',
             ];
 
-            $cacheKey = 'biteship_rates_'.md5(json_encode($requestPayload));
-
-            $response = cache()->remember($cacheKey, now()->addHours(24), function () use ($biteshipService, $requestPayload) {
-                return $biteshipService->getRates($requestPayload);
-            });
-
-            $this->rates = collect($response['pricing'] ?? [])
-                ->filter(fn ($rate) => ($rate['available'] ?? true) && ! ($rate['error'] ?? false))
-                ->sortBy('price')
-                ->values()
-                ->toArray();
-
-            if (empty($this->rates)) {
-                $this->error = 'Tidak ada layanan kurir yang tersedia untuk rute ini.';
+            if (in_array($e->getMessage(), $knownErrors)) {
+                $this->error = $e->getMessage();
+            } else {
+                $this->error = 'Gagal mengambil tarif pengiriman: '.$e->getMessage();
             }
-        } catch (Exception $e) {
-            $this->error = 'Gagal mengambil tarif pengiriman: '.$e->getMessage();
         } finally {
             $this->loading = false;
         }

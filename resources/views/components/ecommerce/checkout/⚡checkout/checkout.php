@@ -1,5 +1,8 @@
 <?php
 
+use App\Actions\Ecommerce\Checkout\ResolveShopGroupsAction;
+use App\Actions\Ecommerce\Shipping\GetShippingRatesAction;
+use App\Models\Location\Location;
 use App\Models\Product\ProductFlat;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -9,6 +12,7 @@ new class extends Component
 {
     // CONSTANTS
     public $asuransiPengiriman = 2500;
+
     public $jasaAplikasi = 1000;
 
     // Selected product flat ids to checkout
@@ -57,30 +61,11 @@ new class extends Component
      *
      * @param  array<int, array<string, mixed>>  $cartItems
      */
-    public function resolveShopGroups(array $cartItems)
+    public function resolveShopGroups(array $cartItems, ResolveShopGroupsAction $resolveShopGroupsAction)
     {
         $selectedIds = $this->getSelectedIdsArrayProperty();
 
-        // Filter to checked items
-        $items = empty($selectedIds) ? $cartItems : array_filter($cartItems, fn ($i) => in_array((int) $i['id'], $selectedIds));
-
-        // Group by shop_id
-        $groups = [];
-        foreach ($items as $item) {
-            $shopId = (int) ($item['shop_id'] ?? 0);
-            if (! isset($groups[$shopId])) {
-                $groups[$shopId] = [
-                    'shop_id' => $shopId,
-                    'shop_name' => $item['shop_name'] ?? 'Toko',
-                    'items' => [],
-                ];
-            }
-
-            // Store item id as key and qty as value for easier access in shipping-rates component
-            $groups[$shopId]['items'][$item['id']] = $item['qty'];
-        }
-
-        $this->shopGroups = array_values($groups);
+        $this->shopGroups = $resolveShopGroupsAction->handle($cartItems, $selectedIds);
     }
 
     /**
@@ -113,24 +98,26 @@ new class extends Component
     /**
      * Submit checkout
      */
-    public function submit(array $checkoutItems, ?array $guestData)
+    public function submit(?array $guestData, GetShippingRatesAction $getShippingRatesAction)
     {
         // Check if user is authenticated and no location is selected
-        if (auth()->check() && !$this->selectedLocationId) {
+        if (auth()->check() && ! $this->selectedLocationId) {
             // Toast message
             $this->dispatch([
                 'type' => 'error',
                 'message' => 'Silakan pilih alamat tujuan pengiriman terlebih dahulu.',
             ]);
+
             return;
         }
 
         // Check if guest data is provided for guest checkout
-        if (!auth()->check() && !$guestData) {
+        if (! auth()->check() && ! $guestData) {
             $this->dispatch([
                 'type' => 'error',
                 'message' => 'Silakan lengkapi data pengiriman terlebih dahulu.',
             ]);
+
             return;
         }
 
@@ -155,11 +142,12 @@ new class extends Component
 
         foreach ($this->shopGroups as $group) {
             $shopId = $group['shop_id'];
-            if (!isset($this->shopRates[$shopId])) {
+            if (! isset($this->shopRates[$shopId])) {
                 $this->dispatch([
                     'type' => 'error',
                     'message' => "Silakan pilih ongkos kirim untuk toko {$group['shop_name']} terlebih dahulu.",
                 ]);
+
                 return;
             }
 
@@ -170,14 +158,55 @@ new class extends Component
                 $totalCheckoutShop += $productFlat->price * $qty;
             }
 
-            // Get shop rate for this shop
+            // Validate the shipping rates
+            $destinationAreaId = auth()->check()
+                ? Location::find($this->selectedLocationId)?->biteship_area_id
+                : ($guestData['biteship_area_id'] ?? null);
+
+            try {
+                $availableRates = $getShippingRatesAction->handle(
+                    shopId: $shopId,
+                    destinationAreaId: $destinationAreaId,
+                    items: $group['items'],
+                );
+            } catch (Exception $e) {
+                $this->dispatch([
+                    'type' => 'error',
+                    'message' => $e->getMessage(),
+                ]);
+
+                return;
+            }
+
+            $selectedRate = $this->shopRates[$shopId];
+
+            $matchedRate = collect($availableRates)->first(function ($rate) use ($selectedRate) {
+                return $rate['courier_code'] === $selectedRate['courier_code'] &&
+                    $rate['courier_service_code'] === $selectedRate['courier_service_code'];
+            });
+
+            if (! $matchedRate) {
+                $this->dispatch([
+                    'type' => 'error',
+                    'message' => "Layanan kurir {$selectedRate['name']} tidak tersedia untuk toko {$group['shop_name']}. Silakan pilih ulang kurir.",
+                ]);
+
+                return;
+            }
+
+            // Pastikan harga selalu dari API jika ada perubahan
+            $this->shopRates[$shopId]['price'] = $matchedRate['price'];
+
+            // Get updated shop rate for this shop
             $shopRate = $this->shopRates[$shopId];
 
             $totalCheckout += $totalCheckoutShop;
             $totalRates += $shopRate['price'];
         }
 
+        //
         dd(
+            $guestData,
             $totalCheckout,
             $totalCheckoutShop,
             $totalRates,

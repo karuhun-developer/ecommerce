@@ -87,6 +87,7 @@
                     localStorage.setItem(this.lsKey, JSON.stringify({
                         contact_name: $wire.guest_contact_name,
                         contact_phone: $wire.guest_contact_phone,
+                        email: $wire.guest_email,
                         address: $wire.guest_address,
                         note: $wire.guest_note,
                         postal_code: $wire.guest_postal_code,
@@ -112,6 +113,7 @@
                 restore();
                 $watch('$wire.guest_contact_name', () => save());
                 $watch('$wire.guest_contact_phone', () => save());
+                $watch('$wire.guest_email', () => save());
                 $watch('$wire.guest_address', () => save());
                 $watch('$wire.guest_note', () => save());
                 $watch('$wire.guest_biteship_area_id', () => save());
@@ -145,6 +147,12 @@
                     <flux:error name="guest_contact_phone" />
                 </flux:field>
             </div>
+
+            <flux:field>
+                <flux:label>Email</flux:label>
+                <flux:input wire:model="guest_email" type="email" placeholder="Email" />
+                <flux:error name="guest_email" />
+            </flux:field>
 
             <flux:field>
                 <flux:label badge="Wajib">Alamat Lengkap</flux:label>

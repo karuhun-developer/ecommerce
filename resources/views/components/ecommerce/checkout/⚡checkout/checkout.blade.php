@@ -2,6 +2,9 @@
 <div
     x-data="{
         lsKey: 'checkout_guest_address',
+        totalShippingCost: $wire.entangle('totalShippingCost'),
+        asuransiPengiriman: $wire.entangle('asuransiPengiriman'),
+        jasaAplikasi: $wire.entangle('jasaAplikasi'),
         ready: false,
 
         get checkoutItems() {
@@ -19,7 +22,7 @@
         },
 
         get grandTotal() {
-            return this.subtotal + {{ $totalShippingCost }} + {{ $this->asuransiPengiriman }} + {{ $this->jasaAplikasi }};
+            return this.subtotal + this.totalShippingCost + this.asuransiPengiriman + this.jasaAplikasi;
         },
 
         async init() {
@@ -34,6 +37,7 @@
                 guestData = {
                     contact_name: localStorageData.contact_name,
                     contact_phone: localStorageData.contact_phone,
+                    email: localStorageData.email,
                     address: localStorageData.address,
                     note: localStorageData.note,
                     postal_code: localStorageData.postal_code,
@@ -44,7 +48,7 @@
                 }
             }
 
-            await $wire.submit(this.checkoutItems, guestData);
+            await $wire.submit(guestData);
         }
     }"
 >
@@ -150,11 +154,11 @@
 
                             <div class="flex justify-between text-gray-600">
                                 <span>Asuransi Pengiriman</span>
-                                <span>{{ $this->asuransiPengiriman }}</span>
+                                <span x-text="'Rp' + asuransiPengiriman.toLocaleString('id-ID')"></span>
                             </div>
                             <div class="flex justify-between text-gray-600">
                                 <span>Biaya Jasa Aplikasi</span>
-                                <span>{{ $this->jasaAplikasi }}</span>
+                                <span x-text="'Rp' + jasaAplikasi.toLocaleString('id-ID')"></span>
                             </div>
                         </div>
 

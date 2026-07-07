@@ -19,6 +19,8 @@ new class extends Component
 
     public $guest_contact_phone = '';
 
+    public $guest_email = '';
+
     public $guest_address = '';
 
     public $guest_note = '';
@@ -45,6 +47,7 @@ new class extends Component
     {
         $this->guest_contact_name = $data['contact_name'] ?? '';
         $this->guest_contact_phone = $data['contact_phone'] ?? '';
+        $this->guest_email = $data['email'] ?? '';
         $this->guest_address = $data['address'] ?? '';
         $this->guest_note = $data['note'] ?? '';
         $this->guest_postal_code = $data['postal_code'] ?? '';
