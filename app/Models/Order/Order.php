@@ -2,6 +2,9 @@
 
 namespace App\Models\Order;
 
+use App\Models\Location\Location;
+use App\Models\Payment\Payment;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
@@ -36,12 +39,12 @@ class Order extends Model
 
     public function user()
     {
-        return $this->belongsTo(\App\Models\User::class);
+        return $this->belongsTo(User::class);
     }
 
     public function location()
     {
-        return $this->belongsTo(\App\Models\Location\Location::class);
+        return $this->belongsTo(Location::class);
     }
 
     public function orderShops()
@@ -52,5 +55,10 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderShopItem::class);
+    }
+
+    public function payments()
+    {
+        return $this->morphMany(Payment::class, 'payable');
     }
 }

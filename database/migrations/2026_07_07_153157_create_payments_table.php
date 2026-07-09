@@ -23,7 +23,9 @@ return new class extends Migration
             $table->string('channel');
             $table->dateTime('expired_at')->nullable();
             $table->dateTime('paid_at')->nullable();
-            $table->decimal('amount', 12, 4);
+            $table->decimal('amount', 12, 4)->comment('Original amount before fees');
+            $table->decimal('fee', 12, 4)->default(0);
+            $table->decimal('total', 12, 4)->comment('Total amount after fees');
             $table->timestamps();
         });
     }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Order\OrderShop;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('order_shop_shipments', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(\App\Models\Order\OrderShop::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(OrderShop::class)->constrained()->cascadeOnDelete();
             $table->string('event')->default('order.status');
             $table->string('courier_tracking_id')->nullable();
             $table->string('courier_waybill_id')->nullable();

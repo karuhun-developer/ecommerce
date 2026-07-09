@@ -6,6 +6,6 @@ name('home');
 
 ?>
 
-<x-layouts.ecommerce>
+<x-layouts.ecommerce title="Best Online Store | {{ config('app.name') }}">
     <livewire:ecommerce.home />
 </x-layouts.ecommerce>

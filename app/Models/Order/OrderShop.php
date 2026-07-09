@@ -2,6 +2,7 @@
 
 namespace App\Models\Order;
 
+use App\Models\Shop\Shop;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderShop extends Model
@@ -34,7 +35,7 @@ class OrderShop extends Model
 
     public function shop()
     {
-        return $this->belongsTo(\App\Models\Shop\Shop::class);
+        return $this->belongsTo(Shop::class);
     }
 
     public function shipments()

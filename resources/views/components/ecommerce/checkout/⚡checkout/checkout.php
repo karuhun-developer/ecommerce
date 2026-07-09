@@ -1,9 +1,11 @@
 <?php
 
 use App\Actions\Ecommerce\Checkout\ResolveShopGroupsAction;
+use App\Actions\Ecommerce\Checkout\StoreCheckoutAction;
 use App\Actions\Ecommerce\Shipping\GetShippingRatesAction;
 use App\Models\Location\Location;
 use App\Models\Product\ProductFlat;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Sqids\Sqids;
@@ -98,7 +100,7 @@ new class extends Component
     /**
      * Submit checkout
      */
-    public function submit(?array $guestData, GetShippingRatesAction $getShippingRatesAction)
+    public function submit(?array $guestData, GetShippingRatesAction $getShippingRatesAction, StoreCheckoutAction $storeCheckoutAction)
     {
         // Check if user is authenticated and no location is selected
         if (auth()->check() && ! $this->selectedLocationId) {
@@ -140,6 +142,9 @@ new class extends Component
         $totalCheckout = 0;
         $totalRates = 0;
 
+        // Submited shop groups
+        $submitedShopGroups = [];
+
         foreach ($this->shopGroups as $group) {
             $shopId = $group['shop_id'];
             if (! isset($this->shopRates[$shopId])) {
@@ -156,6 +161,14 @@ new class extends Component
             foreach ($group['items'] as $productFlatId => $qty) {
                 $productFlat = ProductFlat::findOrFail($productFlatId);
                 $totalCheckoutShop += $productFlat->price * $qty;
+
+                // Store the submitted shop groups with product details for later use
+                $submitedShopGroups[$shopId]['items'][$productFlatId] = [
+                    'price' => $productFlat->price,
+                    'qty' => $qty,
+                    'total' => $productFlat->price * $qty,
+                    'raw' => $productFlat->toArray(), // Store the raw product flat data for later use
+                ];
             }
 
             // Validate the shipping rates
@@ -194,24 +207,45 @@ new class extends Component
                 return;
             }
 
-            // Pastikan harga selalu dari API jika ada perubahan
-            $this->shopRates[$shopId]['price'] = $matchedRate['price'];
-
-            // Get updated shop rate for this shop
-            $shopRate = $this->shopRates[$shopId];
+            // Make sure the price is updated to the matched rate's price
+            $submitedShopGroups[$shopId]['selected_rate'] = $matchedRate;
+            $submitedShopGroups[$shopId]['total_checkout'] = $totalCheckoutShop;
+            $submitedShopGroups[$shopId]['total_shipping'] = $matchedRate['price'];
+            $submitedShopGroups[$shopId]['total'] = $totalCheckoutShop + $matchedRate['price'];
 
             $totalCheckout += $totalCheckoutShop;
-            $totalRates += $shopRate['price'];
+            $totalRates += $matchedRate['price'];
         }
 
-        //
-        dd(
-            $guestData,
-            $totalCheckout,
-            $totalCheckoutShop,
-            $totalRates,
-            $this->shopRates,
-            $totalCheckout + $totalRates + $this->asuransiPengiriman + $this->jasaAplikasi,
-        );
+        // Store order
+        $submitedData = [
+            'shop_groups' => $submitedShopGroups,
+            'total_checkout' => $totalCheckout,
+            'total_rates' => $totalRates,
+            'asuransi_pengiriman' => $this->asuransiPengiriman,
+            'jasa_aplikasi' => $this->jasaAplikasi,
+            'selected_location_id' => $this->selectedLocationId,
+            'guest_data' => $guestData,
+        ];
+
+        try {
+            $checkout = $storeCheckoutAction->handle($submitedData);
+
+            // Redirect to order detail page with the order reference
+            return $this->redirectRoute('payment.detail', [
+                'reference' => $checkout->reference,
+            ], navigate: true);
+
+        } catch (Exception $e) {
+            // Log the error with additional context for debugging
+            Log::error('Failed to store order: '.$e->getMessage(), $submitedData);
+
+            $this->dispatch([
+                'type' => 'error',
+                'message' => 'Failed to store order: '.$e->getMessage(),
+            ]);
+
+            return;
+        }
     }
 };

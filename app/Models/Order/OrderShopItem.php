@@ -2,6 +2,7 @@
 
 namespace App\Models\Order;
 
+use App\Models\Product\ProductFlat;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderShopItem extends Model
@@ -35,6 +36,6 @@ class OrderShopItem extends Model
 
     public function productFlat()
     {
-        return $this->belongsTo(\App\Models\Product\ProductFlat::class);
+        return $this->belongsTo(ProductFlat::class);
     }
 }

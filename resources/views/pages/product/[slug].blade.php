@@ -14,6 +14,6 @@ render(function (View $view, string $slug) {
 
     return $view->with(compact('product'));
 }); ?>
-<x-layouts.ecommerce>
+<x-layouts.ecommerce title="{{ $product->name }} | {{ config('app.name') }}">
     <livewire:ecommerce.product.detail :$product />
 </x-layouts.ecommerce>

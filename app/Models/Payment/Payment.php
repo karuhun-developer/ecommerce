@@ -23,11 +23,16 @@ class Payment extends Model
         'expired_at',
         'paid_at',
         'amount',
+        'fee',
+        'total',
     ];
 
     protected $casts = [
         'expired_at' => 'datetime',
         'paid_at' => 'datetime',
+        'amount' => 'decimal:2',
+        'fee' => 'decimal:2',
+        'total' => 'decimal:2',
     ];
 
     // Get the activity log options.

@@ -6,6 +6,6 @@ name('cart');
 
 ?>
 
-<x-layouts.ecommerce>
+<x-layouts.ecommerce title="Your Cart | {{ config('app.name') }}">
     <livewire:ecommerce.cart.detail />
 </x-layouts.ecommerce>
