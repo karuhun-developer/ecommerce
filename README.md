@@ -52,7 +52,8 @@ php artisan serve
     - Update user profile details
     - Manage shipping addresses and locations
 - [ ] **Admin / Shop Owner Order Page**: Interface for store owners to manage incoming orders.
-- [ ] **Midtrans Webhook**: Listen to real-time payment status updates automatically.
+- [x] **Midtrans Webhook**: Listen to real-time payment status updates automatically.
+- [ ] **Email Notifications**: Send email notifications for order confirmations, shipping updates, and payment receipts.
 - [ ] **Biteship Webhook**: Listen to real-time shipping and tracking updates.
 - [ ] **Admin / Shop Owner Dashboard**: Overview of store performance, sales, and analytics.
 - [ ] **Shop Detail Page**: View a specific store's profile, product catalog, and information.
