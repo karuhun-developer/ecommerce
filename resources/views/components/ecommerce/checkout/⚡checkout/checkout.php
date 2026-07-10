@@ -6,6 +6,7 @@ use App\Actions\Ecommerce\Shipping\GetShippingRatesAction;
 use App\Models\Location\Location;
 use App\Models\Product\ProductFlat;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Sqids\Sqids;
@@ -13,9 +14,11 @@ use Sqids\Sqids;
 new class extends Component
 {
     // CONSTANTS
-    public $asuransiPengiriman = 2500;
+    #[Locked]
+    public $insuranceFee = 2500;
 
-    public $jasaAplikasi = 1000;
+    #[Locked]
+    public $applicationFee = 1000;
 
     // Selected product flat ids to checkout
     public $selectedIds;
@@ -105,20 +108,20 @@ new class extends Component
         // Check if user is authenticated and no location is selected
         if (auth()->check() && ! $this->selectedLocationId) {
             // Toast message
-            $this->dispatch([
-                'type' => 'error',
-                'message' => 'Silakan pilih alamat tujuan pengiriman terlebih dahulu.',
-            ]);
+            $this->dispatch('toast',
+                type: 'error',
+                message: 'Silakan pilih alamat tujuan pengiriman terlebih dahulu.',
+            );
 
             return;
         }
 
         // Check if guest data is provided for guest checkout
         if (! auth()->check() && ! $guestData) {
-            $this->dispatch([
-                'type' => 'error',
-                'message' => 'Silakan lengkapi data pengiriman terlebih dahulu.',
-            ]);
+            $this->dispatch('toast',
+                type: 'error',
+                message: 'Silakan isi data pengiriman terlebih dahulu.',
+            );
 
             return;
         }
@@ -148,10 +151,10 @@ new class extends Component
         foreach ($this->shopGroups as $group) {
             $shopId = $group['shop_id'];
             if (! isset($this->shopRates[$shopId])) {
-                $this->dispatch([
-                    'type' => 'error',
-                    'message' => "Silakan pilih ongkos kirim untuk toko {$group['shop_name']} terlebih dahulu.",
-                ]);
+                $this->dispatch('toast',
+                    type: 'error',
+                    message: "Kurir untuk toko {$group['shop_name']} belum dipilih. Silakan pilih kurir terlebih dahulu.",
+                );
 
                 return;
             }
@@ -183,10 +186,16 @@ new class extends Component
                     items: $group['items'],
                 );
             } catch (Exception $e) {
-                $this->dispatch([
-                    'type' => 'error',
-                    'message' => $e->getMessage(),
+                // Log the error with additional context for debugging
+                Log::error('Failed to get shipping rates for shop '.$group['shop_name'].': '.$e->getMessage(), [
+                    'shop_id' => $shopId,
+                    'destination_area_id' => $destinationAreaId,
+                    'items' => $group['items'],
                 ]);
+                $this->dispatch('toast',
+                    type: 'error',
+                    message: "Gagal mendapatkan tarif pengiriman untuk toko {$group['shop_name']}: ".$e->getMessage(),
+                );
 
                 return;
             }
@@ -199,10 +208,10 @@ new class extends Component
             });
 
             if (! $matchedRate) {
-                $this->dispatch([
-                    'type' => 'error',
-                    'message' => "Layanan kurir {$selectedRate['name']} tidak tersedia untuk toko {$group['shop_name']}. Silakan pilih ulang kurir.",
-                ]);
+                $this->dispatch('toast',
+                    type: 'error',
+                    message: "Tarif pengiriman yang dipilih untuk toko {$group['shop_name']} tidak valid. Silakan pilih kurir yang tersedia.",
+                );
 
                 return;
             }
@@ -222,8 +231,8 @@ new class extends Component
             'shop_groups' => $submitedShopGroups,
             'total_checkout' => $totalCheckout,
             'total_rates' => $totalRates,
-            'asuransi_pengiriman' => $this->asuransiPengiriman,
-            'jasa_aplikasi' => $this->jasaAplikasi,
+            'application_fee' => $this->applicationFee,
+            'insurance_fee' => $this->insuranceFee,
             'selected_location_id' => $this->selectedLocationId,
             'guest_data' => $guestData,
         ];
@@ -231,19 +240,27 @@ new class extends Component
         try {
             $checkout = $storeCheckoutAction->handle($submitedData);
 
+            // Dispatch success message
+            $this->dispatch('toast',
+                type: 'success',
+                message: 'Order berhasil dibuat. Silakan lanjutkan ke pembayaran.',
+            );
+
+            // Dispatch delete localstorage event to clear the cart
+            $this->dispatch('delete-localstorage', key: 'cart');
+
             // Redirect to order detail page with the order reference
-            return $this->redirectRoute('payment.detail', [
+            return $this->redirectRoute('payment.show', [
                 'reference' => $checkout->reference,
             ], navigate: true);
-
         } catch (Exception $e) {
             // Log the error with additional context for debugging
             Log::error('Failed to store order: '.$e->getMessage(), $submitedData);
 
-            $this->dispatch([
-                'type' => 'error',
-                'message' => 'Failed to store order: '.$e->getMessage(),
-            ]);
+            $this->dispatch('toast',
+                type: 'error',
+                message: 'Gagal membuat order: '.$e->getMessage(),
+            );
 
             return;
         }

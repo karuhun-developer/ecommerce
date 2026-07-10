@@ -7,13 +7,23 @@ use Livewire\Component;
 new class extends Component
 {
     public Order $order;
-    public ?Payment $payment = null;
+
+    public ?Payment $payment;
+
     public bool $isPaid = false;
 
-    public function mount(Order $order)
+    public function mount()
     {
-        $this->order = $order;
-        $this->payment = $order->payments()->latest()->first();
+        $this->order->load(
+            'user',
+            'location',
+            'orderShops.items.productFlat.media',
+            'orderShops.shop',
+            'orderShops.latestShipment',
+            'latestPayment',
+        );
+
+        $this->payment = $this->order->latestPayment;
         $this->isPaid = $this->payment?->paid_at !== null;
     }
 };

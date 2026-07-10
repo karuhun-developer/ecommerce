@@ -13,6 +13,14 @@ import "./cart";
 
 window.Jodit = Jodit;
 window.Sqids = new Sqids();
+window.numberToCurrency = (value) => {
+    return new Intl.NumberFormat("id-ID", {
+        minimumFractionDigits: 0,
+    }).format(value);
+};
+window.currencyToNumber = (value) => {
+    return Number(value.replace(/[^0-9.-]+/g, ""));
+};
 
 window.TomSelect = TomSelect;
 window.debounce = (callback, wait) => {
@@ -75,6 +83,11 @@ Livewire.on("toast", (params) => {
         text: params.message,
         variant: params.type ?? "success",
     });
+});
+
+// Livewire delete localstorage
+Livewire.on("delete-localstorage", (params) => {
+    localStorage.removeItem(params.key);
 });
 
 Livewire.start();

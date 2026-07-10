@@ -3,6 +3,7 @@
     <div
         class="max-w-7xl mx-auto px-4 md:px-6 py-8"
         x-data="{
+            // Default checked items are all items in the cart
             checked: [
                 ...$store.cart.items.map(i => i.id)
             ],
@@ -169,7 +170,7 @@
                                             </div>
                                             <div class="flex-1 min-w-0">
                                                 <h3 class="text-gray-900 font-medium line-clamp-2 mb-1" x-text="item.name"></h3>
-                                                <div class="font-bold text-gray-900" x-text="'Rp' + item.price.toLocaleString('id-ID')"></div>
+                                                <div class="font-bold text-gray-900" x-text="'Rp' + window.numberToCurrency(item.price)"></div>
                                             </div>
                                             <div class="flex flex-col justify-end items-end gap-3 shrink-0">
                                                 <flux:button
@@ -201,7 +202,7 @@
                     <div class="space-y-3 text-sm mb-6">
                         <div class="flex justify-between text-gray-600">
                             <span x-text="'Total Harga (' + checkedCount + ' barang)'"></span>
-                            <span x-text="'Rp' + checkedTotal.toLocaleString('id-ID')"></span>
+                            <span x-text="'Rp' + window.numberToCurrency(checkedTotal)"></span>
                         </div>
                         <div class="flex justify-between text-gray-600">
                             <span>Total Diskon Barang</span>
@@ -212,7 +213,7 @@
                     <div class="border-t pt-4 mb-6">
                         <div class="flex justify-between items-center">
                             <span class="font-bold text-gray-900">Total Harga</span>
-                            <span class="font-black text-xl text-gray-900" x-text="'Rp' + checkedTotal.toLocaleString('id-ID')"></span>
+                            <span class="font-black text-xl text-gray-900" x-text="'Rp' + window.numberToCurrency(checkedTotal)"></span>
                         </div>
                     </div>
 

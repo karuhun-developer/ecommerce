@@ -16,7 +16,7 @@
                             <div class="text-center py-12">
                                 <flux:icon.shopping-bag class="w-16 h-16 text-gray-300 mx-auto mb-4" />
                                 <flux:text class="text-gray-500 font-medium">Keranjangmu kosong.</flux:text>
-                                <flux:button @click="$flux.modal('cartModal').close()" variant="primary" color="green" class="mt-4">
+                                <flux:button href="{{ route('home') }}" variant="primary" color="green" class="mt-4" wire:navigate>
                                     Mulai Belanja
                                 </flux:button>
                             </div>
@@ -49,7 +49,7 @@
                                                             <flux:heading size="sm" class="line-clamp-2">
                                                                 <a href="#" x-text="item.name"></a>
                                                             </flux:heading>
-                                                            <flux:text class="mt-1 font-bold text-orange-500" x-text="'Rp ' + item.price.toLocaleString('id-ID')"></flux:text>
+                                                            <flux:text class="mt-1 font-bold text-orange-500" x-text="'Rp ' + window.numberToCurrency(item.price)"></flux:text>
                                                         </div>
                                                         <div class="flex flex-1 items-end justify-between text-sm mt-3">
                                                             <div class="flex items-center gap-2">
@@ -74,7 +74,7 @@
             <div class="border-t border-gray-200 px-4 py-6 sm:px-6" x-show="$store.cart.items.length > 0">
                 <div class="flex justify-between text-base mb-4">
                     <flux:text class="font-bold">Total Harga</flux:text>
-                    <flux:text class="font-bold" x-text="'Rp ' + $store.cart.total.toLocaleString('id-ID')"></flux:text>
+                    <flux:text class="font-bold" x-text="'Rp ' + window.numberToCurrency($store.cart.total)"></flux:text>
                 </div>
                 <div class="mt-6">
                     <flux:button href="{{ route('cart') }}" variant="primary" color="green" class="w-full justify-center text-base py-3" wire:navigate>

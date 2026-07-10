@@ -11,9 +11,12 @@ use Illuminate\Support\Facades\DB;
 class CreatePaymentAction
 {
     public function __construct(
-        protected MidtransService $midtransService,
+        public readonly MidtransService $midtransService,
     ) {}
 
+    /**
+     * Handle the action.
+     */
     public function handle(Order $order, string $paymentMethod): Payment
     {
         return DB::transaction(function () use ($order, $paymentMethod) {
@@ -22,6 +25,11 @@ class CreatePaymentAction
             $fee = $paymentMethod === 'qris'
                 ? $amount * 0.007
                 : 4500;
+
+            // Update order
+            $order->update([
+                'payment_fee' => $fee,
+            ]);
 
             $fee = (int) round($fee);
             $totalAmount = $amount + $fee;
@@ -48,7 +56,7 @@ class CreatePaymentAction
             if ($paymentMethod === 'qris') {
                 $midtrans = $this->midtransService->createQris(
                     orderId: $payment->order_id,
-                    amount: $payment->total,
+                    amount: (int) $payment->total,
                 );
             } else {
                 // If it's mandiri, we use echannel for midtrans bill_payment. Wait, if MidtransService sends it as 'mandiri' under 'bank_transfer' -> 'bank' it might fail midtrans API if it expects echannel. But the user example relies on `midtransService->createBankTransfer`. I will pass the paymentMethod as bank directly.
@@ -58,7 +66,7 @@ class CreatePaymentAction
                 $midtrans = $this->midtransService->createBankTransfer(
                     orderId: $payment->order_id,
                     bank: $paymentMethod,
-                    amount: $payment->total,
+                    amount: (int) $payment->total,
                 );
             }
 

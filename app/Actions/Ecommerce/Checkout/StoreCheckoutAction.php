@@ -33,11 +33,11 @@ class StoreCheckoutAction
                 'guest_data' => $data['guest_data'],
                 'total_checkout' => $data['total_checkout'],
                 'total_shipping' => $data['total_rates'],
-                'application_fee' => $data['jasa_aplikasi'],
-                'insurance_fee' => $data['asuransi_pengiriman'],
+                'application_fee' => $data['application_fee'],
+                'insurance_fee' => $data['insurance_fee'],
                 'payment_fee' => 0, // Fill later after user selects payment method
                 'tax_total' => 0, // Fill later after calculating tax
-                'total' => $data['total_checkout'] + $data['total_rates'] + $data['asuransi_pengiriman'] + $data['jasa_aplikasi'],
+                'total' => $data['total_checkout'] + $data['total_rates'] + $data['insurance_fee'] + $data['application_fee'],
                 'status' => false, // Fill later after payment confirmation
             ]);
 

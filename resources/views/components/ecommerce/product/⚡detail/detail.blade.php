@@ -194,7 +194,7 @@
 
                         <div class="flex items-center justify-between text-gray-500 text-sm mb-6">
                             <span>Subtotal</span>
-                            <span class="font-bold text-gray-900 text-xl" x-text="'Rp' + ({{ $flat->price }} * qty).toLocaleString('id-ID')"></span>
+                            <span class="font-bold text-gray-900 text-xl" x-text="'Rp' + window.numberToCurrency({{ $flat->price }} * qty)"></span>
                         </div>
 
                         <div class="flex flex-col gap-2">

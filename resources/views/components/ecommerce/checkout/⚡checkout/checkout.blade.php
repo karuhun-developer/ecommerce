@@ -3,8 +3,8 @@
     x-data="{
         lsKey: 'checkout_guest_address',
         totalShippingCost: $wire.entangle('totalShippingCost'),
-        asuransiPengiriman: $wire.entangle('asuransiPengiriman'),
-        jasaAplikasi: $wire.entangle('jasaAplikasi'),
+        insuranceFee: $wire.entangle('insuranceFee'),
+        applicationFee: $wire.entangle('applicationFee'),
         ready: false,
 
         get checkoutItems() {
@@ -22,7 +22,7 @@
         },
 
         get grandTotal() {
-            return this.subtotal + this.totalShippingCost + this.asuransiPengiriman + this.jasaAplikasi;
+            return this.subtotal + this.totalShippingCost + this.insuranceFee + this.applicationFee;
         },
 
         async init() {
@@ -105,9 +105,9 @@
                                             </div>
                                             <div class="flex-1 min-w-0">
                                                 <h3 class="text-gray-900 font-medium line-clamp-2 mb-1 text-sm" x-text="item.name"></h3>
-                                                <div class="text-gray-500 text-sm" x-text="item.qty + ' x Rp' + item.price.toLocaleString('id-ID')"></div>
+                                                <div class="text-gray-500 text-sm" x-text="item.qty + ' x Rp' + window.numberToCurrency(item.price)"></div>
                                             </div>
-                                            <div class="font-bold text-gray-900 text-sm shrink-0" x-text="'Rp' + (item.price * item.qty).toLocaleString('id-ID')"></div>
+                                            <div class="font-bold text-gray-900 text-sm shrink-0" x-text="'Rp' + window.numberToCurrency(item.price * item.qty)"></div>
                                         </div>
                                     </template>
                                 </div>
@@ -131,7 +131,7 @@
                         <div class="space-y-3 text-sm mb-6">
                             <div class="flex justify-between text-gray-600">
                                 <span x-text="'Total Harga (' + checkoutCount + ' barang)'"></span>
-                                <span x-text="'Rp' + subtotal.toLocaleString('id-ID')"></span>
+                                <span x-text="'Rp' + window.numberToCurrency(subtotal)"></span>
                             </div>
                             <div class="flex justify-between text-gray-600">
                                 <span>Total Ongkos Kirim</span>
@@ -154,18 +154,18 @@
 
                             <div class="flex justify-between text-gray-600">
                                 <span>Asuransi Pengiriman</span>
-                                <span x-text="'Rp' + asuransiPengiriman.toLocaleString('id-ID')"></span>
+                                <span x-text="'Rp' + window.numberToCurrency(insuranceFee)"></span>
                             </div>
                             <div class="flex justify-between text-gray-600">
                                 <span>Biaya Jasa Aplikasi</span>
-                                <span x-text="'Rp' + jasaAplikasi.toLocaleString('id-ID')"></span>
+                                <span x-text="'Rp' + window.numberToCurrency(applicationFee)"></span>
                             </div>
                         </div>
 
                         <div class="border-t pt-4 mb-6">
                             <div class="flex justify-between items-center">
                                 <span class="font-bold text-gray-900">Total Tagihan</span>
-                                <span class="font-black text-xl text-gray-900" x-text="'Rp' + grandTotal.toLocaleString('id-ID')"></span>
+                                <span class="font-black text-xl text-gray-900" x-text="'Rp' + window.numberToCurrency(grandTotal)"></span>
                             </div>
                         </div>
 

@@ -10,22 +10,25 @@ new class extends Component
 {
     public Order $order;
 
-    public ?Payment $payment = null;
+    public ?Payment $payment;
 
     public $paymentMethod = '';
 
-    public function mount(Order $order)
+    public function mount()
     {
-        $this->order = $order;
-        $this->payment = $order->payments()->latest()->first();
+        $this->order->load(
+            'orderShops.items.productFlat.media',
+            'orderShops.shop',
+            'orderShops.latestShipment',
+            'latestPayment',
+        );
+
+        $this->payment = $this->order->latestPayment;
+
+        // Set the payment method if the payment exists and is not expired
         if ($this->payment && $this->payment->expired_at->isFuture()) {
             $this->paymentMethod = $this->payment->channel;
         }
-    }
-
-    public function getPaymentModel()
-    {
-        return $this->order->payments()->latest()->first();
     }
 
     public function submit(CreatePaymentAction $createPaymentAction)
