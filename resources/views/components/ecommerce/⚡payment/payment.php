@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\Payment\CreatePaymentAction;
+use App\Actions\Ecommerce\Payment\CreatePaymentAction;
 use App\Models\Order\Order;
 use App\Models\Payment\Payment;
 
@@ -14,6 +14,8 @@ new class extends Component
 
     public $paymentMethod = '';
 
+    public bool $isPaid = false;
+
     public function mount()
     {
         $this->order->load(
@@ -24,6 +26,7 @@ new class extends Component
         );
 
         $this->payment = $this->order->latestPayment;
+        $this->isPaid = $this->payment?->paid_at !== null;
 
         // Set the payment method if the payment exists and is not expired
         if ($this->payment && $this->payment->expired_at->isFuture()) {

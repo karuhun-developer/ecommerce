@@ -11,5 +11,8 @@ Route::group(['prefix' => 'v1', 'as' => 'api.v1.'], function () {
     })->name('welcome');
 
     // Authentication Routes
-    require 'v1/auth.php';
+    // require 'v1/auth.php';
+
+    // Callback Routes
+    require 'v1/callback.php';
 });

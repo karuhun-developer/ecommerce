@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions\Payment;
+namespace App\Actions\Ecommerce\Payment;
 
 use App\Models\Order\Order;
 use App\Models\Payment\Payment;

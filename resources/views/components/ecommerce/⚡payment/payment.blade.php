@@ -15,7 +15,14 @@
         </a>
     </div>
 
-    <flux:heading size="xl" class="mb-6">Payment Method</flux:heading>
+    <div class="flex justify-between items-center mb-6">
+        <flux:heading size="xl">Transaksi #{{ $order->reference }}</flux:heading>
+        @if($isPaid)
+            <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Dibayar</span>
+        @else
+            <span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1 rounded-full">Menunggu Pembayaran</span>
+        @endif
+    </div>
 
     <!-- If there is a payment, and it's active -->
     @if($payment && $payment->expired_at->isFuture())
@@ -27,6 +34,7 @@
                         Silakan selesaikan pembayaran anda sebelum pesanan anda kadaluarsa.
                     </div>
                 </div>
+                @if(!$isPaid)
                 <div x-data="{
                     expiredAt: new Date('{{ $payment->expired_at->toIso8601String() }}').getTime(),
                     now: new Date().getTime(),
@@ -54,6 +62,7 @@
                     <div class="text-xs font-semibold mb-0.5 uppercase tracking-wider">Waktu Tersisa</div>
                     <div class="text-lg font-bold tabular-nums" x-text="timeLeft"></div>
                 </div>
+                @endif
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
@@ -123,6 +132,8 @@
     @endif
 
     <form wire:submit.prevent="submit" class="space-y-8">
+        <flux:heading size="xl">Metode Pembayaran</flux:heading>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <!-- QRIS -->
             <label class="cursor-pointer relative rounded-xl border p-4 flex flex-col items-center justify-center gap-4 transition-all hover:border-indigo-500 hover:shadow-md"
@@ -161,7 +172,7 @@
 
         <flux:card>
             <div class="mb-4">
-                <flux:heading size="lg">Order & Payment Summary</flux:heading>
+                <flux:heading size="lg">Ringkasan Pembayaran</flux:heading>
                 <flux:text>
                     Reference: <strong class="text-gray-900 dark:text-white">{{ $order->reference }}</strong>
                 </flux:text>
@@ -241,13 +252,15 @@
             </div>
         </flux:card>
 
-        <div class="flex justify-end">
-            <flux:button type="submit" variant="primary" x-bind:disabled="!paymentMethod">
-                <span wire:loading.remove>
-                    {{ $payment ? 'Change Payment Method' : 'Proceed to Payment' }}
-                </span>
-                <span wire:loading>Processing...</span>
-            </flux:button>
-        </div>
+        @if (! $isPaid)
+            <div class="flex justify-end">
+                <flux:button type="submit" variant="primary" x-bind:disabled="!paymentMethod">
+                    <span wire:loading.remove>
+                        {{ $payment ? 'Change Payment Method' : 'Proceed to Payment' }}
+                    </span>
+                    <span wire:loading>Processing...</span>
+                </flux:button>
+            </div>
+        @endif
     </form>
 </div>

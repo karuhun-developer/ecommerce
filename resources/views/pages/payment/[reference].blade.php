@@ -22,7 +22,7 @@ render(function (View $view, string $reference) {
     return $view->with(compact('order'));
 }); ?>
 
-<x-layouts.ecommerce>
+<x-layouts.ecommerce title="Pembayaran {{ $order->reference }}">
     <div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-8">
         <div class="max-w-4xl mx-auto px-4 md:px-6">
             <livewire:ecommerce.payment :$order />

@@ -1,10 +1,28 @@
-# My Starter Template for Laravel
+# Laravel E-Commerce Application
 
-This is a starter template for Laravel applications, designed to provide a solid foundation for building web applications quickly and efficiently.
+A modern, robust e-commerce application built with the Laravel ecosystem, utilizing cutting-edge tools to deliver a fast and dynamic user experience.
 
-# Installation
+## Tech Stack & Packages
 
-```
+This project leverages the following technologies and packages:
+
+- **[Laravel](https://laravel.com/)** - The PHP framework for web artisans.
+- **[Livewire](https://livewire.laravel.com/)** - Building dynamic interfaces without writing JavaScript.
+- **[Laravel Folio](https://laravel.com/docs/folio)** - Page-based routing for Laravel.
+- **[Livewire Flux (Flux UI)](https://fluxui.dev/)** - Beautiful, accessible UI components.
+- **[Laravel Boost](https://boost.laravel.com/)** - Agentic guidelines and context.
+- **[TweakFlux](https://github.com/joshcirre/tweakflux)** - Deep theming for Flux UI (`./vendor/bin/tweakflux apply {theme?}`).
+- **[Spatie Permissions](https://spatie.be/docs/laravel-permission)** - Roles and permissions management.
+- **[Spatie Media Library](https://spatie.be/docs/laravel-medialibrary)** - Attaching media files to Eloquent models.
+- **[Spatie Activity Log](https://spatie.be/docs/laravel-activitylog)** - Logging user activities.
+- **Payment Gateway**: Midtrans
+- **Shipping & Logistics**: Biteship
+
+## Installation
+
+To get the project up and running locally, follow these steps:
+
+```bash
 git clone
 cp .env.example .env
 composer install
@@ -17,26 +35,24 @@ yarn build
 php artisan serve
 ```
 
-# Enable Laravel Boost
+## Features Overview (Completed)
 
-Documentation: https://boost.laravel.com/installed
+- Shopping Cart functionality
+- Dynamic Checkout process
+- Real-time Shipping Rate calculation via Biteship
+- Payment integration via Midtrans (QRIS & Virtual Accounts)
+- Order detail and payment instruction pages
 
-# Tweakflux
+## To-Do List / Upcoming Features
 
-Documentation: https://tweakflux.com
-
-```
-./vendor/bin/tweakflux apply {theme?}
-```
-
-# Package
-
-This project uses the following packages:
-
-- [Laravel Boost](https://boost.laravel.com/)
-- [Laravel Folio](https://laravel.com/docs/12.x/folio)
-- [Livewire Flux](https://fluxui.dev/)
-- [Tweakflux](https://github.com/joshcirre/tweakflux)
-- [Spatie Permissions](https://spatie.be/docs/laravel-permission/v6/introduction)
-- [Spatie Media Library](https://spatie.be/docs/laravel-medialibrary/v10/introduction)
-- [Spatie Activity Log](https://spatie.be/docs/laravel-activitylog/v4/introduction)
+- [ ] **Explore Page**: A page to discover various products and stores.
+- [ ] **List Transaction Page**: View the master list of all transactions.
+- [ ] **User Page**:
+    - View personal transaction history
+    - Update user profile details
+    - Manage shipping addresses and locations
+- [ ] **Admin / Shop Owner Order Page**: Interface for store owners to manage incoming orders.
+- [ ] **Midtrans Webhook**: Listen to real-time payment status updates automatically.
+- [ ] **Biteship Webhook**: Listen to real-time shipping and tracking updates.
+- [ ] **Admin / Shop Owner Dashboard**: Overview of store performance, sales, and analytics.
+- [ ] **Shop Detail Page**: View a specific store's profile, product catalog, and information.
