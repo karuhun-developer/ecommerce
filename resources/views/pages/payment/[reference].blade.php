@@ -2,7 +2,8 @@
 
 use App\Models\Order\Order;
 use Illuminate\View\View;
-use function Laravel\Folio\{render, name};
+use function Laravel\Folio\name;
+use function Laravel\Folio\render;
 
 name('payment.show');
 
