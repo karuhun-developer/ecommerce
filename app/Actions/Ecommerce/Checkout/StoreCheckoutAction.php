@@ -2,11 +2,13 @@
 
 namespace App\Actions\Ecommerce\Checkout;
 
+use App\Mail\OrderPlaced;
 use App\Models\Order\Order;
 use App\Models\Order\OrderShop;
 use App\Models\Order\OrderShopItem;
 use App\Traits\WithGenerateReference;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class StoreCheckoutAction
 {
@@ -71,5 +73,15 @@ class StoreCheckoutAction
 
             return $order;
         });
+
+        // Send email notification
+        $email = auth()->check() ? auth()->user()->email : ($order->guest_data['email'] ?? null);
+
+        if ($email) {
+            $order->load(['orderShops.shop', 'orderShops.items.productFlat.media', 'location']);
+            Mail::to($email)->send(new OrderPlaced($order));
+        }
+
+        return $order;
     }
 }
