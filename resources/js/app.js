@@ -32,7 +32,6 @@ window.currencyToNumber = (value) => {
     return Number(value.replace(/[^0-9.-]+/g, ""));
 };
 
-window.TomSelect = TomSelect;
 window.debounce = (callback, wait) => {
     let timeoutId = null;
     return (...args) => {
