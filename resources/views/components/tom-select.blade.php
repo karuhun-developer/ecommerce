@@ -42,21 +42,23 @@
                 })
             },
             initTomSelect() {
-                new window.TomSelect(this.$refs.{{ $ref }}, {
-                    valueField: '{{ $valueField }}',
-                    labelField: '{{ $labelField }}',
-                    searchField: [],
-                    load(query, callback) {
-                        $wire.{{ $fetchFunction }}(query)
-                        .then(menus => {
-                            callback(menus)
-                        })
-                        .catch(() => callback())
-                    },
-                    render: {
-                        {!! $customOptions ?? '' !!}
-                    },
-                })
+                window.loadTomSelect().then(TomSelect => {
+                    new TomSelect(this.$refs.{{ $ref }}, {
+                        valueField: '{{ $valueField }}',
+                        labelField: '{{ $labelField }}',
+                        searchField: [],
+                        load(query, callback) {
+                            $wire.{{ $fetchFunction }}(query)
+                            .then(menus => {
+                                callback(menus)
+                            })
+                            .catch(() => callback())
+                        },
+                        render: {
+                            {!! $customOptions ?? '' !!}
+                        },
+                    });
+                });
             }
         }"
         wire:model.live="{{ $model }}"

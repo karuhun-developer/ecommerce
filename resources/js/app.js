@@ -2,16 +2,26 @@ import {
     Livewire,
     Alpine,
 } from "../../vendor/livewire/livewire/dist/livewire.esm";
-import TomSelect from "tom-select";
 import Sqids from "sqids";
-
-// Jodit Editor
-import "jodit/esm/plugins/resizer/resizer";
-import "jodit/esm/plugins/video/video";
-import { Jodit } from "jodit";
 import "./cart";
 
-window.Jodit = Jodit;
+window.loadJodit = async () => {
+    if (window.Jodit) return window.Jodit;
+    await import("jodit/es2021/jodit.css");
+    const { Jodit } = await import("jodit");
+    await import("jodit/esm/plugins/resizer/resizer");
+    await import("jodit/esm/plugins/video/video");
+    window.Jodit = Jodit;
+    return Jodit;
+};
+
+window.loadTomSelect = async () => {
+    if (window.TomSelect) return window.TomSelect;
+    await import("tom-select/dist/css/tom-select.css");
+    const { default: TomSelect } = await import("tom-select");
+    window.TomSelect = TomSelect;
+    return TomSelect;
+};
 window.Sqids = new Sqids();
 window.numberToCurrency = (value) => {
     return new Intl.NumberFormat("id-ID", {

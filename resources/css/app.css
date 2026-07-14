@@ -1,7 +1,5 @@
-@import "tom-select/dist/css/tom-select.css";
 @import "tailwindcss";
 @import "../../vendor/livewire/flux/dist/flux.css";
-@import "jodit/es2021/jodit";
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
