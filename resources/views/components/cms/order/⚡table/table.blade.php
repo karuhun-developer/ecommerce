@@ -65,7 +65,7 @@
                 </div>
                 
                 <div class="border-t dark:border-zinc-800 p-3 flex justify-end gap-2 bg-gray-50 dark:bg-zinc-800/50">
-                    <a href="{{ route('cms.order.show', ['reference' => $order->reference]) }}" wire:navigate class="text-sm font-bold text-green-600 hover:text-green-700 border border-green-600 px-4 py-1.5 rounded-lg transition">Detail Transaksi</a>
+                    <a href="{{ route('cms.order.show', ['id' => $orderShop->id]) }}" wire:navigate class="text-sm font-bold text-green-600 hover:text-green-700 border border-green-600 px-4 py-1.5 rounded-lg transition">Detail Transaksi</a>
                     
                     @if ($order->status && !$orderShop->shipping_status)
                         <button wire:click="kirimPesanan({{ $orderShop->id }})" class="text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-1.5 rounded-lg transition">
