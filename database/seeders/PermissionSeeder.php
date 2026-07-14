@@ -99,6 +99,11 @@ class PermissionSeeder extends Seeder
                     $roleUser->givePermissionTo($permissionName);
                 }
 
+                // Assign permissions to shop owner role
+                if (in_array($permissionName, $this->shopOwnerPermissions)) {
+                    $roleShopOwner->givePermissionTo($permissionName);
+                }
+
                 // Exclude superadmin permissions
                 if (! in_array($permissionName, $this->superAdminExcludePermission)) {
                     $roleSuperAdmin->givePermissionTo($permissionName);
