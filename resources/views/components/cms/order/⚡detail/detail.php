@@ -15,11 +15,11 @@ new class extends Component
     public function getOrderShopProperty()
     {
         return OrderShop::with([
-            'order.latestPayment', 
-            'order.user', 
-            'order.location', 
-            'shop', 
-            'items.productFlat.media'
+            'order.latestPayment',
+            'order.user',
+            'order.location',
+            'shop',
+            'items.productFlat.media',
         ])->findOrFail($this->orderShopId);
     }
 

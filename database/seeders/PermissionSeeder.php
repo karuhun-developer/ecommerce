@@ -2,6 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Order\Order;
+use App\Models\Order\OrderShop;
+use App\Models\Product\Product;
+use App\Models\Shop\Shop;
 use App\Models\Spatie\Permission;
 use App\Models\Spatie\Role;
 use App\Models\User;
@@ -42,6 +46,26 @@ class PermissionSeeder extends Seeder
         'update'.User::class,
     ];
 
+    // List shop owner permissions
+    private $shopOwnerPermissions = [
+        'view'.Product::class,
+        'show'.Product::class,
+        'create'.Product::class,
+        'update'.Product::class,
+        'delete'.Product::class,
+        'view'.Order::class,
+        'show'.Order::class,
+        'update'.Order::class,
+        'view'.OrderShop::class,
+        'show'.OrderShop::class,
+        'update'.OrderShop::class,
+        'view'.Shop::class,
+        'show'.Shop::class,
+        'update'.Shop::class,
+        'view'.User::class,
+        'update'.User::class,
+    ];
+
     /**
      * Run the database seeds.
      */
@@ -55,6 +79,7 @@ class PermissionSeeder extends Seeder
 
         // Create roles
         $roleSuperAdmin = Role::findOrCreate('superadmin', $this->guardName);
+        $roleShopOwner = Role::findOrCreate('shopowner', $this->guardName);
         $roleUser = Role::findOrCreate('user', $this->guardName);
 
         // Loop through each model and create permissions

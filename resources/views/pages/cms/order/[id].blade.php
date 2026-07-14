@@ -39,7 +39,16 @@ render(function (View $view, $id) {
 <x-layouts.app :$title>
     <div class="w-full">
         <div class="flex justify-between items-center mb-5">
-            <h1 class="text-3xl font-bold">{{ $title }}</h1>
+            <div class="flex items-center gap-4">
+                <flux:button
+                    href="{{ route('cms.order.index') }}"
+                    size="sm"
+                    variant="primary"
+                    icon="arrow-left"
+                    wire:navigate
+                />
+                <h1 class="text-3xl font-bold">{{ $title }}</h1>
+            </div>
             <flux:breadcrumbs>
                 <flux:breadcrumbs.item href="{{ route('cms.dashboard') }}" icon="home" />
                 @foreach($breadcrumbs as $breadcrumb)

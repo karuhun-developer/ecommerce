@@ -22,8 +22,8 @@ class SuperadminMenuSeeder extends Seeder
         $this->dashboardMenu();
         $this->shopMenu();
         $this->productMenu();
-        $this->attributeMenu();
         $this->orderMenu();
+        $this->attributeMenu();
         $this->managementMenu();
     }
 
@@ -118,7 +118,7 @@ class SuperadminMenuSeeder extends Seeder
             'name' => 'Orders',
             'url' => 'cms.order.index',
             'icon' => 'shopping-bag',
-            'order' => 400,
+            'order' => 250,
             'active_pattern' => 'cms.order.index,cms.order.show',
             'status' => 1,
         ]);

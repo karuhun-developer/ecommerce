@@ -24,17 +24,17 @@ new class extends Component
 
         if ($this->status === 'berlangsung') {
             $query->where('status', false)
-                  ->whereHas('latestPayment', function ($q) {
-                      $q->whereNull('expired_at')
+                ->whereHas('latestPayment', function ($q) {
+                    $q->whereNull('expired_at')
                         ->orWhere('expired_at', '>', now());
-                  });
+                });
         } elseif ($this->status === 'berhasil') {
             $query->where('status', true);
         } elseif ($this->status === 'tidak-berhasil') {
             $query->where('status', false)
-                  ->whereHas('latestPayment', function ($q) {
-                      $q->where('expired_at', '<=', now());
-                  });
+                ->whereHas('latestPayment', function ($q) {
+                    $q->where('expired_at', '<=', now());
+                });
         }
 
         return $query->get();

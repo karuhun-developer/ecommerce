@@ -20,8 +20,9 @@ new class extends Component
             $orderQuery->whereNull('user_id');
         }
 
-        if (!$orderQuery->exists()) {
+        if (! $orderQuery->exists()) {
             $this->addError('reference', 'Transaksi dengan nomor referensi tersebut tidak ditemukan.');
+
             return;
         }
 

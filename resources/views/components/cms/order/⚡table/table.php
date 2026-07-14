@@ -21,7 +21,7 @@ new class extends Component
         $query = OrderShop::with(['order.latestPayment', 'order.user', 'shop', 'items'])
             ->latest();
 
-        if (!isSingleShop() && auth()->user()->hasRole('shopowner')) {
+        if (! isSingleShop() && auth()->user()->hasRole('shopowner')) {
             $query->whereHas('shop', function ($q) {
                 $q->where('user_id', auth()->id());
             });
@@ -30,10 +30,10 @@ new class extends Component
         if ($this->status === 'menunggu-pembayaran') {
             $query->whereHas('order', function ($q) {
                 $q->where('status', false)
-                  ->whereHas('latestPayment', function ($sq) {
-                      $sq->whereNull('expired_at')
-                        ->orWhere('expired_at', '>', now());
-                  });
+                    ->whereHas('latestPayment', function ($sq) {
+                        $sq->whereNull('expired_at')
+                            ->orWhere('expired_at', '>', now());
+                    });
             });
         } elseif ($this->status === 'proses') {
             $query->whereHas('order', function ($q) {
@@ -49,9 +49,9 @@ new class extends Component
         } elseif ($this->status === 'gagal') {
             $query->whereHas('order', function ($q) {
                 $q->where('status', false)
-                  ->whereHas('latestPayment', function ($sq) {
-                      $sq->where('expired_at', '<=', now());
-                  });
+                    ->whereHas('latestPayment', function ($sq) {
+                        $sq->where('expired_at', '<=', now());
+                    });
             });
         }
 
@@ -64,7 +64,7 @@ new class extends Component
         // Nanti akan diisi oleh user
         // $orderShop = OrderShop::find($id);
         // ...
-        
+
         // $this->dispatch('pesanan-dikirim');
     }
 };
