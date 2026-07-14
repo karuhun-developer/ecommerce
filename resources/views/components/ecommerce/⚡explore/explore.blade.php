@@ -344,15 +344,6 @@
                                             </span>
                                         </div>
                                     </div>
-                                    <!-- Add to Cart (kept from explore UI) -->
-                                    <div class="mt-3">
-                                        <button
-                                            @click=""
-                                            class="w-full bg-white border border-green-600 text-green-600 font-bold py-1.5 rounded-lg text-xs hover:bg-green-50 transition"
-                                        >
-                                            + Keranjang
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
                         @endforeach

@@ -14,9 +14,10 @@ name('product.detail');
 // Page title and breadcrumbs
 render(function (View $view, string $slug) {
     $product = Product::with('mainProductFlat')->where('slug', $slug)->firstOrFail();
-    
+
     $title = $product->name;
-    $description = str($product->description)->limit(150)->plainText();
+    $description = str(strip_tags($product->description))->limit(150);
+
     $url = url()->current();
 
     // Set SEO meta tags
