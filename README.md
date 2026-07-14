@@ -52,11 +52,45 @@
 
 | Feature | Status |
 |---|---|
-| Biteship webhook integration (shipment tracking) | 🔄 Ongoing |
-| Admin / Shop Owner Dashboard (role-specific view) | 🔄 Ongoing |
+| Dashboard (User/Analytics) | 🔄 Ongoing |
+| Review product & shop | 🔄 Ongoing |
 | Shop detail page (public storefront per shop) | 🔄 Ongoing |
-| User profile page | 🔄 Ongoing |
-| Transaction list page (admin view) | 🔄 Ongoing |
+
+---
+
+## 🔗 Integrations & Webhooks Setup
+
+To use the full functionality of payments and shipping, you must set up an account with Midtrans and Biteship, then configure their API keys and Webhooks.
+
+1. **Midtrans (Payments)**
+   - Register/Login: [https://dashboard.midtrans.com/login](https://dashboard.midtrans.com/login)
+   - Configure your `.env` with `MIDTRANS_MERCHANT_ID`, `MIDTRANS_SERVER_KEY`, and `MIDTRANS_CLIENT_KEY`.
+   - Set the webhook/notification URL in the Midtrans dashboard to: `https://your-domain.com/api/v1/callback/midtrans`
+
+2. **Biteship (Shipping & Tracking)**
+   - Register/Login: [https://biteship.com/en](https://biteship.com/en)
+   - Configure your `.env` with `BITESHIP_API_KEY`.
+   - Set the webhook URL in the Biteship dashboard to: `https://your-domain.com/api/v1/callback/biteship`
+
+> **Note on Biteship Webhook Setup:**
+> When you first add the webhook URL in the Biteship dashboard, they will send a test payload to verify the endpoint. To successfully verify, you **must temporarily** update the `handle` method in `app/Http/Controllers/Api/V1/Callback/BiteshipController.php` to immediately return a 200 response.
+> 
+> ```php
+> public function handle(array $payload)
+> {
+>     Log::info('Biteship Callback Received', [
+>         'request' => $payload,
+>     ]);
+>     
+>     // Temporarily return 200 for Biteship webhook verification
+>     return response()->json([], 200);
+>     
+>     // ... original logic
+> }
+> ```
+> Once verified, you can remove or move the early return so actual webhooks process correctly.
+
+---
 
 ---
 
