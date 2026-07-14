@@ -2,10 +2,13 @@
 
 namespace App\Actions\Api\V1\Callback;
 
+use App\Mail\OrderPaid;
+use App\Mail\OrderPaymentFailed;
 use App\Models\Order\Order;
 use App\Models\Payment\Payment;
 use App\Services\MidtransService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class HandleMidtransCallbackAction
 {
@@ -99,13 +102,20 @@ class HandleMidtransCallbackAction
             'status' => true, // Mark the order as paid
         ]);
 
-        // $this->sendOrderNotification($order, true);
+        $email = $order->user->email ?? $order->guest_data['contact_email'] ?? null;
+        if ($email) {
+            Mail::to($email)->send(new OrderPaid($order));
+        }
     }
 
     protected function deny(Payment $payment)
     {
         if ($payment->payable_type === Order::class) {
-            // $this->sendOrderNotification($order, false);
+            $order = $payment->payable;
+            $email = $order->user->email ?? $order->guest_data['contact_email'] ?? null;
+            if ($email) {
+                Mail::to($email)->send(new OrderPaymentFailed($order));
+            }
         }
     }
 }

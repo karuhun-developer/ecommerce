@@ -2,8 +2,10 @@
 
 namespace App\Actions\Api\V1\Callback;
 
+use App\Mail\OrderDelivered;
 use App\Models\Order\OrderShopShipment;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class HandleBiteshipCallbackAction
 {
@@ -78,6 +80,11 @@ class HandleBiteshipCallbackAction
                     'shipping_status' => true,
                     'shipping_note' => null,
                 ]);
+
+                $email = $orderShop->order->user->email ?? $orderShop->order->guest_data['contact_email'] ?? null;
+                if ($email) {
+                    Mail::to($email)->send(new OrderDelivered($orderShop));
+                }
             }
         }
 
