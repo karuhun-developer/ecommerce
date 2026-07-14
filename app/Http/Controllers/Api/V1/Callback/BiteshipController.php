@@ -18,14 +18,11 @@ class BiteshipController extends Controller
         $headerSecret = config('services.biteship.webhook.header_secret');
 
         if ($headerKey && $headerSecret) {
-            $signature = $request->header($headerKey);
-            $expectedSignature = hash_hmac('sha256', $request->getContent(), $headerSecret);
+            $providedSecret = $request->header($headerKey);
 
-            if (! $signature || ! hash_equals($expectedSignature, $signature)) {
+            if ($providedSecret !== $headerSecret) {
                 Log::warning('Invalid Biteship Webhook Signature', [
                     'ip' => $request->ip(),
-                    'headers' => $request->headers->all(),
-                    'payload' => $request->all(),
                 ]);
 
                 return $this->responseWithError('Unauthorized', 401);
