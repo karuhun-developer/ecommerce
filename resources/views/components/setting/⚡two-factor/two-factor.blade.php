@@ -1,6 +1,5 @@
 <section class="w-full">
     <x-setting.heading />
-    <x-setting.layout :heading="__('Two Factor Authentication')" :subheading="__('Manage your two-factor authentication settings')">
         <div class="flex flex-col w-full mx-auto space-y-6 text-sm" wire:cloak>
             @if ($twoFactorEnabled)
                 <div class="space-y-4">
@@ -46,7 +45,6 @@
                 </div>
             @endif
         </div>
-    </x-setting.layout>
 
     <flux:modal
         name="two-factor-setup-modal"

@@ -74,9 +74,9 @@ class CreatePaymentAction
                 throw new Exception('Failed to create Midtrans transaction: '.($midtrans['message'] ?? 'Unknown Error'));
             }
 
-            $payment->transaction_id = $midtrans['transaction_id'] ?? null;
-            $payment->account_number = $midtrans['account'] ?? null;
-            $payment->account_code = $midtrans['code'] ?? null;
+            $payment->transaction_id = $midtrans['transaction_id'] ?? '';
+            $payment->account_number = $midtrans['account'] ?? '';
+            $payment->account_code = $midtrans['code'] ?? '';
             $payment->save();
 
             return $payment;

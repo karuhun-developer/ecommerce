@@ -6,6 +6,8 @@ name('appearance.edit');
 
 ?>
 
-<x-layouts.app title="Appearance Settings">
-    <livewire:setting.appearance />
+<x-layouts.app title="Appearance">
+    <x-setting.layout :heading="__('Appearance')" :subheading="__('Update the appearance settings for your account')">
+        <livewire:setting.appearance />
+    </x-setting.layout>
 </x-layouts.app>

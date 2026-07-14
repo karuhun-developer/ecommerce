@@ -19,6 +19,8 @@ middleware(
 
 ?>
 
-<x-layouts.app title="Two-Factor Authentication Settings">
-    <livewire:setting.two-factor />
+<x-layouts.app title="Two Factor Authentication">
+    <x-setting.layout :heading="__('Two Factor Authentication')" :subheading="__('Manage your two-factor authentication settings')">
+        <livewire:setting.two-factor />
+    </x-setting.layout>
 </x-layouts.app>

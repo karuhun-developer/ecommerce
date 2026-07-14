@@ -2,7 +2,7 @@
     <div class="me-10 w-full pb-4 md:w-[220px]">
         <flux:navlist>
             <flux:navlist.item href="/orders" current wire:navigate>Daftar Transaksi</flux:navlist.item>
-            <flux:navlist.item :href="route('profile.edit')" wire:navigate>Pengaturan Akun</flux:navlist.item>
+            <flux:navlist.item :href="route('account.profile')" wire:navigate>Pengaturan Akun</flux:navlist.item>
         </flux:navlist>
     </div>
 
