@@ -88,7 +88,7 @@
                                                         file:text-xs file:font-semibold
                                                         file:bg-blue-50 file:text-blue-700
                                                         hover:file:bg-blue-100"
-                                                    accept="image/*" 
+                                                    accept="image/jpg,image/jpeg,image/png,image/webp" 
                                                 />
                                                 <flux:error name="images.{{ $flat->id }}.{{ $i }}" />
                                             </div>
