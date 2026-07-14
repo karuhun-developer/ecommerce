@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             UserSeeder::class,
             SuperadminMenuSeeder::class,
+            ShopownerMenuSeeder::class,
             DefaultShopSeeder::class,
         ]);
     }

@@ -23,6 +23,7 @@ class SuperadminMenuSeeder extends Seeder
         $this->shopMenu();
         $this->productMenu();
         $this->attributeMenu();
+        $this->orderMenu();
         $this->managementMenu();
     }
 
@@ -106,6 +107,19 @@ class SuperadminMenuSeeder extends Seeder
             'url' => 'cms.attribute.attribute',
             'order' => 2,
             'active_pattern' => 'cms.attribute.attribute',
+            'status' => 1,
+        ]);
+    }
+
+    public function orderMenu()
+    {
+        Menu::create([
+            'role_id' => $this->role->id,
+            'name' => 'Orders',
+            'url' => 'cms.order.index',
+            'icon' => 'shopping-bag',
+            'order' => 400,
+            'active_pattern' => 'cms.order.index,cms.order.show',
             'status' => 1,
         ]);
     }
