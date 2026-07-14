@@ -73,6 +73,12 @@
                         <span class="font-bold text-gray-900 dark:text-zinc-100 text-sm">{{ $orderShop->shop->name ?? 'Toko' }}</span>
                     </div>
 
+                    @if($orderShop->shipping_note)
+                        <div class="bg-red-50 text-red-700 p-4 rounded-xl text-sm border border-red-200">
+                            <strong>Catatan Pengiriman:</strong> {{ $orderShop->shipping_note }}
+                        </div>
+                    @endif
+
                     @foreach($orderShop->items as $item)
                         <div class="flex gap-4 border dark:border-zinc-800 p-4 rounded-xl">
                             <div class="flex-1">

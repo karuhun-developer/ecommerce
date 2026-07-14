@@ -44,7 +44,8 @@ class HandleBiteshipCallbackAction
             throw new \Exception('Unknown shipment', 404);
         }
 
-        // Create new timeline record
+        $status = $payload['status'] ?? $latestShipment->status;
+
         $shipment = OrderShopShipment::create([
             'order_shop_id' => $latestShipment->order_shop_id,
             'event' => $payload['event'],
@@ -58,8 +59,19 @@ class HandleBiteshipCallbackAction
             'courier_driver_photo_url' => $payload['courier_driver_photo_url'] ?? null,
             'courier_driver_plate_number' => $payload['courier_driver_plate_number'] ?? null,
             'courier_link' => $payload['courier_link'] ?? null,
-            'status' => $payload['status'] ?? $latestShipment->status,
+            'status' => $status,
         ]);
+
+        if ($status === 'courier_not_found') {
+            $orderShop = $latestShipment->orderShop;
+            if ($orderShop) {
+                $orderShop->update([
+                    'waybill_number' => null,
+                    'shipping_status' => false,
+                    'shipping_note' => 'Kurir tidak ditemukan. Silakan atur pengiriman ulang.',
+                ]);
+            }
+        }
 
         return $shipment;
     }

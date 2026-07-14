@@ -17,6 +17,7 @@ class OrderShop extends Model
         'tax',
         'total',
         'shipping_status',
+        'shipping_note',
     ];
 
     protected $casts = [
