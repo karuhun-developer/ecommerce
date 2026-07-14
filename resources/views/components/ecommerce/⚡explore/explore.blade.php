@@ -296,81 +296,55 @@
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
                         @foreach ($this->products as $product)
                             <div wire:key="product-{{ $product->id }}" class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition flex flex-col h-full overflow-hidden relative group">
-
-                                {{-- Discount Badge --}}
-                                @if ($product->mainProductFlat && $product->price < $product->mainProductFlat->price)
-                                    @php
-                                        $discountPct = round((1 - $product->price / $product->mainProductFlat->price) * 100);
-                                    @endphp
+                                <!-- Discount Badge -->
+                                @if ($product->discount)
                                     <div class="absolute top-2 left-2 z-10 bg-red-100 text-red-600 text-[10px] font-bold px-2 py-1 rounded">
-                                        {{ $discountPct }}%
+                                        {{ $product->discount }}%
                                     </div>
                                 @endif
 
-                                {{-- Product Image --}}
-                                <a href="#" class="block aspect-square overflow-hidden bg-gray-50 relative" wire:navigate>
-                                    @if ($product->mainProductFlat && $product->mainProductFlat->getFirstMediaUrl('images'))
-                                        <img
-                                            src="{{ $product->mainProductFlat->getFirstMediaUrl('images', 'thumb') ?: $product->mainProductFlat->getFirstMediaUrl('images') }}"
-                                            alt="{{ $product->name }}"
-                                            class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                                            loading="lazy"
-                                        >
+                                <!-- Product Image -->
+                                <a href="{{ route('product.detail', ['slug' => $product->slug]) }}" class="block aspect-square overflow-hidden bg-gray-50 relative" wire:navigate>
+                                    @if ($product->mainProductFlat && $product->mainProductFlat->getFirstMediaUrl('image_slot_0') !== '')
+                                        <img src="{{ $product->mainProductFlat->getFirstMediaUrl('image_slot_0') }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                                     @else
-                                        <div class="w-full h-full flex items-center justify-center bg-gray-100">
-                                            <flux:icon.photo class="w-12 h-12 text-gray-300" />
-                                        </div>
+                                        <flux:icon.photo class="w-16 h-16 text-gray-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                                     @endif
                                     <div class="absolute inset-0 bg-black/5 group-hover:bg-transparent transition duration-300"></div>
                                 </a>
 
-                                {{-- Product Details --}}
+                                <!-- Product Details -->
                                 <div class="p-3 flex flex-col flex-1">
-                                    <a
-                                        href="#"
-                                        class="text-sm text-gray-800 line-clamp-2 mb-2 hover:text-green-600 transition"
-                                        wire:navigate
-                                    >
+                                    <a href="{{ route('product.detail', ['slug' => $product->slug]) }}" class="text-sm text-gray-800 line-clamp-2 mb-2 hover:text-green-600 transition" wire:navigate>
                                         {{ $product->name }}
                                     </a>
-
                                     <div class="mt-auto">
                                         <div class="font-bold text-gray-900 leading-tight mb-1">
-                                            Rp{{ number_format($product->price, 0, ',', '.') }}
+                                            Rp{{ numberToCurrency($product->price) }}
                                         </div>
-
-                                        {{-- Original Price --}}
-                                        @if ($product->mainProductFlat && $product->price < $product->mainProductFlat->price)
-                                            <div class="text-[10px] text-gray-400 line-through mb-1">
-                                                Rp{{ number_format($product->mainProductFlat->price, 0, ',', '.') }}
-                                            </div>
-                                        @endif
-
-                                        {{-- Category & Rating --}}
-                                        @if ($product->category)
-                                            <div class="flex items-center gap-1 text-gray-400 text-[10px] mt-1 mb-1">
-                                                <flux:icon.tag class="w-3 h-3" />
-                                                <span class="truncate">{{ $product->category->name }}</span>
-                                            </div>
-                                        @endif
-
-                                        @if ($product->rating || $product->total_sales)
-                                            <div class="flex items-center gap-1 text-[10px] text-gray-500">
-                                                @if ($product->rating)
-                                                    <flux:icon.star class="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                                                    <span>{{ number_format($product->rating, 1) }}</span>
-                                                    @if ($product->total_sales)
-                                                        <span>|</span>
-                                                    @endif
+                                        <!-- Location & Rating -->
+                                        <div class="flex items-center gap-1 text-gray-500 text-[10px] mt-2 mb-1">
+                                            <flux:icon.building-storefront class="w-3 h-3" />
+                                            <span class="truncate">
+                                                {{ $product->shop->name ?? 'Toko' }}
+                                            </span>
+                                        </div>
+                                        <div class="flex items-center gap-1 text-[10px] text-gray-500">
+                                            <flux:icon.star class="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                                            <span>
+                                                @if ($product->rating == 0)
+                                                    Belum ada rating
+                                                @else
+                                                    {{ $product->rating }}
                                                 @endif
-                                                @if ($product->total_sales)
-                                                    <span>Terjual {{ $product->total_sales }}</span>
-                                                @endif
-                                            </div>
-                                        @endif
+                                            </span>
+                                            <span>|</span>
+                                            <span>Terjual 
+                                                {{ $product->total_sales }}
+                                            </span>
+                                        </div>
                                     </div>
-
-                                    {{-- Add to Cart --}}
+                                    <!-- Add to Cart (kept from explore UI) -->
                                     <div class="mt-3">
                                         <button
                                             @click=""

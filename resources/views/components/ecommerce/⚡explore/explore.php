@@ -28,6 +28,16 @@ new class extends Component
 
     public bool $showFilter = false;
 
+    public function mount(?string $categorySlug = null)
+    {
+        if ($categorySlug) {
+            $category = ProductCategory::where('slug', $categorySlug)->first();
+            if ($category) {
+                $this->categoryId = $category->id;
+            }
+        }
+    }
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -82,7 +92,7 @@ new class extends Component
     public function products()
     {
         return Product::query()
-            ->with(['mainProductFlat', 'category'])
+            ->with(['mainProductFlat.media', 'category', 'shop'])
             ->where('status', true)
             ->when($this->search, fn ($q) => $q->where('name', 'like', "%{$this->search}%"))
             ->when($this->categoryId, fn ($q) => $q->where('product_category_id', $this->categoryId))
