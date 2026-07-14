@@ -40,14 +40,15 @@ new class extends Component
         } elseif ($this->status === 'proses') {
             $query->whereHas('order', function ($q) {
                 $q->where('status', true);
-            })->where('shipping_status', false);
+            })->whereNull('waybill_number')->where('shipping_status', false);
         } elseif ($this->status === 'dikirim') {
             $query->whereHas('order', function ($q) {
                 $q->where('status', true);
-            })->where('shipping_status', true);
+            })->whereNotNull('waybill_number')->where('shipping_status', false);
         } elseif ($this->status === 'sampai') {
-            // For now, no action. Assuming shipping_status boolean isn't enough to distinguish dikirim/sampai yet.
-            $query->whereId(0);
+            $query->whereHas('order', function ($q) {
+                $q->where('status', true);
+            })->whereNotNull('waybill_number')->where('shipping_status', true);
         } elseif ($this->status === 'gagal') {
             $query->whereHas('order', function ($q) {
                 $q->where('status', false)

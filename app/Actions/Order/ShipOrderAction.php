@@ -65,7 +65,6 @@ class ShipOrderAction
 
             $orderShop->update([
                 'waybill_number' => $response['courier']['waybill_id'] ?? null,
-                'shipping_status' => true,
             ]);
 
             DB::commit();

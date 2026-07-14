@@ -39,7 +39,7 @@
                                     Detail
                                 </flux:menu.item>
                                 
-                                @if ($order->status && !$orderShop->shipping_status)
+                                @if ($order->status && !$orderShop->shipping_status && !$orderShop->waybill_number)
                                     <flux:menu.item
                                         icon="truck"
                                         @click="$wire.dispatch('confirm', {
@@ -76,9 +76,11 @@
                     </flux:table.cell>
                     
                     <flux:table.cell>
-                        @if ($order->status && $orderShop->shipping_status)
+                        @if ($order->status && $orderShop->shipping_status && $orderShop->waybill_number)
+                            <flux:badge color="green" size="sm">Sampai</flux:badge>
+                        @elseif ($order->status && !$orderShop->shipping_status && $orderShop->waybill_number)
                             <flux:badge color="blue" size="sm">Dikirim</flux:badge>
-                        @elseif ($order->status && !$orderShop->shipping_status)
+                        @elseif ($order->status && !$orderShop->shipping_status && !$orderShop->waybill_number)
                             <flux:badge color="indigo" size="sm">Proses</flux:badge>
                         @elseif (!$order->status && $order->latestPayment && $order->latestPayment->expired_at && $order->latestPayment->expired_at->isPast())
                             <flux:badge color="red" size="sm">Gagal</flux:badge>

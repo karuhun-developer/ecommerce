@@ -12,9 +12,11 @@
                 <flux:heading size="lg" class="mb-1">Status Transaksi</flux:heading>
                 <p class="text-sm text-gray-500">{{ $order->reference }}</p>
             </div>
-            @if ($isPaid && $orderShop->shipping_status)
+            @if ($isPaid && $orderShop->shipping_status && $orderShop->waybill_number)
+                <flux:badge color="green" size="sm">Sampai</flux:badge>
+            @elseif ($isPaid && !$orderShop->shipping_status && $orderShop->waybill_number)
                 <flux:badge color="blue" size="sm">Dikirim</flux:badge>
-            @elseif ($isPaid && !$orderShop->shipping_status)
+            @elseif ($isPaid && !$orderShop->shipping_status && !$orderShop->waybill_number)
                 <flux:badge color="indigo" size="sm">Proses</flux:badge>
             @elseif (!$isPaid && $payment && $payment->expired_at && $payment->expired_at->isPast())
                 <flux:badge color="red" size="sm">Gagal / Kedaluwarsa</flux:badge>
@@ -123,7 +125,7 @@
             </div>
         </div>
         
-        @if ($isPaid && !$orderShop->shipping_status)
+        @if ($isPaid && !$orderShop->shipping_status && !$orderShop->waybill_number)
         <div class="border-t dark:border-zinc-800 pt-6 mt-6 flex justify-end">
             <flux:button 
                 @click="$wire.dispatch('confirm', {
