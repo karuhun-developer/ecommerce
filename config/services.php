@@ -37,6 +37,10 @@ return [
 
     'biteship' => [
         'key' => env('BITESHIP_API_KEY'),
+        'webhook' => [
+            'header_key' => env('BITESHIP_WEBHOOK_HEADER_KEY'),
+            'header_secret' => env('BITESHIP_WEBHOOK_HEADER_SECRET'),
+        ],
     ],
 
 ];

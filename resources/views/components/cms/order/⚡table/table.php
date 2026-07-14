@@ -71,10 +71,10 @@ new class extends Component
                 type: 'success',
                 message: 'Pesanan berhasil dikirim melalui kurir Biteship.'
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->dispatch('toast',
                 type: 'error',
-                message: 'Gagal mengirim pesanan: ' . $e->getMessage()
+                message: 'Gagal mengirim pesanan: '.$e->getMessage()
             );
         }
     }
