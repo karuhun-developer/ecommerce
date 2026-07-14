@@ -75,15 +75,50 @@
                             <span class="font-bold text-gray-900 text-sm">{{ $orderShop->shop->name ?? 'Toko' }}</span>
                         </div>
                         @if($orderShop->latestShipment)
-                            <div class="bg-gray-50 border rounded-lg p-3 text-sm flex gap-4">
+                            <div class="bg-gray-50 border rounded-lg p-3 text-sm flex gap-4 items-center">
                                 <div class="flex-1">
                                     <p class="text-gray-500 mb-1">Kurir: <strong class="text-gray-900">{{ $orderShop->latestShipment->courier_company }} ({{ $orderShop->latestShipment->courier_type }})</strong></p>
                                     <p class="text-gray-500">Resi: <strong class="text-gray-900">{{ $orderShop->latestShipment->courier_waybill_id ?? '-' }}</strong></p>
                                 </div>
-                                <div>
-                                    <p class="text-gray-500 mb-1">Status: <strong class="text-gray-900">{{ $orderShop->latestShipment->status ?? 'Menunggu Resi' }}</strong></p>
+                                <div class="text-right">
+                                    <p class="text-gray-500 mb-2">Status: <strong class="text-gray-900">{{ $orderShop->latestShipment->status ?? 'Menunggu Resi' }}</strong></p>
+                                    <flux:modal.trigger name="shipment-history-{{ $orderShop->id }}">
+                                        <flux:button size="sm" variant="outline" class="text-xs">Lihat History</flux:button>
+                                    </flux:modal.trigger>
                                 </div>
                             </div>
+                            
+                            <flux:modal name="shipment-history-{{ $orderShop->id }}" class="min-w-[22rem]">
+                                <div class="space-y-6">
+                                    <div>
+                                        <flux:heading size="lg">History Pengiriman</flux:heading>
+                                        <flux:subheading>Detail status pengiriman paket.</flux:subheading>
+                                    </div>
+                                    
+                                    <div class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                                        @foreach($orderShop->shipments->sortByDesc('created_at') as $shipment)
+                                            <div class="border-l-2 border-primary-500 pl-4 relative">
+                                                <div class="absolute w-3 h-3 bg-primary-500 rounded-full -left-[7px] top-1"></div>
+                                                <div class="text-sm font-bold text-gray-900">{{ $shipment->status }}</div>
+                                                <div class="text-xs text-gray-500">{{ $shipment->created_at->format('d M Y, H:i') }}</div>
+                                                @if($shipment->courier_driver_name)
+                                                    <div class="text-sm text-gray-600 mt-1">
+                                                        Driver: {{ $shipment->courier_driver_name }} ({{ $shipment->courier_driver_phone }}) <br>
+                                                        Plat: {{ $shipment->courier_driver_plate_number }}
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    
+                                    <div class="flex">
+                                        <flux:spacer />
+                                        <flux:modal.close>
+                                            <flux:button variant="ghost">Tutup</flux:button>
+                                        </flux:modal.close>
+                                    </div>
+                                </div>
+                            </flux:modal>
                         @endif
 
                         @foreach($orderShop->items as $item)

@@ -20,6 +20,7 @@ new class extends Component
             'orderShops.items.productFlat.media',
             'orderShops.shop',
             'orderShops.latestShipment',
+            'orderShops.shipments',
             'latestPayment',
         );
 
