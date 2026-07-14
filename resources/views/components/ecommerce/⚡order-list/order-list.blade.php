@@ -14,9 +14,11 @@
         <!-- Tabs -->
         <div class="flex gap-6 border-b mb-6 overflow-x-auto hide-scrollbar">
             <button wire:click="setStatus('semua')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'semua' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600' }}">Semua</button>
-            <button wire:click="setStatus('berlangsung')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'berlangsung' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600' }}">Berlangsung</button>
-            <button wire:click="setStatus('berhasil')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'berhasil' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600' }}">Berhasil</button>
-            <button wire:click="setStatus('tidak-berhasil')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'tidak-berhasil' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600' }}">Tidak Berhasil</button>
+            <button wire:click="setStatus('menunggu-pembayaran')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'menunggu-pembayaran' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600' }}">Menunggu Pembayaran</button>
+            <button wire:click="setStatus('proses')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'proses' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600' }}">Proses</button>
+            <button wire:click="setStatus('dikirim')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'dikirim' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600' }}">Dikirim</button>
+            <button wire:click="setStatus('sampai')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'sampai' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600' }}">Sampai</button>
+            <button wire:click="setStatus('gagal')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'gagal' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600' }}">Gagal</button>
         </div>
 
         <div class="space-y-4">
@@ -47,6 +49,13 @@
                                     <div class="flex items-center gap-2 mb-2">
                                         <flux:icon.building-storefront class="w-4 h-4 text-gray-500" />
                                         <span class="font-bold text-gray-900">{{ $orderShop->shop->name ?? 'Toko' }}</span>
+                                        @if ($order->status && $orderShop->shipping_status && $orderShop->waybill_number)
+                                            <flux:badge color="green" size="sm">Sampai</flux:badge>
+                                        @elseif ($order->status && !$orderShop->shipping_status && $orderShop->waybill_number)
+                                            <flux:badge color="blue" size="sm">Dikirim</flux:badge>
+                                        @elseif ($order->status && !$orderShop->shipping_status && !$orderShop->waybill_number)
+                                            <flux:badge color="indigo" size="sm">Proses</flux:badge>
+                                        @endif
                                     </div>
                                     @foreach ($orderShop->items as $item)
                                         <div class="ml-6 flex justify-between items-center mb-2">

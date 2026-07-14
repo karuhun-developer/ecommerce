@@ -22,15 +22,28 @@ new class extends Component
             ->with(['orderShops.shop', 'orderShops.items', 'latestPayment'])
             ->latest();
 
-        if ($this->status === 'berlangsung') {
+        if ($this->status === 'menunggu-pembayaran') {
             $query->where('status', false)
                 ->whereHas('latestPayment', function ($q) {
                     $q->whereNull('expired_at')
                         ->orWhere('expired_at', '>', now());
                 });
-        } elseif ($this->status === 'berhasil') {
-            $query->where('status', true);
-        } elseif ($this->status === 'tidak-berhasil') {
+        } elseif ($this->status === 'proses') {
+            $query->where('status', true)
+                ->whereHas('orderShops', function ($q) {
+                    $q->whereNull('waybill_number')->where('shipping_status', false);
+                });
+        } elseif ($this->status === 'dikirim') {
+            $query->where('status', true)
+                ->whereHas('orderShops', function ($q) {
+                    $q->whereNotNull('waybill_number')->where('shipping_status', false);
+                });
+        } elseif ($this->status === 'sampai') {
+            $query->where('status', true)
+                ->whereHas('orderShops', function ($q) {
+                    $q->whereNotNull('waybill_number')->where('shipping_status', true);
+                });
+        } elseif ($this->status === 'gagal') {
             $query->where('status', false)
                 ->whereHas('latestPayment', function ($q) {
                     $q->where('expired_at', '<=', now());
