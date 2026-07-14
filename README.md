@@ -317,7 +317,10 @@ vendor/bin/pint --dirty
 # Tail application logs in real-time
 php artisan pail
 
-# List all registered routes
+# List all Folio page-based routes
+php artisan folio:list
+
+# List all registered API/non-Folio routes
 php artisan route:list --except-vendor
 ```
 
