@@ -75,12 +75,57 @@
                     <flux:badge x-show="$store.cart.count > 0" x-text="$store.cart.count" color="red" class="absolute -top-1 -right-1 text-[10px] font-bold px-1.5" />
                 </div>
                 <flux:separator vertical class="hidden md:block mx-2" />
-                <flux:button href="{{ route('login') }}" variant="primary" color="green" class="hidden md:flex font-semibold px-6 rounded-lg" wire:navigate>
-                    Masuk
-                </flux:button>
-                <flux:button href="{{ route('register') }}" variant="outline" class="hidden md:flex font-semibold px-6 rounded-lg" wire:navigate>
-                    Daftar
-                </flux:button>
+                
+                @auth
+                    <flux:dropdown position="bottom" align="end">
+                        <flux:profile
+                            class="cursor-pointer transition px-2 py-1"
+                            :initials="auth()->user()->initials()"
+                        />
+
+                        <flux:menu class="w-56">
+                            <flux:menu.radio.group>
+                                <div class="p-0 text-sm font-normal">
+                                    <div class="flex items-center gap-3 px-1 py-1.5 text-start text-sm">
+                                        <span class="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-lg">
+                                            <span class="flex h-full w-full items-center justify-center rounded-lg bg-gray-200 text-gray-700 font-bold text-lg">
+                                                {{ auth()->user()->initials() }}
+                                            </span>
+                                        </span>
+
+                                        <div class="grid flex-1 text-start text-sm leading-tight">
+                                            <span class="truncate font-bold text-gray-900">{{ auth()->user()->name }}</span>
+                                            <span class="truncate text-xs text-gray-500">{{ auth()->user()->email }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </flux:menu.radio.group>
+
+                            <flux:menu.separator />
+
+                            <flux:menu.radio.group>
+                                <flux:menu.item :href="route('orders.index')" icon="shopping-bag" wire:navigate>Daftar Transaksi</flux:menu.item>
+                                <flux:menu.item :href="route('account.profile')" icon="cog" wire:navigate>Pengaturan Akun</flux:menu.item>
+                            </flux:menu.radio.group>
+
+                            <flux:menu.separator />
+
+                            <form method="POST" action="{{ route('logout') }}" class="w-full">
+                                @csrf
+                                <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full text-red-600 hover:bg-red-50 hover:text-red-700">
+                                    Keluar
+                                </flux:menu.item>
+                            </form>
+                        </flux:menu>
+                    </flux:dropdown>
+                @else
+                    <flux:button href="{{ route('login') }}" variant="primary" color="green" class="hidden md:flex font-semibold px-6 rounded-lg" wire:navigate>
+                        Masuk
+                    </flux:button>
+                    <flux:button href="{{ route('register') }}" variant="outline" class="hidden md:flex font-semibold px-6 rounded-lg" wire:navigate>
+                        Daftar
+                    </flux:button>
+                @endauth
             </div>
         </div>
 
