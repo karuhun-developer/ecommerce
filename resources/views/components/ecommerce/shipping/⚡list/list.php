@@ -80,7 +80,7 @@ new class extends Component
             // Auto-select first address
             $first = $this->addresses->first();
             if ($first) {
-                $this->selectedLocationId = $first->id;
+                $this->selectAddress($first->id);
             }
         }
     }
