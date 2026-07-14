@@ -23,10 +23,20 @@ new class extends Component
         ])->findOrFail($this->orderShopId);
     }
 
-    public function kirimPesanan()
+    public function kirimPesanan(\App\Actions\Order\ShipOrderAction $action)
     {
-        // Placeholder untuk logic kirim pesanan
-        // $this->orderShop->update(['shipping_status' => true]);
-        // $this->dispatch('pesanan-dikirim');
+        try {
+            $action->execute($this->orderShop);
+
+            $this->dispatch('toast',
+                type: 'success',
+                message: 'Pesanan berhasil dikirim melalui kurir Biteship.'
+            );
+        } catch (\Exception $e) {
+            $this->dispatch('toast',
+                type: 'error',
+                message: 'Gagal mengirim pesanan: ' . $e->getMessage()
+            );
+        }
     }
 };

@@ -58,13 +58,21 @@ new class extends Component
         return $query->get();
     }
 
-    public function kirimPesanan($id)
+    public function kirimPesanan($id, \App\Actions\Order\ShipOrderAction $action)
     {
-        // Placeholder untuk logic kirim pesanan
-        // Nanti akan diisi oleh user
-        // $orderShop = OrderShop::find($id);
-        // ...
+        try {
+            $orderShop = OrderShop::findOrFail($id);
+            $action->execute($orderShop);
 
-        // $this->dispatch('pesanan-dikirim');
+            $this->dispatch('toast',
+                type: 'success',
+                message: 'Pesanan berhasil dikirim melalui kurir Biteship.'
+            );
+        } catch (\Exception $e) {
+            $this->dispatch('toast',
+                type: 'error',
+                message: 'Gagal mengirim pesanan: ' . $e->getMessage()
+            );
+        }
     }
 };

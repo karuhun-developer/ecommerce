@@ -9,23 +9,23 @@
     <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl shadow-sm p-6 mb-6">
         <div class="flex justify-between items-start border-b dark:border-zinc-800 pb-4 mb-4">
             <div>
-                <h1 class="text-xl font-bold text-gray-900 dark:text-zinc-100 mb-1">Status Transaksi</h1>
+                <flux:heading size="lg" class="mb-1">Status Transaksi</flux:heading>
                 <p class="text-sm text-gray-500">{{ $order->reference }}</p>
             </div>
             @if ($isPaid && $orderShop->shipping_status)
-                <span class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">Dikirim</span>
+                <flux:badge color="blue" size="sm">Dikirim</flux:badge>
             @elseif ($isPaid && !$orderShop->shipping_status)
-                <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1 rounded-full">Proses</span>
+                <flux:badge color="indigo" size="sm">Proses</flux:badge>
             @elseif (!$isPaid && $payment && $payment->expired_at && $payment->expired_at->isPast())
-                <span class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full">Gagal / Kedaluwarsa</span>
+                <flux:badge color="red" size="sm">Gagal / Kedaluwarsa</flux:badge>
             @else
-                <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full">Menunggu Pembayaran</span>
+                <flux:badge color="orange" size="sm">Menunggu Pembayaran</flux:badge>
             @endif
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
             <div>
-                <h3 class="font-bold text-gray-900 dark:text-zinc-100 mb-3 text-sm">Info Pelanggan & Pengiriman</h3>
+                <flux:heading size="md" class="mb-3">Info Pelanggan & Pengiriman</flux:heading>
                 <div class="text-sm text-gray-600 dark:text-zinc-400 space-y-1">
                     @if($order->guest_data)
                         <p class="font-bold text-gray-900 dark:text-zinc-100">
@@ -57,7 +57,7 @@
                 </div>
             </div>
             <div>
-                <h3 class="font-bold text-gray-900 dark:text-zinc-100 mb-3 text-sm">Info Pembayaran (Keseluruhan Transaksi)</h3>
+                <flux:heading size="md" class="mb-3">Info Pembayaran (Keseluruhan Transaksi)</flux:heading>
                 <div class="text-sm text-gray-600 dark:text-zinc-400 space-y-1">
                     <p><span class="w-32 inline-block text-gray-500">Metode Bayar</span>: {{ $payment ? strtoupper($payment->payment_type) . ' (' . strtoupper($payment->channel) . ')' : '-' }}</p>
                 </div>
@@ -65,7 +65,7 @@
         </div>
 
         <div class="border-t dark:border-zinc-800 pt-4">
-            <h3 class="font-bold text-gray-900 dark:text-zinc-100 mb-4 text-sm">Rincian Produk Toko Anda</h3>
+            <flux:heading size="md" class="mb-4">Rincian Produk Toko Anda</flux:heading>
             <div class="space-y-6">
                 <div class="space-y-4">
                     <div class="flex items-center gap-2">
@@ -108,7 +108,7 @@
         </div>
 
         <div class="border-t dark:border-zinc-800 pt-4 mt-6">
-            <h3 class="font-bold text-gray-900 dark:text-zinc-100 mb-3 text-sm">Rincian Total Toko</h3>
+            <flux:heading size="md" class="mb-3">Rincian Total Toko</flux:heading>
             <div class="space-y-2 text-sm text-gray-600 dark:text-zinc-400 max-w-sm ml-auto">
                 <div class="flex justify-between border-t dark:border-zinc-800 pt-2 mt-2 font-bold text-gray-900 dark:text-zinc-100">
                     <span>Total Pembayaran (Toko Ini)</span>
@@ -119,7 +119,7 @@
         
         @if ($isPaid && !$orderShop->shipping_status)
         <div class="border-t dark:border-zinc-800 pt-6 mt-6 flex justify-end">
-            <flux:button wire:click="kirimPesanan" variant="primary">Kirim Pesanan Sekarang</flux:button>
+            <flux:button wire:click="kirimPesanan" variant="primary" icon="truck">Kirim Pesanan Sekarang</flux:button>
         </div>
         @endif
     </div>
