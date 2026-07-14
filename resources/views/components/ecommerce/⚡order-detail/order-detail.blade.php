@@ -102,9 +102,20 @@
                                                 <div class="text-sm font-bold text-gray-900">{{ $shipment->status }}</div>
                                                 <div class="text-xs text-gray-500">{{ $shipment->created_at->format('d M Y, H:i') }}</div>
                                                 @if($shipment->courier_driver_name)
-                                                    <div class="text-sm text-gray-600 mt-1">
-                                                        Driver: {{ $shipment->courier_driver_name }} ({{ $shipment->courier_driver_phone }}) <br>
-                                                        Plat: {{ $shipment->courier_driver_plate_number }}
+                                                    <div class="text-sm text-gray-600 mt-2 bg-gray-50 rounded-lg p-3 border">
+                                                        <div class="flex items-center gap-3">
+                                                            @if($shipment->courier_driver_photo_url)
+                                                                <img src="{{ $shipment->courier_driver_photo_url }}" alt="Driver Photo" class="w-10 h-10 rounded-full object-cover border bg-white">
+                                                            @else
+                                                                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center border">
+                                                                    <flux:icon.user class="w-5 h-5 text-gray-500" />
+                                                                </div>
+                                                            @endif
+                                                            <div>
+                                                                <p class="font-bold text-gray-900">{{ $shipment->courier_driver_name }}</p>
+                                                                <p class="text-xs">{{ $shipment->courier_driver_phone }} &bull; {{ $shipment->courier_driver_plate_number }}</p>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 @endif
                                             </div>

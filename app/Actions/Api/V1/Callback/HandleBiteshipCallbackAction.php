@@ -71,6 +71,14 @@ class HandleBiteshipCallbackAction
                     'shipping_note' => 'Kurir tidak ditemukan. Silakan atur pengiriman ulang.',
                 ]);
             }
+        } elseif ($status === 'delivered') {
+            $orderShop = $latestShipment->orderShop;
+            if ($orderShop) {
+                $orderShop->update([
+                    'shipping_status' => true,
+                    'shipping_note' => null,
+                ]);
+            }
         }
 
         return $shipment;
