@@ -24,6 +24,8 @@ class BiteshipController extends Controller
             if (! $signature || ! hash_equals($expectedSignature, $signature)) {
                 Log::warning('Invalid Biteship Webhook Signature', [
                     'ip' => $request->ip(),
+                    'headers' => $request->headers->all(),
+                    'payload' => $request->all(),
                 ]);
 
                 return $this->responseWithError('Unauthorized', 401);
