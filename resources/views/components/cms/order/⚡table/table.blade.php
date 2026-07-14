@@ -42,7 +42,10 @@
                                 @if ($order->status && !$orderShop->shipping_status)
                                     <flux:menu.item
                                         icon="truck"
-                                        wire:click="kirimPesanan({{ $orderShop->id }})">
+                                        @click="$wire.dispatch('confirm', {
+                                            function: 'kirimPesanan',
+                                            id: '{{ $orderShop->id }}'
+                                        })">
                                         Kirim Pesanan
                                     </flux:menu.item>
                                 @endif

@@ -1,7 +1,9 @@
 <?php
 
+use App\Actions\Order\ShipOrderAction;
 use App\Models\Order\OrderShop;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -58,7 +60,8 @@ new class extends Component
         return $query->get();
     }
 
-    public function kirimPesanan($id, \App\Actions\Order\ShipOrderAction $action)
+    #[On('kirimPesanan')]
+    public function kirimPesanan($id, ShipOrderAction $action)
     {
         try {
             $orderShop = OrderShop::findOrFail($id);

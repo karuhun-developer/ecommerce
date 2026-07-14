@@ -119,7 +119,15 @@
         
         @if ($isPaid && !$orderShop->shipping_status)
         <div class="border-t dark:border-zinc-800 pt-6 mt-6 flex justify-end">
-            <flux:button wire:click="kirimPesanan" variant="primary" icon="truck">Kirim Pesanan Sekarang</flux:button>
+            <flux:button 
+                @click="$wire.dispatch('confirm', {
+                    function: 'kirimPesanan',
+                    id: '{{ $orderShop->id }}',
+                })" 
+                variant="primary" 
+                icon="truck">
+                Kirim Pesanan Sekarang
+            </flux:button>
         </div>
         @endif
     </div>

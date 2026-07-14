@@ -1,6 +1,8 @@
 <?php
 
+use App\Actions\Order\ShipOrderAction;
 use App\Models\Order\OrderShop;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 new class extends Component
@@ -23,7 +25,8 @@ new class extends Component
         ])->findOrFail($this->orderShopId);
     }
 
-    public function kirimPesanan(\App\Actions\Order\ShipOrderAction $action)
+    #[On('kirimPesanan')]
+    public function kirimPesanan($id, ShipOrderAction $action)
     {
         try {
             $action->execute($this->orderShop);
