@@ -138,6 +138,6 @@ new class extends Component
         );
 
         // Redirect to edit page
-        $this->redirectRoute('cms.product.edit', ['product_id' => $$product->id], navigate: true);
+        $this->redirectRoute('cms.product.edit', ['product_id' => $product->id], navigate: true);
     }
 };
