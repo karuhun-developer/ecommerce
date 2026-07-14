@@ -18,6 +18,7 @@ class StoreProductAction
     {
         return DB::transaction(function () use ($data) {
             $product = Product::create([
+                'product_category_id' => $data['product_category_id'],
                 'shop_id' => $data['shop_id'],
                 'type' => $data['type'],
                 'name' => $data['name'],
