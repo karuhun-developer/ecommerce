@@ -82,8 +82,73 @@
         <!-- Chart -->
         <flux:card class="lg:col-span-2">
             <h3 class="font-bold text-lg mb-4">Grafik Penjualan</h3>
-            <div wire:ignore>
-                <div id="salesChart" class="w-full h-[300px]"></div>
+            <div 
+                x-data="{
+                    chart: null,
+                    initChart() {
+                        if (typeof ApexCharts === 'undefined') {
+                            const script = document.createElement('script');
+                            script.src = 'https://cdn.jsdelivr.net/npm/apexcharts';
+                            script.onload = () => this.renderChart();
+                            document.head.appendChild(script);
+                        } else {
+                            this.renderChart();
+                        }
+                    },
+                    renderChart() {
+                        let chartData = @js($this->chartData);
+                        
+                        let options = {
+                            series: [
+                                { name: 'Dibayar', data: chartData.paid },
+                                { name: 'Belum Dibayar', data: chartData.unpaid }
+                            ],
+                            chart: {
+                                type: 'area',
+                                height: 300,
+                                toolbar: { show: false },
+                                fontFamily: 'inherit'
+                            },
+                            colors: ['#3b82f6', '#eab308'],
+                            dataLabels: { enabled: false },
+                            stroke: { curve: 'smooth', width: 2 },
+                            xaxis: {
+                                categories: chartData.categories,
+                                labels: { style: { colors: '#9ca3af' } }
+                            },
+                            yaxis: {
+                                labels: { style: { colors: '#9ca3af' } }
+                            },
+                            fill: {
+                                type: 'gradient',
+                                gradient: {
+                                    shadeIntensity: 1,
+                                    opacityFrom: 0.4,
+                                    opacityTo: 0.05,
+                                    stops: [0, 100]
+                                }
+                            },
+                            legend: { position: 'top', horizontalAlign: 'right' }
+                        };
+
+                        this.chart = new ApexCharts(this.$refs.chartContainer, options);
+                        this.chart.render();
+                        
+                        Livewire.on('update-chart', (data) => {
+                            let newData = data[0].data;
+                            this.chart.updateOptions({
+                                xaxis: { categories: newData.categories }
+                            });
+                            this.chart.updateSeries([
+                                { name: 'Dibayar', data: newData.paid },
+                                { name: 'Belum Dibayar', data: newData.unpaid }
+                            ]);
+                        });
+                    }
+                }"
+                x-init="initChart()"
+            >
+                <div x-ref="chartContainer" class="w-full h-[300px]" wire:ignore></div>
             </div>
         </flux:card>
 
@@ -108,61 +173,4 @@
             </div>
         </flux:card>
     </div>
-
-    <!-- Chart Script -->
-    @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    <script>
-        document.addEventListener('livewire:initialized', () => {
-            let chartData = @json($this->chartData);
-            
-            let options = {
-                series: [
-                    { name: 'Dibayar', data: chartData.paid },
-                    { name: 'Belum Dibayar', data: chartData.unpaid }
-                ],
-                chart: {
-                    type: 'area',
-                    height: 300,
-                    toolbar: { show: false },
-                    fontFamily: 'inherit'
-                },
-                colors: ['#3b82f6', '#eab308'],
-                dataLabels: { enabled: false },
-                stroke: { curve: 'smooth', width: 2 },
-                xaxis: {
-                    categories: chartData.categories,
-                    labels: { style: { colors: '#9ca3af' } }
-                },
-                yaxis: {
-                    labels: { style: { colors: '#9ca3af' } }
-                },
-                fill: {
-                    type: 'gradient',
-                    gradient: {
-                        shadeIntensity: 1,
-                        opacityFrom: 0.4,
-                        opacityTo: 0.05,
-                        stops: [0, 100]
-                    }
-                },
-                legend: { position: 'top', horizontalAlign: 'right' }
-            };
-
-            let chart = new ApexCharts(document.querySelector("#salesChart"), options);
-            chart.render();
-
-            Livewire.on('update-chart', (data) => {
-                let newData = data[0].data;
-                chart.updateOptions({
-                    xaxis: { categories: newData.categories }
-                });
-                chart.updateSeries([
-                    { name: 'Dibayar', data: newData.paid },
-                    { name: 'Belum Dibayar', data: newData.unpaid }
-                ]);
-            });
-        });
-    </script>
-    @endpush
 </div>
