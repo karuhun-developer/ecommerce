@@ -7,7 +7,7 @@
         <div class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
             @foreach ($this->categories as $category)
                 <a href="{{ route('explore.category', ['category' => $category->slug]) }}" class="flex flex-col items-center gap-2 min-w-[80px] cursor-pointer group" wire:navigate>
-                    <div class="w-16 h-16 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center justify-center group-hover:border-green-500 group-hover:shadow-md transition">
+                    <div class="w-16 h-16 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center justify-center group-hover:border-gray-500 group-hover:shadow-md transition">
                         @if ($category->getFirstMediaUrl('image') !== '')
                             <img src="{{ $category->getFirstMediaUrl('image') }}" alt="{{ $category->name }}" class="w-8 h-8" />
                         @else
@@ -26,7 +26,7 @@
     <div>
         <div class="flex items-center justify-between mb-6">
             <h3 class="text-xl font-bold text-gray-800">Kejar Diskon</h3>
-            <a href="{{ route('explore.index') }}" class="text-green-600 font-bold text-sm hover:text-green-700" wire:navigate>
+            <a href="{{ route('explore.index') }}" class="font-bold text-sm hover:text-gray-700" wire:navigate>
                 Lihat Semua
             </a>
         </div>
@@ -51,7 +51,7 @@
 
                     <!-- Product Details -->
                     <div class="p-3 flex flex-col flex-1">
-                        <a href="{{ route('product.detail', ['slug' => $product->slug]) }}" class="text-sm text-gray-800 line-clamp-2 mb-2 hover:text-green-600 transition" wire:navigate>
+                        <a href="{{ route('product.detail', ['slug' => $product->slug]) }}" class="text-sm text-gray-800 line-clamp-2 mb-2 transition" wire:navigate>
                             {{ $product->name }}
                         </a>
                         <div class="mt-auto">

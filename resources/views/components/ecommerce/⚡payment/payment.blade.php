@@ -10,7 +10,7 @@
     },
 }" class="w-full">
     <div class="mb-6">
-        <a href="{{ route('orders.detail', ['reference' => $order->reference]) }}" class="text-green-600 hover:text-green-700 font-bold text-sm flex items-center gap-2" wire:navigate>
+        <a href="{{ route('orders.detail', ['reference' => $order->reference]) }}" class="text-gray-600 hover:text-gray-700 font-bold text-sm flex items-center gap-2" wire:navigate>
             <flux:icon.arrow-left class="w-4 h-4" /> Kembali ke Detail Pesanan
         </a>
     </div>
@@ -18,9 +18,9 @@
     <div class="flex justify-between items-center mb-6">
         <flux:heading size="xl">Transaksi #{{ $order->reference }}</flux:heading>
         @if($isPaid)
-            <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Dibayar</span>
+            <flux:badge color="green" size="sm">Dibayar</flux:badge>
         @else
-            <span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1 rounded-full">Menunggu Pembayaran</span>
+            <flux:badge color="yellow" size="sm">Menunggu Pembayaran</flux:badge>
         @endif
     </div>
 
@@ -97,7 +97,7 @@
                                         setTimeout(() => copied = false, 2000);
                                     ">
                                         <span x-show="!copied">Copy VA</span>
-                                        <span x-show="copied" class="text-green-600">Copied!</span>
+                                        <span x-show="copied" class="text-gray-600">Copied!</span>
                                     </flux:button>
                                 </div>
                             @endif
@@ -107,14 +107,14 @@
                         <span class="text-gray-500 dark:text-gray-400 text-xs font-medium uppercase tracking-wider">Amount to Pay</span>
                         <div class="font-medium mt-1">
                             <div class="flex items-center gap-2" x-data="{ copied: false }">
-                                <span class="text-2xl font-bold text-green-600 dark:text-indigo-400">Rp {{ number_format($payment->total, 0, ',', '.') }}</span>
+                                <span class="text-2xl font-bold text-gray-600 dark:text-indigo-400">Rp {{ number_format($payment->total, 0, ',', '.') }}</span>
                                 <flux:button size="sm" variant="subtle" icon="document-duplicate" x-on:click="
                                     navigator.clipboard.writeText('{{ $payment->total }}');
                                     copied = true;
                                     setTimeout(() => copied = false, 2000);
                                 ">
                                     <span x-show="!copied">Copy Amount</span>
-                                    <span x-show="copied" class="text-green-600">Copied!</span>
+                                    <span x-show="copied" class="text-gray-600">Copied!</span>
                                 </flux:button>
                             </div>
                         </div>
@@ -221,19 +221,19 @@
             <div class="space-y-3 pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
                 @if($order->total_shipping > 0)
                 <div class="flex justify-between items-center text-gray-600 dark:text-gray-400 text-sm">
-                    <span>Shipping</span>
+                    <span>Total Ongkos Kirim</span>
                     <span>Rp {{ number_format($order->total_shipping, 0, ',', '.') }}</span>
                 </div>
                 @endif
                 @if($order->application_fee > 0)
                 <div class="flex justify-between items-center text-gray-600 dark:text-gray-400 text-sm">
-                    <span>Application Fee</span>
+                    <span>Biaya Jasa Aplikasi</span>
                     <span>Rp {{ number_format($order->application_fee, 0, ',', '.') }}</span>
                 </div>
                 @endif
                 @if($order->insurance_fee > 0)
                 <div class="flex justify-between items-center text-gray-600 dark:text-gray-400 text-sm">
-                    <span>Insurance Fee</span>
+                    <span>Asuransi Pengiriman</span>
                     <span>Rp {{ number_format($order->insurance_fee, 0, ',', '.') }}</span>
                 </div>
                 @endif
@@ -242,7 +242,7 @@
                     <span x-text="'Rp ' + window.numberToCurrency(baseAmount)"></span>
                 </div>
                 <div class="flex justify-between items-center text-gray-600 dark:text-gray-400 text-sm">
-                    <span>Payment Fee</span>
+                    <span>Biaya Layanan Pembayaran</span>
                     <span x-text="'Rp ' + window.numberToCurrency(fee)"></span>
                 </div>
                 <div class="pt-3 mt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center font-bold text-lg">

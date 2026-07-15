@@ -54,7 +54,7 @@
     <header class="bg-white border-b sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between gap-4 md:gap-8">
             <!-- Logo -->
-            <a href="/" class="text-2xl md:text-3xl font-black text-green-600 tracking-tight shrink-0" wire:navigate>
+            <a href="/" class="text-2xl md:text-3xl font-black tracking-tight shrink-0" wire:navigate>
                 {{ config('app.name', 'Nexa') }}
                 <span class="text-gray-800">.</span>
             </a>
@@ -104,6 +104,9 @@
                             <flux:menu.separator />
 
                             <flux:menu.radio.group>
+                                @role('superadmin')
+                                    <flux:menu.item :href="route('cms.dashboard')" icon="home" wire:navigate>Dashboard</flux:menu.item>
+                                @endrole
                                 <flux:menu.item :href="route('orders.index')" icon="shopping-bag" wire:navigate>Daftar Transaksi</flux:menu.item>
                                 <flux:menu.item :href="route('account.profile')" icon="cog" wire:navigate>Pengaturan Akun</flux:menu.item>
                             </flux:menu.radio.group>
@@ -119,7 +122,7 @@
                         </flux:menu>
                     </flux:dropdown>
                 @else
-                    <flux:button href="{{ route('login') }}" variant="primary" color="green" class="hidden md:flex font-semibold px-6 rounded-lg" wire:navigate>
+                    <flux:button href="{{ route('login') }}" variant="primary" class="hidden md:flex font-semibold px-6 rounded-lg" wire:navigate>
                         Masuk
                     </flux:button>
                     <flux:button href="{{ route('register') }}" variant="outline" class="hidden md:flex font-semibold px-6 rounded-lg" wire:navigate>
@@ -147,7 +150,7 @@
             @endforeach
 
             <div class="ml-auto flex items-center">
-                <flux:navbar.item href="{{ route('orders.check') }}" icon="receipt-percent" wire:navigate class="!text-green-600 font-semibold">
+                <flux:navbar.item href="{{ route('orders.check') }}" icon="receipt-percent" wire:navigate class="font-semibold">
                     Cek Transaksi
                 </flux:navbar.item>
             </div>

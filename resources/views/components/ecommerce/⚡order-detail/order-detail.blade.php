@@ -1,7 +1,7 @@
 <div>
     <div class="flex justify-between items-center mb-6">
         @auth
-            <a href="/orders" class="text-green-600 hover:text-green-700 font-bold text-sm flex items-center gap-2" wire:navigate>
+            <a href="/orders" class="text-gray-600 hover:text-gray-700 font-bold text-sm flex items-center gap-2" wire:navigate>
                 <flux:icon.arrow-left class="w-4 h-4" /> Kembali ke Daftar Transaksi
             </a>
         @endauth
@@ -9,8 +9,8 @@
             <flux:spacer />
         @endguest
         @if(!$isPaid)
-            <flux:button href="{{ route('payment.show', ['reference' => $order->reference]) }}" variant="primary" size="sm" wire:navigate>
-                Pay This Order
+            <flux:button href="{{ route('payment.show', ['reference' => $order->reference]) }}" icon="credit-card" variant="primary" size="sm" wire:navigate>
+                Bayar Sekarang
             </flux:button>
         @endif
     </div>
@@ -22,9 +22,9 @@
                 <p class="text-sm text-gray-500">{{ $order->reference }}</p>
             </div>
             @if($isPaid)
-                <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">Dibayar</span>
+                <flux:badge color="green" size="sm">Dibayar</flux:badge>
             @else
-                <span class="bg-yellow-100 text-yellow-700 text-xs font-bold px-3 py-1 rounded-full">Menunggu Pembayaran</span>
+                <flux:badge color="yellow" size="sm">Menunggu Pembayaran</flux:badge>
             @endif
         </div>
 

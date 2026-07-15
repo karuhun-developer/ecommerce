@@ -6,7 +6,7 @@
             <div class="px-8 md:px-16">
                 <h2 class="text-3xl md:text-5xl font-black text-white mb-2">Mega Sale 12.12</h2>
                 <p class="text-white/90 text-lg mb-4">Diskon hingga 90% untuk semua produk elektronik!</p>
-                <flux:button variant="primary" color="green">
+                <flux:button href="{{ route('explore.index') }}" wire:navigate>
                     Belanja Sekarang
                 </flux:button>
             </div>

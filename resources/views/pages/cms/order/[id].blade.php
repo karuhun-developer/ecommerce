@@ -16,7 +16,7 @@ render(function (View $view, $id) {
 
     if (!isSingleShop() && auth()->user()->hasRole('shopowner')) {
         if ($orderShop->shop->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized access to this order.');
+            abort(404);
         }
     }
 

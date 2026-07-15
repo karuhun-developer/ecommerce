@@ -67,7 +67,7 @@
                             <flux:icon.shopping-bag class="w-16 h-16 text-gray-200 mx-auto mb-4" />
                             <p class="font-bold text-gray-800 mb-1">Tidak ada item untuk di-checkout</p>
                             <p class="text-sm text-gray-500 mb-4">Kembali ke keranjang dan pilih barang terlebih dahulu.</p>
-                            <flux:button href="{{ route('cart') }}" variant="primary" color="green" wire:navigate>
+                            <flux:button href="{{ route('cart') }}" variant="primary" wire:navigate>
                                 Ke Keranjang
                             </flux:button>
                         </div>
@@ -171,7 +171,6 @@
 
                         <flux:button
                             variant="primary"
-                            color="green"
                             class="w-full"
                             x-bind:disabled="checkoutItems.length === 0 || {{ count($shopGroups) > 0 && count($shopRates) < count($shopGroups) ? 'true' : 'false' }}"
                             x-on:click="submitOrder"

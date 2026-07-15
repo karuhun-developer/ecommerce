@@ -73,7 +73,7 @@
         @if(empty($rates) && !$loading && blank($error) && !blank($destinationAreaId))
             <button
                 wire:click="fetchRates"
-                class="w-full border border-dashed border-gray-300 rounded-xl p-4 text-sm text-gray-500 hover:border-green-400 hover:text-green-600 transition flex items-center justify-center gap-2"
+                class="w-full border border-dashed border-gray-300 rounded-xl p-4 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-600 transition flex items-center justify-center gap-2"
             >
                 <flux:icon.truck class="w-4 h-4" />
                 Klik untuk cek ongkir
@@ -95,13 +95,13 @@
                     <button
                         wire:key="rate-{{ $shopId }}-{{ $code }}-{{ $service }}"
                         wire:click="selectRate('{{ $code }}', '{{ $service }}', {{ $price }}, '{{ addslashes($name) }}', '{{ addslashes($etd) }}')"
-                        class="w-full border rounded-xl p-3 cursor-pointer flex items-center justify-between transition text-left {{ $isSelected ? 'border-green-500 bg-green-50' : 'hover:border-gray-300 bg-white' }}"
+                        class="w-full border rounded-xl p-3 cursor-pointer flex items-center justify-between transition text-left {{ $isSelected ? 'border-gray-500 bg-gray-50' : 'hover:border-gray-300 bg-white' }}"
                     >
                         <div class="flex items-center gap-3">
                             {{-- Radio indicator --}}
-                            <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 {{ $isSelected ? 'border-green-500' : 'border-gray-300' }}">
+                            <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 {{ $isSelected ? 'border-gray-500' : 'border-gray-300' }}">
                                 @if($isSelected)
-                                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                                    <div class="w-2 h-2 rounded-full bg-gray-500"></div>
                                 @endif
                             </div>
                             <div>
@@ -123,8 +123,8 @@
             </div>
 
             @if($selectedCourierCode)
-                <div class="mt-3 flex items-center gap-2 p-2.5 bg-green-50 border border-green-200 rounded-xl text-xs text-green-800">
-                    <flux:icon.check-circle class="w-4 h-4 text-green-600 shrink-0" />
+                <div class="mt-3 flex items-center gap-2 p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800">
+                    <flux:icon.check-circle class="w-4 h-4 text-gray-600 shrink-0" />
                     <span><span class="font-bold">{{ $selectedName }}</span> — Rp{{ number_format($selectedPrice, 0, ',', '.') }}</span>
                 </div>
             @endif

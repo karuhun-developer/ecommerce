@@ -14,7 +14,7 @@
                 type="text"
                 wire:model.live.debounce.400ms="search"
                 placeholder="Cari produk..."
-                class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition"
             />
             @if ($search)
                 <button wire:click="$set('search', '')" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -26,7 +26,7 @@
         {{-- Filter toggle (mobile) --}}
         <button
             wire:click="$toggle('showFilter')"
-            class="md:hidden flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium shadow-sm hover:border-green-500 transition"
+            class="md:hidden flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium shadow-sm hover:border-gray-500 transition"
         >
             <flux:icon.adjustments-horizontal class="w-4 h-4" />
             Filter
@@ -51,7 +51,7 @@
                     ] as $value => $label)
                         <button
                             wire:click="$set('sortBy', '{{ $value }}')"
-                            class="w-full text-left text-sm px-3 py-2 rounded-lg transition {{ $sortBy === $value ? 'bg-green-50 text-green-700 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}"
+                            class="w-full text-left text-sm px-3 py-2 rounded-lg transition {{ $sortBy === $value ? 'bg-gray-50 text-gray-700 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}"
                         >
                             {{ $label }}
                         </button>
@@ -65,14 +65,14 @@
                 <div class="space-y-1 max-h-64 overflow-y-auto">
                     <button
                         wire:click="selectCategory(null)"
-                        class="w-full text-left text-sm px-3 py-2 rounded-lg transition {{ is_null($categoryId) ? 'bg-green-50 text-green-700 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}"
+                        class="w-full text-left text-sm px-3 py-2 rounded-lg transition {{ is_null($categoryId) ? 'bg-gray-50 text-gray-700 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}"
                     >
                         Semua Kategori
                     </button>
                     @foreach ($this->categories as $category)
                         <button
                             wire:click="selectCategory({{ $category->id }})"
-                            class="w-full text-left text-sm px-3 py-2 rounded-lg transition flex justify-between items-center {{ $categoryId === $category->id ? 'bg-green-50 text-green-700 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}"
+                            class="w-full text-left text-sm px-3 py-2 rounded-lg transition flex justify-between items-center {{ $categoryId === $category->id ? 'bg-gray-50 text-gray-700 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}"
                         >
                             <span class="truncate">{{ $category->name }}</span>
                             <span class="text-[10px] text-gray-400 ml-1 shrink-0">({{ $category->products_count }})</span>
@@ -89,13 +89,13 @@
                         type="number"
                         wire:model.live.debounce.600ms="minPrice"
                         placeholder="Harga minimum"
-                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                     />
                     <input
                         type="number"
                         wire:model.live.debounce.600ms="maxPrice"
                         placeholder="Harga maksimum"
-                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent"
                     />
                 </div>
             </div>
@@ -137,7 +137,7 @@
                                 ] as $value => $label)
                                     <button
                                         wire:click="$set('sortBy', '{{ $value }}'); $set('showFilter', false)"
-                                        class="w-full text-left text-sm px-3 py-2 rounded-lg transition {{ $sortBy === $value ? 'bg-green-50 text-green-700 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}"
+                                        class="w-full text-left text-sm px-3 py-2 rounded-lg transition {{ $sortBy === $value ? 'bg-gray-50 text-gray-700 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}"
                                     >
                                         {{ $label }}
                                     </button>
@@ -151,14 +151,14 @@
                             <div class="space-y-1">
                                 <button
                                     wire:click="selectCategory(null); $set('showFilter', false)"
-                                    class="w-full text-left text-sm px-3 py-2 rounded-lg transition {{ is_null($categoryId) ? 'bg-green-50 text-green-700 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}"
+                                    class="w-full text-left text-sm px-3 py-2 rounded-lg transition {{ is_null($categoryId) ? 'bg-gray-50 text-gray-700 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}"
                                 >
                                     Semua
                                 </button>
                                 @foreach ($this->categories as $category)
                                     <button
                                         wire:click="selectCategory({{ $category->id }}); $set('showFilter', false)"
-                                        class="w-full text-left text-sm px-3 py-2 rounded-lg transition flex justify-between items-center {{ $categoryId === $category->id ? 'bg-green-50 text-green-700 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}"
+                                        class="w-full text-left text-sm px-3 py-2 rounded-lg transition flex justify-between items-center {{ $categoryId === $category->id ? 'bg-gray-50 text-gray-700 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}"
                                     >
                                         <span class="truncate">{{ $category->name }}</span>
                                         <span class="text-[10px] text-gray-400 ml-1">({{ $category->products_count }})</span>
@@ -175,13 +175,13 @@
                                     type="number"
                                     wire:model.live.debounce.600ms="minPrice"
                                     placeholder="Harga minimum"
-                                    class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
                                 />
                                 <input
                                     type="number"
                                     wire:model.live.debounce.600ms="maxPrice"
                                     placeholder="Harga maksimum"
-                                    class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    class="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
                                 />
                             </div>
                         </div>
@@ -206,9 +206,9 @@
             @if ($search || $categoryId || $minPrice || $maxPrice)
                 <div class="flex flex-wrap gap-2 mb-4">
                     @if ($search)
-                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
                             "{{ $search }}"
-                            <button wire:click="$set('search', '')" class="hover:text-green-900">
+                            <button wire:click="$set('search', '')" class="hover:text-gray-900">
                                 <flux:icon.x-mark class="w-3 h-3" />
                             </button>
                         </span>
@@ -216,26 +216,26 @@
                     @if ($categoryId)
                         @php $activeCat = $this->categories->firstWhere('id', $categoryId) @endphp
                         @if ($activeCat)
-                            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
                                 {{ $activeCat->name }}
-                                <button wire:click="selectCategory(null)" class="hover:text-green-900">
+                                <button wire:click="selectCategory(null)" class="hover:text-gray-900">
                                     <flux:icon.x-mark class="w-3 h-3" />
                                 </button>
                             </span>
                         @endif
                     @endif
                     @if ($minPrice)
-                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
                             Min Rp{{ number_format($minPrice, 0, ',', '.') }}
-                            <button wire:click="$set('minPrice', null)" class="hover:text-green-900">
+                            <button wire:click="$set('minPrice', null)" class="hover:text-gray-900">
                                 <flux:icon.x-mark class="w-3 h-3" />
                             </button>
                         </span>
                     @endif
                     @if ($maxPrice)
-                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
                             Max Rp{{ number_format($maxPrice, 0, ',', '.') }}
-                            <button wire:click="$set('maxPrice', null)" class="hover:text-green-900">
+                            <button wire:click="$set('maxPrice', null)" class="hover:text-gray-900">
                                 <flux:icon.x-mark class="w-3 h-3" />
                             </button>
                         </span>
@@ -253,7 +253,7 @@
                     <span>Urutkan:</span>
                     <select
                         wire:model.live="sortBy"
-                        class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-gray-500"
                     >
                         <option value="latest">Terbaru</option>
                         <option value="popular">Terlaris</option>
@@ -287,7 +287,7 @@
                         <p class="text-sm text-gray-400 mb-4">Coba ubah kata kunci atau filter pencarian</p>
                         <button
                             wire:click="resetFilters"
-                            class="px-5 py-2 rounded-xl bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition"
+                            class="px-5 py-2 rounded-xl bg-gray-600 text-white text-sm font-bold hover:bg-gray-700 transition"
                         >
                             Reset Filter
                         </button>
@@ -315,7 +315,7 @@
 
                                 <!-- Product Details -->
                                 <div class="p-3 flex flex-col flex-1">
-                                    <a href="{{ route('product.detail', ['slug' => $product->slug]) }}" class="text-sm text-gray-800 line-clamp-2 mb-2 hover:text-green-600 transition" wire:navigate>
+                                    <a href="{{ route('product.detail', ['slug' => $product->slug]) }}" class="text-sm text-gray-800 line-clamp-2 mb-2 hover:text-gray-600 transition" wire:navigate>
                                         {{ $product->name }}
                                     </a>
                                     <div class="mt-auto">

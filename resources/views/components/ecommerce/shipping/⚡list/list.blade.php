@@ -3,7 +3,7 @@
     @auth
         <div class="flex justify-between items-center px-6 pt-5 pb-4 border-b">
             <h2 class="font-bold text-gray-900">Alamat Pengiriman</h2>
-            <flux:button size="sm" variant="primary" color="green" icon="plus" wire:click="openCreate">
+            <flux:button size="sm" variant="primary" icon="plus" wire:click="openCreate">
                 Tambah Alamat
             </flux:button>
         </div>
@@ -13,14 +13,14 @@
                 <div
                     wire:key="addr-{{ $location->id }}"
                     wire:click="selectAddress({{ $location->id }})"
-                    class="border rounded-xl p-4 cursor-pointer transition {{ $selectedLocationId === $location->id ? 'border-green-500 bg-green-50' : 'hover:border-gray-300' }}"
+                    class="border rounded-xl p-4 cursor-pointer transition {{ $selectedLocationId === $location->id ? 'border-gray-500 bg-gray-50' : 'hover:border-gray-300' }}"
                 >
                     <div class="flex items-start justify-between gap-3">
                         <!-- Radio indicator -->
                         <div class="mt-0.5 shrink-0">
-                            <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center {{ $selectedLocationId === $location->id ? 'border-green-500' : 'border-gray-300' }}">
+                            <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center {{ $selectedLocationId === $location->id ? 'border-gray-500' : 'border-gray-300' }}">
                                 @if ($selectedLocationId === $location->id)
-                                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                                    <div class="w-2 h-2 rounded-full bg-gray-500"></div>
                                 @endif
                             </div>
                         </div>
@@ -69,7 +69,7 @@
                 <div class="text-center py-8">
                     <flux:icon.map-pin class="w-10 h-10 text-gray-200 mx-auto mb-3" />
                     <p class="text-sm text-gray-500">Belum ada alamat tersimpan.</p>
-                    <flux:button size="sm" variant="primary" color="green" class="mt-3" wire:click="openCreate">
+                    <flux:button size="sm" variant="primary" color="gray" class="mt-3" wire:click="openCreate">
                         + Tambah Alamat
                     </flux:button>
                 </div>
@@ -195,8 +195,8 @@
             @endif
 
             @if($guest_area_string)
-                <div class="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-800">
-                    <flux:icon.check-circle class="w-4 h-4 text-green-600 shrink-0" />
+                <div class="flex items-center gap-2 p-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800">
+                    <flux:icon.check-circle class="w-4 h-4 text-gray-600 shrink-0" />
                     <span><span class="font-bold">Area terpilih:</span> {{ $guest_area_string }} ({{ $guest_postal_code }})</span>
                 </div>
             @endif

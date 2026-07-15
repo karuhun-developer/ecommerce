@@ -24,35 +24,35 @@
                 <div class="flex items-center gap-3">
                     <span class="flex items-center gap-1 w-12 text-gray-600"><flux:icon.star class="w-3.5 h-3.5 text-yellow-400 fill-yellow-400"/> 5</span>
                     <div class="h-2 flex-1 bg-gray-200 rounded-full overflow-hidden">
-                        <div class="h-full bg-green-500 rounded-full" style="width: 85%"></div>
+                        <div class="h-full bg-gray-500 rounded-full" style="width: 85%"></div>
                     </div>
                     <span class="w-8 text-right text-gray-400">382</span>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="flex items-center gap-1 w-12 text-gray-600"><flux:icon.star class="w-3.5 h-3.5 text-yellow-400 fill-yellow-400"/> 4</span>
                     <div class="h-2 flex-1 bg-gray-200 rounded-full overflow-hidden">
-                        <div class="h-full bg-green-500 rounded-full" style="width: 10%"></div>
+                        <div class="h-full bg-gray-500 rounded-full" style="width: 10%"></div>
                     </div>
                     <span class="w-8 text-right text-gray-400">45</span>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="flex items-center gap-1 w-12 text-gray-600"><flux:icon.star class="w-3.5 h-3.5 text-yellow-400 fill-yellow-400"/> 3</span>
                     <div class="h-2 flex-1 bg-gray-200 rounded-full overflow-hidden">
-                        <div class="h-full bg-green-500 rounded-full" style="width: 3%"></div>
+                        <div class="h-full bg-gray-500 rounded-full" style="width: 3%"></div>
                     </div>
                     <span class="w-8 text-right text-gray-400">12</span>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="flex items-center gap-1 w-12 text-gray-600"><flux:icon.star class="w-3.5 h-3.5 text-yellow-400 fill-yellow-400"/> 2</span>
                     <div class="h-2 flex-1 bg-gray-200 rounded-full overflow-hidden">
-                        <div class="h-full bg-green-500 rounded-full" style="width: 1%"></div>
+                        <div class="h-full bg-gray-500 rounded-full" style="width: 1%"></div>
                     </div>
                     <span class="w-8 text-right text-gray-400">6</span>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="flex items-center gap-1 w-12 text-gray-600"><flux:icon.star class="w-3.5 h-3.5 text-yellow-400 fill-yellow-400"/> 1</span>
                     <div class="h-2 flex-1 bg-gray-200 rounded-full overflow-hidden">
-                        <div class="h-full bg-green-500 rounded-full" style="width: 1%"></div>
+                        <div class="h-full bg-gray-500 rounded-full" style="width: 1%"></div>
                     </div>
                     <span class="w-8 text-right text-gray-400">5</span>
                 </div>
@@ -63,7 +63,7 @@
         <div class="mb-8">
             <h3 class="font-bold text-gray-900 mb-3 text-sm">Filter Ulasan</h3>
             <div class="flex flex-wrap gap-2">
-                <button class="bg-green-50 text-green-700 border-green-600 border px-4 py-1.5 rounded-full text-sm font-semibold transition">Semua Ulasan</button>
+                <button class="bg-gray-50 text-gray-700 border-gray-600 border px-4 py-1.5 rounded-full text-sm font-semibold transition">Semua Ulasan</button>
                 <button class="bg-white text-gray-600 border-gray-300 hover:bg-gray-50 border px-4 py-1.5 rounded-full text-sm font-semibold transition">Dengan Foto & Video</button>
             </div>
         </div>
@@ -98,7 +98,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-4 text-sm font-semibold text-gray-500">
-                    <button class="flex items-center gap-1.5 hover:text-green-600 transition"><flux:icon.hand-thumb-up class="w-4 h-4"/> Membantu</button>
+                    <button class="flex items-center gap-1.5 hover:text-gray-600 transition"><flux:icon.hand-thumb-up class="w-4 h-4"/> Membantu</button>
                 </div>
             </div>
 
@@ -125,10 +125,10 @@
                 </div>
                 <p class="text-sm text-gray-700 mb-4 leading-relaxed">Sesuai deskripsi, respon penjual cepat. Mantap!</p>
                 <div class="flex items-center gap-4 text-sm font-semibold text-gray-500">
-                    <button class="flex items-center gap-1.5 hover:text-green-600 transition"><flux:icon.hand-thumb-up class="w-4 h-4"/> Membantu</button>
+                    <button class="flex items-center gap-1.5 hover:text-gray-600 transition"><flux:icon.hand-thumb-up class="w-4 h-4"/> Membantu</button>
                 </div>
             </div>
-            <button class="text-green-600 font-bold text-sm w-full py-2 hover:bg-green-50 rounded-xl transition">Lihat Semua Ulasan</button>
+            <button class="text-gray-600 font-bold text-sm w-full py-2 hover:bg-gray-50 rounded-xl transition">Lihat Semua Ulasan</button>
         </div>
     </div>
 </div>

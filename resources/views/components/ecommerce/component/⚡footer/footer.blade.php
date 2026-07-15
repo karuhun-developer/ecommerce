@@ -8,22 +8,22 @@
                 </flux:heading>
                 <ul class="space-y-3 text-sm text-gray-500">
                     <li>
-                        <a href="#" class="hover:text-green-600" wire:navigate>
+                        <a href="#" wire:navigate>
                             Tentang {{ config('app.name') }}
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="hover:text-green-600" wire:navigate>
+                        <a href="#" wire:navigate>
                             Hak Kekayaan Intelektual
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="hover:text-green-600" wire:navigate>
+                        <a href="#" wire:navigate>
                             Karir
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="hover:text-green-600" wire:navigate>
+                        <a href="#" wire:navigate>
                             Blog
                         </a>
                     </li>
@@ -35,12 +35,12 @@
                 </flux:heading>
                 <ul class="space-y-3 text-sm text-gray-500">
                     <li>
-                        <a href="#" class="hover:text-green-600" wire:navigate>
+                        <a href="#" wire:navigate>
                             Tagihan & Top Up
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="hover:text-green-600" wire:navigate>
+                        <a href="#" wire:navigate>
                             Tukar Tambah Handphone
                         </a>
                     </li>
@@ -52,20 +52,20 @@
                 </flux:heading>
                 <ul class="space-y-3 text-sm text-gray-500">
                     <li>
-                        <a href="#" class="hover:text-green-600">
+                        <a href="#" wire:navigate>
                             Pusat Edukasi Seller
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="hover:text-green-600">
+                        <a href="#" wire:navigate>
                             Daftar Official Store
                         </a>
                     </li>
                 </ul>
             </div>
             <div>
-                <a href="/" class="text-3xl font-black text-green-600 tracking-tight block mb-4">
-                    {{ config('app.name') }}<span class="text-gray-800">.</span>
+                <a href="/" class="text-3xl font-black tracking-tight block mb-4" wire:navigate>
+                    {{ config('app.name') }}.
                 </a>
                 <flux:text class="mb-4">
                     Download aplikasi {{ config('app.name') }} sekarang.
@@ -77,7 +77,7 @@
             </div>
         </div>
         <div class="max-w-7xl mx-auto px-6 pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-4">
-            <flux:text>© 2026 Nexa. All rights reserved.</flux:text>
+            <flux:text>© {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</flux:text>
             <div class="flex gap-4 text-gray-400">
                 <flux:icon.chat-bubble-oval-left class="w-5 h-5 hover:text-gray-600 cursor-pointer" />
                 <flux:icon.camera class="w-5 h-5 hover:text-gray-600 cursor-pointer" />

@@ -16,7 +16,7 @@
                             <div class="text-center py-12">
                                 <flux:icon.shopping-bag class="w-16 h-16 text-gray-300 mx-auto mb-4" />
                                 <flux:text class="text-gray-500 font-medium">Keranjangmu kosong.</flux:text>
-                                <flux:button href="{{ route('home') }}" variant="primary" color="green" class="mt-4" wire:navigate>
+                                <flux:button href="{{ route('home') }}" variant="primary" class="mt-4" wire:navigate>
                                     Mulai Belanja
                                 </flux:button>
                             </div>
@@ -77,7 +77,7 @@
                     <flux:text class="font-bold" x-text="'Rp ' + window.numberToCurrency($store.cart.total)"></flux:text>
                 </div>
                 <div class="mt-6">
-                    <flux:button href="{{ route('cart') }}" variant="primary" color="green" class="w-full justify-center text-base py-3" wire:navigate>
+                    <flux:button href="{{ route('cart') }}" variant="primary" class="w-full justify-center text-base py-3" wire:navigate>
                         Lihat Keranjang
                     </flux:button>
                 </div>

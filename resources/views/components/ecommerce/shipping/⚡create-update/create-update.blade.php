@@ -82,8 +82,8 @@
                 @endif
 
                 @if($area_string)
-                    <div class="flex items-center gap-2 p-3 bg-green-50 text-green-800 rounded-xl text-sm border border-green-200">
-                        <flux:icon.check-circle class="w-4 h-4 text-green-600 shrink-0" />
+                    <div class="flex items-center gap-2 p-3 bg-gray-50 text-gray-800 rounded-xl text-sm border border-gray-200">
+                        <flux:icon.check-circle class="w-4 h-4 text-gray-600 shrink-0" />
                         <span><span class="font-bold">Area terpilih:</span> {{ $area_string }} ({{ $postal_code }})</span>
                     </div>
                 @endif
@@ -170,7 +170,7 @@
             <!-- Actions -->
             <div class="flex justify-end gap-3 pt-2">
                 <flux:button type="button" @click="$flux.modal('shippingFormModal').close()">Batal</flux:button>
-                <flux:button type="submit" variant="primary" color="green">
+                <flux:button type="submit" variant="primary">
                     {{ $id ? 'Simpan Perubahan' : 'Tambah Alamat' }}
                 </flux:button>
             </div>

@@ -121,7 +121,7 @@
                             class="ml-auto cursor-pointer"
                             @click="deleteChecked()"
                         >
-                            Hapus
+                            <flux:icon.trash class="w-4 h-4 mr-1" />
                         </flux:button>
                     </div>
 
@@ -131,7 +131,7 @@
                             <flux:icon.shopping-bag class="w-20 h-20 text-gray-200 mx-auto mb-4" />
                             <h2 class="text-xl font-bold text-gray-800 mb-2">Keranjangmu masih kosong</h2>
                             <p class="text-gray-500 mb-6">Yuk, mulai penuhi dengan barang-barang impianmu!</p>
-                            <flux:button href="{{ route('home') }}" variant="primary" color="green" wire:navigate>
+                            <flux:button href="{{ route('home') }}" variant="primary" wire:navigate>
                                 Mulai Belanja
                             </flux:button>
                         </div>
@@ -206,7 +206,7 @@
                         </div>
                         <div class="flex justify-between text-gray-600">
                             <span>Total Diskon Barang</span>
-                            <span class="text-green-600">-Rp0</span>
+                            <span class="text-gray-600">-Rp0</span>
                         </div>
                     </div>
 
@@ -220,7 +220,6 @@
                     <flux:button
                         x-bind:href="'{{ route('checkout') }}?items=' + window.Sqids.encode(checked)"
                         variant="primary"
-                        color="green"
                         class="w-full cursor-pointer"
                         x-bind:disabled="checkedCount === 0"
                         wire:navigate

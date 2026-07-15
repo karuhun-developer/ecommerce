@@ -13,12 +13,12 @@
 
         <!-- Tabs -->
         <div class="flex gap-6 border-b mb-6 overflow-x-auto hide-scrollbar">
-            <button wire:click="setStatus('semua')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'semua' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600' }}">Semua</button>
-            <button wire:click="setStatus('menunggu-pembayaran')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'menunggu-pembayaran' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600' }}">Menunggu Pembayaran</button>
-            <button wire:click="setStatus('proses')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'proses' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600' }}">Proses</button>
-            <button wire:click="setStatus('dikirim')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'dikirim' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600' }}">Dikirim</button>
-            <button wire:click="setStatus('sampai')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'sampai' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600' }}">Sampai</button>
-            <button wire:click="setStatus('gagal')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'gagal' ? 'text-green-600 border-b-2 border-green-600' : 'text-gray-500 hover:text-green-600' }}">Gagal</button>
+            <button wire:click="setStatus('semua')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'semua' ? 'text-gray-600 border-b-2 border-gray-600' : 'text-gray-500 hover:text-gray-600' }}">Semua</button>
+            <button wire:click="setStatus('menunggu-pembayaran')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'menunggu-pembayaran' ? 'text-gray-600 border-b-2 border-gray-600' : 'text-gray-500 hover:text-gray-600' }}">Menunggu Pembayaran</button>
+            <button wire:click="setStatus('proses')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'proses' ? 'text-gray-600 border-b-2 border-gray-600' : 'text-gray-500 hover:text-gray-600' }}">Proses</button>
+            <button wire:click="setStatus('dikirim')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'dikirim' ? 'text-gray-600 border-b-2 border-gray-600' : 'text-gray-500 hover:text-gray-600' }}">Dikirim</button>
+            <button wire:click="setStatus('sampai')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'sampai' ? 'text-gray-600 border-b-2 border-gray-600' : 'text-gray-500 hover:text-gray-600' }}">Sampai</button>
+            <button wire:click="setStatus('gagal')" class="pb-3 text-sm font-bold whitespace-nowrap {{ $status === 'gagal' ? 'text-gray-600 border-b-2 border-gray-600' : 'text-gray-500 hover:text-gray-600' }}">Gagal</button>
         </div>
 
         <div class="space-y-4">
@@ -31,11 +31,11 @@
                             <span class="text-gray-400">{{ $order->created_at->format('d M Y') }}</span>
                             
                             @if ($order->status)
-                                <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded">Berhasil</span>
+                                <flux:badge color="green" size="sm">Berhasil</flux:badge>
                             @elseif ($order->latestPayment && $order->latestPayment->expired_at && $order->latestPayment->expired_at->isPast())
-                                <span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded">Kedaluwarsa</span>
+                                <flux:badge color="red" size="sm">Kedaluwarsa</flux:badge>
                             @else
-                                <span class="bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded">Menunggu Pembayaran</span>
+                                <flux:badge color="yellow" size="sm">Menunggu Pembayaran</flux:badge>
                             @endif
 
                             <span class="text-gray-400">{{ $order->reference }}</span>
@@ -75,9 +75,9 @@
                     </div>
                     
                     <div class="border-t p-3 flex justify-end gap-2 bg-gray-50">
-                        <a href="{{ route('orders.detail', ['reference' => $order->reference]) }}" wire:navigate class="text-sm font-bold text-green-600 hover:text-green-700 border border-green-600 px-4 py-1.5 rounded-lg transition">Detail Transaksi</a>
+                        <a href="{{ route('orders.detail', ['reference' => $order->reference]) }}" wire:navigate class="text-sm font-bold text-gray-600 hover:text-gray-700 border border-gray-600 px-4 py-1.5 rounded-lg transition">Detail Transaksi</a>
                         @if (!$order->status && $order->latestPayment && (!$order->latestPayment->expired_at || $order->latestPayment->expired_at->isFuture()))
-                            <a href="{{ route('payment.show', ['reference' => $order->reference]) }}" wire:navigate class="text-sm font-bold text-white bg-green-600 hover:bg-green-700 px-4 py-1.5 rounded-lg transition">Bayar Sekarang</a>
+                            <a href="{{ route('payment.show', ['reference' => $order->reference]) }}" wire:navigate class="text-sm font-bold text-white bg-gray-600 hover:bg-gray-700 px-4 py-1.5 rounded-lg transition">Bayar Sekarang</a>
                         @endif
                     </div>
                 </div>

@@ -24,7 +24,7 @@
         qty: 1,
     }">
         <div class="mb-4">
-            <a href="{{ route('explore.index') }}" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-green-600 transition font-medium" wire:navigate>
+            <a href="{{ route('explore.index') }}" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-600 transition font-medium" wire:navigate>
                 <flux:icon.arrow-left class="w-4 h-4" />
                 Kembali
             </a>
@@ -40,7 +40,7 @@
                     <div class="flex gap-2 overflow-x-auto pb-2 hide-scrollbar flex-nowrap items-center overscroll-contain">
                         <template x-for="(img, index) in images" :key="index">
                             <div @click="activeImage = index; activeFlatProduct = img.id"
-                                :class="{'border-green-500 ring-2 ring-green-500': activeImage == index, 'border-gray-200 opacity-70': activeImage !== index}"
+                                :class="{'border-gray-500 ring-2 ring-gray-500': activeImage == index, 'border-gray-200 opacity-70': activeImage !== index}"
                                 class="w-16 h-16 rounded-xl overflow-hidden border cursor-pointer hover:opacity-100 transition shrink-0">
                                 <img :src="img.url" alt="Thumbnail" class="w-full h-full object-cover" lazy>
                             </div>
@@ -95,8 +95,8 @@
                         @foreach ($variants as $variant)
                             <button
                                 :class="{
-                                    'border-green-500 bg-green-50 text-green-700': activeFlatProduct == {{ $variant['product_flat_id'] }},
-                                    'border-gray-200 text-gray-600 hover:border-green-500': activeFlatProduct != {{ $variant['product_flat_id'] }}
+                                    'border-gray-500 bg-gray-50 text-gray-700': activeFlatProduct == {{ $variant['product_flat_id'] }},
+                                    'border-gray-200 text-gray-600 hover:border-gray-500': activeFlatProduct != {{ $variant['product_flat_id'] }}
                                 }"
                                 @click="activeFlatProduct = {{ $variant['product_flat_id'] }}; setActiveImageBasedOnFlat({{ $variant['product_flat_id'] }})"
                                 class="border px-4 py-1.5 rounded-xl text-sm font-medium transition">
@@ -110,8 +110,8 @@
                 <div>
                     <div class="border-b mb-4">
                         <nav class="flex gap-6 text-sm font-bold">
-                            <button @click="activeTab = 'description'" :class="{'text-green-600 border-b-2 border-green-600 pb-3': activeTab == 'description', 'text-gray-500 hover:text-green-600 pb-3': activeTab !== 'description'}">Detail</button>
-                            <button @click="activeTab = 'specification'" :class="{'text-green-600 border-b-2 border-green-600 pb-3': activeTab == 'specification', 'text-gray-500 hover:text-green-600 pb-3': activeTab !== 'specification'}">Spesifikasi</button>
+                            <button @click="activeTab = 'description'" :class="{'text-gray-600 border-b-2 border-gray-600 pb-3': activeTab == 'description', 'text-gray-500 hover:text-gray-600 pb-3': activeTab !== 'description'}">Detail</button>
+                            <button @click="activeTab = 'specification'" :class="{'text-gray-600 border-b-2 border-gray-600 pb-3': activeTab == 'specification', 'text-gray-500 hover:text-gray-600 pb-3': activeTab !== 'specification'}">Spesifikasi</button>
                         </nav>
                     </div>
 
@@ -181,7 +181,7 @@
                             <div class="flex items-center border rounded-xl overflow-hidden">
                                 <button @click="qty = Math.max(1, qty - 1)" class="px-3 py-1.5 text-gray-500 hover:bg-gray-100 font-bold transition">-</button>
                                 <input type="number" x-model="qty" class="w-12 text-center text-gray-900 font-medium border-0 focus:ring-0 p-0 text-sm" />
-                                <button @click="qty++" class="px-3 py-1.5 text-green-600 hover:bg-green-50 font-bold transition">+</button>
+                                <button @click="qty++" class="px-3 py-1.5 text-gray-600 hover:bg-gray-50 font-bold transition">+</button>
                             </div>
                             @if ( !$flat->is_unlimited_stock)
                                 <span class="text-sm text-gray-500">Stok Total:
@@ -200,7 +200,6 @@
                         <div class="flex flex-col gap-2">
                             <flux:button
                                 variant="primary"
-                                color="green"
                                 type="button"
                                 class="cursor-pointer"
                                 @click="$store.cart.add({
@@ -214,21 +213,35 @@
                                 }); $flux.modal('cartModal').show()">
                                 + Keranjang
                             </flux:button>
-                            <flux:button href="{{ route('checkout') }}" class="cursor-pointer">
+                            <flux:button href="{{ route('checkout') }}" class="cursor-pointer" wire:navigate>
                                 Beli Sekarang
                             </flux:button>
                         </div>
+
                         <!-- Chat | Wishlist | Share -->
-                        <div class="flex items-center justify-between mt-5 pt-4 border-t text-sm font-bold text-gray-600">
-                            <button class="flex items-center gap-1.5 hover:text-green-600 transition">
+                        {{-- justify-between --}}
+                        <div class="flex items-center justify-center mt-5 pt-4 border-t text-sm font-bold text-gray-600">
+                            {{-- <button class="flex items-center gap-1.5 hover:text-gray-600 transition cursor-pointer">
                                 <flux:icon.chat-bubble-left-ellipsis class="w-5 h-5"/> Chat
                             </button>
                             <div class="w-px h-4 bg-gray-300"></div>
-                            <button class="flex items-center gap-1.5 hover:text-green-600 transition">
+                            <button class="flex items-center gap-1.5 hover:text-gray-600 transition cursor-pointer">
                                 <flux:icon.heart class="w-5 h-5"/> Wishlist
                             </button>
-                            <div class="w-px h-4 bg-gray-300"></div>
-                            <button class="flex items-center gap-1.5 hover:text-green-600 transition">
+                            <div class="w-px h-4 bg-gray-300"></div> --}}
+                            <button class="flex items-center gap-1.5 hover:text-gray-600 transition cursor-pointer" @click="
+                                navigator.clipboard.writeText(window.location.href).then(() => {
+                                    $wire.dispatch('toast', {
+                                        type: 'success',
+                                        message: 'Link produk berhasil disalin ke clipboard.'
+                                    })
+                                }).catch(err => {
+                                    $wire.dispatch('toast', {
+                                        type: 'error',
+                                        message: 'Gagal menyalin link produk. Silakan coba lagi.'
+                                    })
+                                });
+                            ">
                                 <flux:icon.share class="w-5 h-5"/> Share
                             </button>
                         </div>
