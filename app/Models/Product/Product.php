@@ -2,6 +2,7 @@
 
 namespace App\Models\Product;
 
+use App\Models\Order\OrderReview;
 use App\Models\Shop\Shop;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Sluggable\Attributes\Sluggable;
@@ -66,5 +67,10 @@ class Product extends Model
     public function productAttributeGroups()
     {
         return $this->hasMany(ProductAttributeGroup::class);
+    }
+
+    public function reviews()
+    {
+        return $this->morphMany(OrderReview::class, 'reviewable');
     }
 }
