@@ -34,21 +34,21 @@
 
 ### 🏪 CMS / Admin Dashboard
 
-| Feature                                           | Status     |
-| ------------------------------------------------- | ---------- |
-| Dashboard overview                                | ✅ Done    |
-| Product management (CRUD + variants + attributes) | ✅ Done    |
-| Product category management                       | ✅ Done    |
-| Attribute & attribute group management            | ✅ Done    |
-| Shop management                                   | ✅ Done    |
-| User management                                   | ✅ Done    |
-| Role & permission management (Spatie)             | ✅ Done    |
-| Navigation menu builder                           | ✅ Done    |
-| Activity log viewer                               | ✅ Done    |
-| Laravel Pulse monitoring dashboard                | ✅ Done    |
-| Log viewer (Opcodes Log Viewer)                   | ✅ Done    |
-| Review product & shop                             | ✅ Done    |
-| Dashboard (User/Analytics)                        | ✅ Ongoing |
+| Feature                                           | Status  |
+| ------------------------------------------------- | ------- |
+| Dashboard overview                                | ✅ Done |
+| Product management (CRUD + variants + attributes) | ✅ Done |
+| Product category management                       | ✅ Done |
+| Attribute & attribute group management            | ✅ Done |
+| Shop management                                   | ✅ Done |
+| User management                                   | ✅ Done |
+| Role & permission management (Spatie)             | ✅ Done |
+| Navigation menu builder                           | ✅ Done |
+| Activity log viewer                               | ✅ Done |
+| Laravel Pulse monitoring dashboard                | ✅ Done |
+| Log viewer (Opcodes Log Viewer)                   | ✅ Done |
+| Review product & shop                             | ✅ Done |
+| Dashboard (User/Analytics)                        | ✅ Done |
 
 ### 🚧 In Progress / Roadmap
 
