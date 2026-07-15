@@ -22,23 +22,10 @@ class SuperadminMenuSeeder extends Seeder
         $this->dashboardMenu();
         $this->shopMenu();
         $this->orderMenu();
+        $this->reviewMenu();
         $this->productMenu();
         $this->attributeMenu();
-        $this->reviewMenu();
         $this->managementMenu();
-    }
-
-    public function reviewMenu()
-    {
-        Menu::create([
-            'role_id' => $this->role->id,
-            'name' => 'Reviews',
-            'url' => 'cms.review.index',
-            'icon' => 'star',
-            'order' => 195,
-            'active_pattern' => 'cms.review.index',
-            'status' => 1,
-        ]);
     }
 
     public function dashboardMenu()
@@ -76,6 +63,19 @@ class SuperadminMenuSeeder extends Seeder
             'icon' => 'shopping-bag',
             'order' => 190,
             'active_pattern' => 'cms.order.index,cms.order.show',
+            'status' => 1,
+        ]);
+    }
+
+    public function reviewMenu()
+    {
+        Menu::create([
+            'role_id' => $this->role->id,
+            'name' => 'Reviews',
+            'url' => 'cms.review.index',
+            'icon' => 'star',
+            'order' => 195,
+            'active_pattern' => 'cms.review.index',
             'status' => 1,
         ]);
     }
