@@ -33,10 +33,10 @@ class SuperadminMenuSeeder extends Seeder
         Menu::create([
             'role_id' => $this->role->id,
             'name' => 'Reviews',
-            'url' => 'cms.management.review',
+            'url' => 'cms.review.index',
             'icon' => 'star',
             'order' => 195,
-            'active_pattern' => 'cms.management.review',
+            'active_pattern' => 'cms.review.index',
             'status' => 1,
         ]);
     }

@@ -6,7 +6,7 @@ use Artesaos\SEOTools\Facades\SEOMeta;
 use Artesaos\SEOTools\Facades\OpenGraph;
 use Illuminate\View\View;
 
-name('cms.management.review');
+name('cms.review.index');
 
 render(function (View $view) {
     $title = 'Review Management';
@@ -30,7 +30,6 @@ render(function (View $view) {
 
     <flux:breadcrumbs>
         <flux:breadcrumbs.item icon="home" href="{{ route('cms.dashboard') }}" />
-        <flux:breadcrumbs.item>Managements</flux:breadcrumbs.item>
         <flux:breadcrumbs.item>Reviews</flux:breadcrumbs.item>
     </flux:breadcrumbs>
 
@@ -41,5 +40,5 @@ render(function (View $view) {
         </div>
     </div>
 
-    <livewire:cms.management.review.table lazy />
+    <livewire:cms.review.table lazy />
 </x-layouts.cms>

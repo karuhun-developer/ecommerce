@@ -4,17 +4,13 @@ use App\Actions\Ecommerce\Review\AcceptOrderReviewAction;
 use App\Actions\Ecommerce\Review\RejectOrderReviewAction;
 use App\Actions\Ecommerce\Review\DeleteOrderReviewAction;
 use App\Models\Order\OrderReview;
-use App\Traits\WithFilter;
+use App\Livewire\BaseComponent;
+use Livewire\Attributes\Url;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
-use Livewire\Component;
-use Livewire\WithPagination;
-use Livewire\Attributes\Url;
 
-new class extends Component
+new class extends BaseComponent
 {
-    use WithFilter, WithPagination;
-
     #[Url]
     public $status = 'pending';
 
