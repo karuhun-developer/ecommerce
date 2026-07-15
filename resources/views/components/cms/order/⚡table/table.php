@@ -7,14 +7,19 @@ use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
+use Livewire\WithPagination;
+
 new class extends Component
 {
+    use WithPagination;
+
     #[Url]
     public $status = 'semua'; // semua, menunggu-pembayaran, proses, dikirim, sampai, gagal
 
     public function setStatus($status)
     {
         $this->status = $status;
+        $this->resetPage();
     }
 
     #[Computed]
@@ -58,7 +63,7 @@ new class extends Component
             });
         }
 
-        return $query->get();
+        return $query->paginate(10);
     }
 
     #[On('kirimPesanan')]

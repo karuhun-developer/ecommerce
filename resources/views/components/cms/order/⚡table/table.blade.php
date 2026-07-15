@@ -98,4 +98,8 @@
             @endforelse
         </flux:table.rows>
     </flux:table>
+    
+    <div class="mt-4">
+        {{ $this->orders->links() }}
+    </div>
 </div>

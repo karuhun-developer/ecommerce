@@ -95,6 +95,10 @@
                     <p class="text-gray-500 mt-1">Anda belum memiliki transaksi di kategori ini.</p>
                 </div>
             @endforelse
+            
+            <div class="mt-6">
+                {{ $this->orders->links() }}
+            </div>
         </div>
     </div>
 </div>
