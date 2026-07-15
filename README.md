@@ -1,7 +1,7 @@
 <h1 align="center">🛒 Ecommerce Platform</h1>
 
 <p align="center">
-  A full-featured multi-shop ecommerce platform built with Laravel 13, Livewire 4, and Flux UI.
+  Platform e-commerce multi-toko (multi-shop) berfitur lengkap yang dibangun dengan Laravel 13, Livewire 4, dan Flux UI.
 </p>
 
 <p align="center">
@@ -14,68 +14,68 @@
 
 ---
 
-## ✨ Features
+## ✨ Fitur
 
-### 🛍️ Storefront (Customer)
+### 🛍️ Storefront (Pelanggan)
 
-| Feature                                        | Status  |
-| ---------------------------------------------- | ------- |
-| Homepage with featured products & categories   | ✅ Done |
-| Product catalog with category filtering        | ✅ Done |
-| Product detail page with variants & attributes | ✅ Done |
-| Shopping cart (session/auth)                   | ✅ Done |
-| Checkout with address & shipping selection     | ✅ Done |
-| Payment via **Midtrans** (Snap)                | ✅ Done |
-| Order confirmation & email notification        | ✅ Done |
-| Guest order tracking by reference code         | ✅ Done |
-| Order history (authenticated users)            | ✅ Done |
-| Order detail page                              | ✅ Done |
-| Dynamic SEO (OpenGraph, TwitterCard, JSON-LD)  | ✅ Done |
+| Fitur                                                | Status  |
+| ---------------------------------------------------- | ------- |
+| Beranda dengan produk & kategori unggulan            | ✅ Selesai |
+| Katalog produk dengan filter kategori                | ✅ Selesai |
+| Halaman detail produk dengan varian & atribut        | ✅ Selesai |
+| Keranjang belanja (session/auth)                     | ✅ Selesai |
+| Checkout dengan pilihan alamat & pengiriman          | ✅ Selesai |
+| Pembayaran via **Midtrans** (Snap)                   | ✅ Selesai |
+| Konfirmasi pesanan & notifikasi email                | ✅ Selesai |
+| Lacak pesanan guest via kode referensi               | ✅ Selesai |
+| Riwayat pesanan (pengguna login)                     | ✅ Selesai |
+| Halaman detail pesanan                               | ✅ Selesai |
+| Dynamic SEO (OpenGraph, TwitterCard, JSON-LD)        | ✅ Selesai |
 
 ### 🏪 CMS / Admin Dashboard
 
-| Feature                                           | Status  |
-| ------------------------------------------------- | ------- |
-| Dashboard overview                                | ✅ Done |
-| Product management (CRUD + variants + attributes) | ✅ Done |
-| Product category management                       | ✅ Done |
-| Attribute & attribute group management            | ✅ Done |
-| Shop management                                   | ✅ Done |
-| User management                                   | ✅ Done |
-| Role & permission management (Spatie)             | ✅ Done |
-| Navigation menu builder                           | ✅ Done |
-| Activity log viewer                               | ✅ Done |
-| Laravel Pulse monitoring dashboard                | ✅ Done |
-| Log viewer (Opcodes Log Viewer)                   | ✅ Done |
-| Review product & shop                             | ✅ Done |
-| Dashboard (User/Analytics)                        | ✅ Done |
+| Fitur                                                   | Status  |
+| ------------------------------------------------------- | ------- |
+| Dashboard overview                                      | ✅ Selesai |
+| Manajemen produk (CRUD + varian + atribut)              | ✅ Selesai |
+| Manajemen kategori produk                               | ✅ Selesai |
+| Manajemen atribut & grup atribut                        | ✅ Selesai |
+| Manajemen toko (Shop management)                        | ✅ Selesai |
+| Manajemen pengguna (User management)                    | ✅ Selesai |
+| Manajemen peran & hak akses (Role & permission)         | ✅ Selesai |
+| Navigation menu builder                                 | ✅ Selesai |
+| Activity log viewer                                     | ✅ Selesai |
+| Laravel Pulse monitoring dashboard                      | ✅ Selesai |
+| Log viewer (Opcodes Log Viewer)                         | ✅ Selesai |
+| Validasi & ulasan produk / toko (Review product & shop) | ✅ Selesai |
+| Dashboard Analitik Pengguna (User/Analytics)            | ✅ Selesai |
 
-### 🚧 In Progress / Roadmap
+### 🚧 Dalam Proses / Roadmap
 
-| Feature                                       | Status     |
-| --------------------------------------------- | ---------- |
-| Shop detail page (public storefront per shop) | 🔄 Ongoing |
-| Register as a shop owner (multi-shop mode)    | 🔄 Ongoing |
-| Banner management (CMS)                       | 🔄 Ongoing |
+| Fitur                                           | Status     |
+| ----------------------------------------------- | ---------- |
+| Halaman detail toko (public storefront per shop)| 🔄 Berjalan |
+| Pendaftaran pemilik toko (multi-shop mode)      | 🔄 Berjalan |
+| Manajemen banner (CMS)                          | 🔄 Berjalan |
 
 ---
 
 ## 🔗 Integrations & Webhooks Setup
 
-To use the full functionality of payments and shipping, you must set up an account with Midtrans and Biteship, then configure their API keys and Webhooks.
+Untuk menggunakan fungsionalitas penuh pembayaran dan pengiriman, Anda harus menyiapkan akun Midtrans dan Biteship, lalu mengkonfigurasi API key dan Webhook-nya.
 
-1. **Midtrans (Payments)**
-    - Register/Login: [https://dashboard.midtrans.com/login](https://dashboard.midtrans.com/login)
-    - Configure your `.env` with `MIDTRANS_MERCHANT_ID`, `MIDTRANS_SERVER_KEY`, and `MIDTRANS_CLIENT_KEY`.
-    - Set the webhook/notification URL in the Midtrans dashboard to: `https://your-domain.com/api/v1/callback/midtrans`
+1. **Midtrans (Pembayaran)**
+    - Daftar/Masuk: [https://dashboard.midtrans.com/login](https://dashboard.midtrans.com/login)
+    - Konfigurasi file `.env` Anda dengan `MIDTRANS_MERCHANT_ID`, `MIDTRANS_SERVER_KEY`, dan `MIDTRANS_CLIENT_KEY`.
+    - Atur URL webhook/notification di dashboard Midtrans ke: `https://domain-anda.com/api/v1/callback/midtrans`
 
-2. **Biteship (Shipping & Tracking)**
-    - Register/Login: [https://biteship.com/en](https://biteship.com/en)
-    - Configure your `.env` with `BITESHIP_API_KEY`.
-    - Set the webhook URL in the Biteship dashboard to: `https://your-domain.com/api/v1/callback/biteship`
+2. **Biteship (Pengiriman & Pelacakan)**
+    - Daftar/Masuk: [https://biteship.com/en](https://biteship.com/en)
+    - Konfigurasi file `.env` Anda dengan `BITESHIP_API_KEY`.
+    - Atur URL webhook di dashboard Biteship ke: `https://domain-anda.com/api/v1/callback/biteship`
 
-> **Note on Biteship Webhook Setup:**
-> When you first add the webhook URL in the Biteship dashboard, they will send a test payload to verify the endpoint. To successfully verify, you **must temporarily** update the `handle` method in `app/Http/Controllers/Api/V1/Callback/BiteshipController.php` to immediately return a 200 response.
+> **Catatan untuk Setup Webhook Biteship:**
+> Saat pertama kali Anda menambahkan URL webhook di dashboard Biteship, mereka akan mengirimkan test payload untuk memverifikasi endpoint tersebut. Untuk memverifikasi dengan sukses, Anda **harus sementara** mengubah method `handle` di `app/Http/Controllers/Api/V1/Callback/BiteshipController.php` agar langsung me-return response 200.
 >
 > ```php
 > public function handle(array $payload)
@@ -84,14 +84,14 @@ To use the full functionality of payments and shipping, you must set up an accou
 >         'request' => $payload,
 >     ]);
 >
->     // Temporarily return 200 for Biteship webhook verification
+>     // Return 200 sementara untuk verifikasi webhook Biteship
 >     return response()->json([], 200);
 >
->     // ... original logic
+>     // ... logika asli
 > }
 > ```
 >
-> Once verified, you can remove or move the early return so actual webhooks process correctly.
+> Setelah terverifikasi, Anda dapat menghapus atau memindahkan `return` sementara tersebut agar webhook asli dapat diproses dengan benar.
 
 ---
 
@@ -101,7 +101,7 @@ To use the full functionality of payments and shipping, you must set up an accou
 
 ### Backend
 
-| Package                  | Version | Purpose                      |
+| Package                  | Version | Kegunaan                     |
 | ------------------------ | ------- | ---------------------------- |
 | **PHP**                  | 8.4     | Runtime                      |
 | **Laravel**              | 13      | Core framework               |
@@ -120,7 +120,7 @@ To use the full functionality of payments and shipping, you must set up an accou
 
 ### Frontend
 
-| Package               | Version | Purpose                       |
+| Package               | Version | Kegunaan                      |
 | --------------------- | ------- | ----------------------------- |
 | **Flux UI**           | v2      | Livewire UI component library |
 | **Livewire Blaze**    | v1      | Blade component optimization  |
@@ -130,7 +130,7 @@ To use the full functionality of payments and shipping, you must set up an accou
 
 ### Dev Tools
 
-| Package           | Purpose                        |
+| Package           | Kegunaan                       |
 | ----------------- | ------------------------------ |
 | **Laravel Pint**  | Code style fixer               |
 | **Pest PHP v4**   | Testing framework              |
@@ -141,7 +141,7 @@ To use the full functionality of payments and shipping, you must set up an accou
 
 ### Third-party Integrations
 
-| Service      | Purpose                             |
+| Layanan      | Kegunaan                            |
 | ------------ | ----------------------------------- |
 | **Midtrans** | Payment gateway (Snap)              |
 | **Biteship** | Shipping rates & real-time tracking |
@@ -150,35 +150,35 @@ To use the full functionality of payments and shipping, you must set up an accou
 
 ## 📁 Project Structure
 
-```
+```text
 ├── app/
 │   ├── Actions/
-│   │   ├── Cms/            # CMS-related actions (CRUD for products, shops, users, etc.)
-│   │   └── Ecommerce/      # Storefront actions (checkout, shipping, payment, location)
+│   │   ├── Cms/            # CMS-related actions (CRUD untuk produk, toko, pengguna, dll.)
+│   │   └── Ecommerce/      # Storefront actions (checkout, pengiriman, pembayaran, lokasi)
 │   ├── Models/
-│   │   ├── Product/        # Product, ProductFlat, ProductCategory, ProductAttribute, etc.
+│   │   ├── Product/        # Product, ProductFlat, ProductCategory, ProductAttribute, dll.
 │   │   ├── Order/          # Order, OrderShop, OrderShopItem, OrderShopShipment
-│   │   ├── Shop/           # Shop model
-│   │   ├── Payment/        # Payment model
-│   │   ├── Location/       # Saved customer addresses
-│   │   ├── Attribute/      # Attribute groups & values
+│   │   ├── Shop/           # Model Shop (toko)
+│   │   ├── Payment/        # Model Payment (pembayaran)
+│   │   ├── Location/       # Alamat pelanggan yang tersimpan
+│   │   ├── Attribute/      # Grup atribut & nilai atribut
 │   │   └── Menu/           # CMS navigation menus
 │   └── Mail/
-│       └── OrderPlaced.php # Transactional order confirmation email
+│       └── OrderPlaced.php # Email transaksional konfirmasi pesanan
 ├── resources/views/
 │   ├── pages/              # Folio file-based routes
-│   │   ├── index.blade.php         # Homepage
-│   │   ├── explore/                # Product catalog & category pages
-│   │   ├── product/                # Product detail page
+│   │   ├── index.blade.php         # Beranda
+│   │   ├── explore/                # Katalog produk & halaman kategori
+│   │   ├── product/                # Halaman detail produk
 │   │   ├── cart.blade.php
 │   │   ├── checkout.blade.php
-│   │   ├── orders/                 # Order history, detail, guest check
-│   │   ├── payment/                # Payment page
-│   │   ├── settings/               # User settings (profile, password, 2FA, appearance)
-│   │   └── cms/                    # CMS / admin pages
+│   │   ├── orders/                 # Riwayat pesanan, detail, pengecekan guest
+│   │   ├── payment/                # Halaman pembayaran
+│   │   ├── settings/               # Pengaturan akun (profil, password, 2FA, tampilan)
+│   │   └── cms/                    # Halaman CMS / panel admin
 │   └── components/
-│       ├── ecommerce/      # Livewire ecommerce components (⚡ prefix)
-│       └── layouts/        # App layouts (public ecommerce, CMS)
+│       ├── ecommerce/      # Livewire ecommerce components (awalan ⚡)
+│       └── layouts/        # Layout aplikasi (ecommerce publik, CMS)
 └── database/
     ├── migrations/
     └── seeders/
@@ -186,39 +186,39 @@ To use the full functionality of payments and shipping, you must set up an accou
 
 ---
 
-## 🚀 Installation
+## 🚀 Instalasi
 
-### Requirements
+### Persyaratan Sistem
 
 - PHP >= 8.4
 - Composer
 - Node.js >= 20 + npm/yarn
-- SQLite (default) or MySQL/PostgreSQL
-- Redis (optional, for cache/queue optimization)
+- SQLite (bawaan) atau MySQL/PostgreSQL
+- Redis (opsional, untuk optimasi cache/queue)
 
-### Quick Setup
+### Setup Cepat
 
 ```bash
-# 1. Clone the repository
+# 1. Clone repositori
 git clone https://github.com/karuhun-developer/ecommerce.git
 cd ecommerce
 
-# 2. Run the all-in-one setup script
+# 2. Jalankan script all-in-one setup
 composer run setup
 
-# 3. Configure your .env (see environment section below)
+# 3. Konfigurasi .env Anda (lihat bagian Konfigurasi Environment di bawah)
 cp .env.example .env
 
-# 4. Link storage
+# 4. Hubungkan storage (storage:link)
 php artisan storage:link
 
-# 5. Start the development server
+# 5. Jalankan development server
 composer run dev
 ```
 
-> `composer run setup` will automatically run: `composer install`, copy `.env`, generate app key, run migrations, `npm install`, and `npm run build`.
+> `composer run setup` akan secara otomatis menjalankan: `composer install`, menyalin `.env`, men-generate app key, menjalankan migrasi, `npm install`, dan `npm run build`.
 
-### Manual Setup
+### Setup Manual
 
 ```bash
 composer install
@@ -231,17 +231,17 @@ php artisan storage:link
 
 ---
 
-## ⚙️ Environment Configuration
+## ⚙️ Konfigurasi Environment
 
-Key variables to configure in your `.env`:
+Variabel penting yang perlu disesuaikan di file `.env`:
 
 ```env
-APP_NAME=YourStoreName
+APP_NAME=NamaTokoAnda
 APP_URL=http://localhost
 APP_TIMEZONE=UTC
 APP_DISPLAY_TIMEZONE=Asia/Jakarta
 
-# Database (SQLite by default, swap for MySQL if needed)
+# Database (Default SQLite, ganti ke MySQL jika diperlukan)
 DB_CONNECTION=sqlite
 # DB_HOST=127.0.0.1
 # DB_PORT=3306
@@ -249,7 +249,7 @@ DB_CONNECTION=sqlite
 # DB_USERNAME=root
 # DB_PASSWORD=
 
-# Queue — required for emails & background jobs
+# Queue — wajib untuk kirim email & background jobs
 QUEUE_CONNECTION=database
 
 # Payment Gateway — Midtrans
@@ -261,7 +261,7 @@ MIDTRANS_IS_PRODUCTION=false
 # Shipping — Biteship
 BITESHIP_API_KEY=
 
-# Single-shop mode (true = one shop, false = multi-shop)
+# Mode toko tunggal (true = 1 toko, false = multi-shop / marketplace)
 SINGLE_SHOP=true
 
 # Mail
@@ -273,91 +273,91 @@ MAIL_PASSWORD=
 MAIL_FROM_ADDRESS=hello@yourstore.com
 MAIL_FROM_NAME="${APP_NAME}"
 
-# Redis (optional)
+# Redis (opsional)
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 ```
 
 ---
 
-## 🌐 Pages & Routes
+## 🌐 Halaman & Rute
 
 ### Storefront
 
-| URL                    | Description                     |
-| ---------------------- | ------------------------------- |
-| `/`                    | Homepage                        |
-| `/explore`             | All products catalog            |
-| `/explore/{category}`  | Products filtered by category   |
-| `/product/{slug}`      | Product detail                  |
-| `/cart`                | Shopping cart                   |
-| `/checkout`            | Checkout                        |
-| `/payment/{reference}` | Payment page (noindex)          |
-| `/orders`              | My orders (auth required)       |
-| `/orders/check`        | Guest order lookup by reference |
-| `/orders/{reference}`  | Order detail (noindex)          |
+| URL                    | Keterangan                       |
+| ---------------------- | -------------------------------- |
+| `/`                    | Beranda (Homepage)               |
+| `/explore`             | Semua katalog produk             |
+| `/explore/{category}`  | Produk dengan filter kategori    |
+| `/product/{slug}`      | Detail produk                    |
+| `/cart`                | Keranjang belanja                |
+| `/checkout`            | Checkout                         |
+| `/payment/{reference}` | Halaman pembayaran (noindex)     |
+| `/orders`              | Pesanan saya (wajib login)       |
+| `/orders/check`        | Cek pesanan guest via kode       |
+| `/orders/{reference}`  | Detail pesanan (noindex)         |
 
-### Settings
+### Pengaturan Akun
 
-| URL                    | Description                     |
+| URL                    | Keterangan                      |
 | ---------------------- | ------------------------------- |
-| `/settings/profile`    | Profile settings                |
-| `/settings/password`   | Change password                 |
-| `/settings/two-factor` | Two-factor authentication (2FA) |
-| `/settings/appearance` | Appearance preferences          |
+| `/settings/profile`    | Pengaturan profil               |
+| `/settings/password`   | Ganti kata sandi                |
+| `/settings/two-factor` | Autentikasi dua faktor (2FA)    |
+| `/settings/appearance` | Pengaturan tampilan             |
 
 ### CMS / Admin
 
-| URL                          | Description                            |
+| URL                          | Keterangan                             |
 | ---------------------------- | -------------------------------------- |
-| `/cms/dashboard`             | CMS dashboard                          |
-| `/cms/product`               | Product management                     |
-| `/cms/product/category`      | Product category management            |
-| `/cms/attribute/group`       | Attribute group management             |
-| `/cms/attribute/attribute`   | Attribute management                   |
-| `/cms/shop`                  | Shop management                        |
-| `/cms/management/user`       | User management                        |
-| `/cms/management/role`       | Role management                        |
-| `/cms/management/permission` | Permission management                  |
+| `/cms/dashboard`             | Dashboard CMS                          |
+| `/cms/product`               | Manajemen produk                       |
+| `/cms/product/category`      | Manajemen kategori produk              |
+| `/cms/attribute/group`       | Manajemen grup atribut                 |
+| `/cms/attribute/attribute`   | Manajemen atribut                      |
+| `/cms/shop`                  | Manajemen toko                         |
+| `/cms/management/user`       | Manajemen pengguna                     |
+| `/cms/management/role`       | Manajemen peran (role)                 |
+| `/cms/management/permission` | Manajemen hak akses (permission)       |
 | `/cms/management/menu`       | Navigation menu builder                |
-| `/pulse`                     | Application monitoring (Laravel Pulse) |
+| `/pulse`                     | Monitoring aplikasi (Laravel Pulse)    |
 
 ---
 
 ## 🧪 Testing
 
 ```bash
-# Run all tests
+# Jalankan semua pengujian (tests)
 php artisan test
 
-# Run a specific test file or filter
+# Jalankan test atau filter spesifik
 php artisan test --filter=CheckoutTest
 
-# Lint with Pint then run tests
+# Lakukan linting dengan Pint kemudian jalankan pengujian
 composer run test
 ```
 
 ---
 
-## 🛠️ Development Commands
+## 🛠️ Perintah Pengembangan (Dev Commands)
 
 ```bash
-# Start all dev services concurrently (server + queue + logs + vite)
+# Jalankan semua service dev secara bersamaan (server + queue + logs + vite)
 composer run dev
 
-# Format PHP code with Pint
+# Format kode PHP menggunakan Pint
 vendor/bin/pint
 
-# Format only changed files
+# Format hanya file yang berubah saja (dirty)
 vendor/bin/pint --dirty
 
-# Tail application logs in real-time
+# Menampilkan log aplikasi secara real-time
 php artisan pail
 
-# List all Folio page-based routes
+# Tampilkan semua route Folio (berbasis file)
 php artisan folio:list
 
-# List all registered API/non-Folio routes
+# Tampilkan semua route API/non-Folio yang terdaftar
 php artisan route:list --except-vendor
 ```
 
@@ -375,4 +375,4 @@ Untuk custom fitur atau pembuatan project lainnya, silakan hubungi:
 
 ## 📄 License
 
-This project is open-sourced software licensed under the [MIT license](LICENSE).
+Proyek ini adalah perangkat lunak open-source yang dilisensikan di bawah [lisensi MIT](LICENSE).
