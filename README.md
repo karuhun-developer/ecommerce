@@ -363,6 +363,16 @@ php artisan route:list --except-vendor
 
 ---
 
+## ❤️ Dukung Project Ini
+
+Jika project ini bermanfaat, dukung pengembangan lebih lanjut:
+- **Saweria**: [https://saweria.co/warukunai](https://saweria.co/warukunai)
+
+Untuk custom fitur atau pembuatan project lainnya, silakan hubungi:
+- **Telegram**: [https://t.me/bayurifkialgh](https://t.me/bayurifkialgh)
+
+---
+
 ## 📄 License
 
 This project is open-sourced software licensed under the [MIT license](LICENSE).
