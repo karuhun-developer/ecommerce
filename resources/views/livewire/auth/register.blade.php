@@ -31,6 +31,17 @@
                 placeholder="email@example.com"
             />
 
+            <!-- Nomer Telepon -->
+            <flux:input
+                name="phone"
+                :label="__('Nomer Telepon')"
+                type="number"
+                required
+                value="{{ old('phone') }}"
+                autocomplete="phone"
+                placeholder="08123123"
+            />
+
             <!-- Password -->
             <flux:input
                 name="password"
