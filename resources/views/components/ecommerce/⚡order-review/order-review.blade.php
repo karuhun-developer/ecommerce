@@ -1,4 +1,4 @@
-<flux:modal name="review-modal-{{ $orderShop->id }}" class="min-w-full md:min-w-[600px] max-w-4xl" @close-modal-{{ $orderShop->id }}.window="$flux.modal('review-modal-{{ $orderShop->id }}').close()">
+<flux:modal name="review-modal-{{ $orderShop->id }}" class="min-w-full md:min-w-[600px] max-w-4xl">
     <div class="p-6">
         <h2 class="text-xl font-bold mb-4">Tulis Ulasan</h2>
         
@@ -22,7 +22,7 @@
                     <h3 class="font-semibold text-lg border-b pb-2">Ulasan Produk</h3>
                     
                     @foreach($orderShop->items as $item)
-                        @php $key = "App\Models\Order\OrderShopItem__{$item->id}"; @endphp
+                        @php $key = "shopitem__{$item->id}"; @endphp
                         <flux:card>
                             <div class="font-medium text-gray-900 mb-4">{{ $item->product_data['name'] ?? 'Produk' }}</div>
                             
@@ -104,7 +104,7 @@
                                             <div class="relative w-24 h-24 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 flex flex-col items-center justify-center bg-gray-50 cursor-pointer overflow-hidden transition">
                                                 <flux:icon.plus class="w-6 h-6 text-gray-400" />
                                                 <span class="text-xs text-gray-500 mt-1">Upload</span>
-                                                <input type="file" wire:model="images.{{ $key }}" multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                                <input type="file" wire:model="images.{{ $key }}" multiple accept="image/jpeg,image/jpg,image/png" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                                             </div>
                                         @endif
                                     </div>
@@ -125,7 +125,7 @@
                     <div class="space-y-6">
                         <h3 class="font-semibold text-lg border-b pb-2">Ulasan Toko</h3>
                         
-                        @php $shopKey = "App\Models\Shop\Shop__{$orderShop->shop_id}"; @endphp
+                        @php $shopKey = "shop__{$orderShop->shop_id}"; @endphp
                         <flux:card>
                             <div class="font-medium text-gray-900 mb-4 flex items-center gap-2">
                                 <flux:icon.building-storefront class="w-5 h-5 text-gray-500" />
@@ -210,7 +210,7 @@
                                             <div class="relative w-24 h-24 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 flex flex-col items-center justify-center bg-gray-50 cursor-pointer overflow-hidden transition">
                                                 <flux:icon.plus class="w-6 h-6 text-gray-400" />
                                                 <span class="text-xs text-gray-500 mt-1">Upload</span>
-                                                <input type="file" wire:model="images.{{ $shopKey }}" multiple accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                                <input type="file" wire:model="images.{{ $shopKey }}" multiple accept="image/jpeg,image/jpg,image/png" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                                             </div>
                                         @endif
                                     </div>

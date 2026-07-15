@@ -34,7 +34,7 @@ new class extends Component
 
         // Initialize for items
         foreach ($this->orderShop->items as $item) {
-            $key = "App\\Models\\Order\\OrderShopItem__{$item->id}";
+            $key = "shopitem__{$item->id}";
             $this->reviewData[$key] = [
                 'rating' => 5,
                 'comment' => '',
@@ -44,7 +44,7 @@ new class extends Component
 
         // Initialize for shop
         if ($this->orderShop->shop) {
-            $shopKey = "App\\Models\\Shop\\Shop__{$this->orderShop->shop_id}";
+            $shopKey = "shop__{$this->orderShop->shop_id}";
             $this->reviewData[$shopKey] = [
                 'rating' => 5,
                 'comment' => '',

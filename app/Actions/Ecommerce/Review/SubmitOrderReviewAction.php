@@ -3,7 +3,9 @@
 namespace App\Actions\Ecommerce\Review;
 
 use App\Models\Order\OrderReview;
+use App\Models\Shop\Shop;
 use App\Models\Order\OrderShop;
+use App\Models\Product\Product;
 use App\Traits\WithMediaCollection;
 use Illuminate\Support\Facades\DB;
 
@@ -32,7 +34,7 @@ class SubmitOrderReviewAction
 
             // Store items reviews
             foreach ($orderShop->items as $item) {
-                $key = "App\\Models\\Order\\OrderShopItem__{$item->id}";
+                $key = "shopitem__{$item->id}";
 
                 if (isset($data[$key])) {
                     $reviewData = $data[$key];
@@ -40,8 +42,8 @@ class SubmitOrderReviewAction
                     $review = OrderReview::create([
                         'user_id' => auth()->id(),
                         'order_shop_id' => $orderShop->id,
-                        'reviewable_type' => 'App\\Models\\Order\\OrderShopItem',
-                        'reviewable_id' => $item->id,
+                        'reviewable_type' => Product::class,
+                        'reviewable_id' => $item->product_data['product_id'],
                         'rating' => $reviewData['rating'],
                         'comment' => $reviewData['comment'] ?? null,
                         'status' => 'pending',
@@ -66,7 +68,7 @@ class SubmitOrderReviewAction
                 $shopReview = OrderReview::create([
                     'user_id' => auth()->id(),
                     'order_shop_id' => $orderShop->id,
-                    'reviewable_type' => 'App\\Models\\Shop\\Shop',
+                    'reviewable_type' => Shop::class,
                     'reviewable_id' => $orderShop->shop_id,
                     'rating' => $shopReviewData['rating'],
                     'comment' => $shopReviewData['comment'] ?? null,
