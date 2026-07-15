@@ -18,42 +18,42 @@
 
 ### 🛍️ Storefront (Customer)
 
-| Feature | Status |
-|---|---|
-| Homepage with featured products & categories | ✅ Done |
-| Product catalog with category filtering | ✅ Done |
+| Feature                                        | Status  |
+| ---------------------------------------------- | ------- |
+| Homepage with featured products & categories   | ✅ Done |
+| Product catalog with category filtering        | ✅ Done |
 | Product detail page with variants & attributes | ✅ Done |
-| Shopping cart (session/auth) | ✅ Done |
-| Checkout with address & shipping selection | ✅ Done |
-| Payment via **Midtrans** (Snap) | ✅ Done |
-| Order confirmation & email notification | ✅ Done |
-| Guest order tracking by reference code | ✅ Done |
-| Order history (authenticated users) | ✅ Done |
-| Order detail page | ✅ Done |
-| Dynamic SEO (OpenGraph, TwitterCard, JSON-LD) | ✅ Done |
+| Shopping cart (session/auth)                   | ✅ Done |
+| Checkout with address & shipping selection     | ✅ Done |
+| Payment via **Midtrans** (Snap)                | ✅ Done |
+| Order confirmation & email notification        | ✅ Done |
+| Guest order tracking by reference code         | ✅ Done |
+| Order history (authenticated users)            | ✅ Done |
+| Order detail page                              | ✅ Done |
+| Dynamic SEO (OpenGraph, TwitterCard, JSON-LD)  | ✅ Done |
 
 ### 🏪 CMS / Admin Dashboard
 
-| Feature | Status |
-|---|---|
-| Dashboard overview | ✅ Done |
-| Product management (CRUD + variants + attributes) | ✅ Done |
-| Product category management | ✅ Done |
-| Attribute & attribute group management | ✅ Done |
-| Shop management | ✅ Done |
-| User management | ✅ Done |
-| Role & permission management (Spatie) | ✅ Done |
-| Navigation menu builder | ✅ Done |
-| Activity log viewer | ✅ Done |
-| Laravel Pulse monitoring dashboard | ✅ Done |
-| Log viewer (Opcodes Log Viewer) | ✅ Done |
+| Feature                                           | Status     |
+| ------------------------------------------------- | ---------- |
+| Dashboard overview                                | ✅ Done    |
+| Product management (CRUD + variants + attributes) | ✅ Done    |
+| Product category management                       | ✅ Done    |
+| Attribute & attribute group management            | ✅ Done    |
+| Shop management                                   | ✅ Done    |
+| User management                                   | ✅ Done    |
+| Role & permission management (Spatie)             | ✅ Done    |
+| Navigation menu builder                           | ✅ Done    |
+| Activity log viewer                               | ✅ Done    |
+| Laravel Pulse monitoring dashboard                | ✅ Done    |
+| Log viewer (Opcodes Log Viewer)                   | ✅ Done    |
+| Review product & shop                             | ✅ Done    |
+| Dashboard (User/Analytics)                        | ✅ Ongoing |
 
 ### 🚧 In Progress / Roadmap
 
-| Feature | Status |
-|---|---|
-| Dashboard (User/Analytics) | 🔄 Ongoing |
-| Review product & shop | ✅ Done |
+| Feature                                       | Status     |
+| --------------------------------------------- | ---------- |
 | Shop detail page (public storefront per shop) | 🔄 Ongoing |
 
 ---
@@ -63,31 +63,32 @@
 To use the full functionality of payments and shipping, you must set up an account with Midtrans and Biteship, then configure their API keys and Webhooks.
 
 1. **Midtrans (Payments)**
-   - Register/Login: [https://dashboard.midtrans.com/login](https://dashboard.midtrans.com/login)
-   - Configure your `.env` with `MIDTRANS_MERCHANT_ID`, `MIDTRANS_SERVER_KEY`, and `MIDTRANS_CLIENT_KEY`.
-   - Set the webhook/notification URL in the Midtrans dashboard to: `https://your-domain.com/api/v1/callback/midtrans`
+    - Register/Login: [https://dashboard.midtrans.com/login](https://dashboard.midtrans.com/login)
+    - Configure your `.env` with `MIDTRANS_MERCHANT_ID`, `MIDTRANS_SERVER_KEY`, and `MIDTRANS_CLIENT_KEY`.
+    - Set the webhook/notification URL in the Midtrans dashboard to: `https://your-domain.com/api/v1/callback/midtrans`
 
 2. **Biteship (Shipping & Tracking)**
-   - Register/Login: [https://biteship.com/en](https://biteship.com/en)
-   - Configure your `.env` with `BITESHIP_API_KEY`.
-   - Set the webhook URL in the Biteship dashboard to: `https://your-domain.com/api/v1/callback/biteship`
+    - Register/Login: [https://biteship.com/en](https://biteship.com/en)
+    - Configure your `.env` with `BITESHIP_API_KEY`.
+    - Set the webhook URL in the Biteship dashboard to: `https://your-domain.com/api/v1/callback/biteship`
 
 > **Note on Biteship Webhook Setup:**
 > When you first add the webhook URL in the Biteship dashboard, they will send a test payload to verify the endpoint. To successfully verify, you **must temporarily** update the `handle` method in `app/Http/Controllers/Api/V1/Callback/BiteshipController.php` to immediately return a 200 response.
-> 
+>
 > ```php
 > public function handle(array $payload)
 > {
 >     Log::info('Biteship Callback Received', [
 >         'request' => $payload,
 >     ]);
->     
+>
 >     // Temporarily return 200 for Biteship webhook verification
 >     return response()->json([], 200);
->     
+>
 >     // ... original logic
 > }
 > ```
+>
 > Once verified, you can remove or move the early return so actual webhooks process correctly.
 
 ---
@@ -98,49 +99,49 @@ To use the full functionality of payments and shipping, you must set up an accou
 
 ### Backend
 
-| Package | Version | Purpose |
-|---|---|---|
-| **PHP** | 8.4 | Runtime |
-| **Laravel** | 13 | Core framework |
-| **Laravel Folio** | v1 | File-based page routing |
-| **Laravel Fortify** | v1 | Authentication backend |
-| **Laravel Sanctum** | v4 | API token authentication |
-| **Laravel Pulse** | v1 | Application monitoring |
-| **Livewire** | v4 | Reactive UI components |
-| **Spatie Permission** | v6 | Role & permission management |
-| **Spatie Media Library** | v11 | File & image management |
-| **Spatie Activity Log** | v4 | User activity logging |
-| **Spatie Sluggable** | v4 | Slug generation |
-| **Sqids** | v0.5 | Short unique ID generation |
-| **Artesaos SEOTools** | v1 | SEO meta, OpenGraph, JSON-LD |
-| **Predis** | v3 | Redis client |
+| Package                  | Version | Purpose                      |
+| ------------------------ | ------- | ---------------------------- |
+| **PHP**                  | 8.4     | Runtime                      |
+| **Laravel**              | 13      | Core framework               |
+| **Laravel Folio**        | v1      | File-based page routing      |
+| **Laravel Fortify**      | v1      | Authentication backend       |
+| **Laravel Sanctum**      | v4      | API token authentication     |
+| **Laravel Pulse**        | v1      | Application monitoring       |
+| **Livewire**             | v4      | Reactive UI components       |
+| **Spatie Permission**    | v6      | Role & permission management |
+| **Spatie Media Library** | v11     | File & image management      |
+| **Spatie Activity Log**  | v4      | User activity logging        |
+| **Spatie Sluggable**     | v4      | Slug generation              |
+| **Sqids**                | v0.5    | Short unique ID generation   |
+| **Artesaos SEOTools**    | v1      | SEO meta, OpenGraph, JSON-LD |
+| **Predis**               | v3      | Redis client                 |
 
 ### Frontend
 
-| Package | Version | Purpose |
-|---|---|---|
-| **Flux UI** | v2 | Livewire UI component library |
-| **Livewire Blaze** | v1 | Blade component optimization |
-| **TailwindCSS** | v4 | Utility-first CSS framework |
-| **TweakFlux** | v1 | Flux UI deep theming |
-| **Jodit Text Editor** | v1 | Rich text editor (Livewire) |
+| Package               | Version | Purpose                       |
+| --------------------- | ------- | ----------------------------- |
+| **Flux UI**           | v2      | Livewire UI component library |
+| **Livewire Blaze**    | v1      | Blade component optimization  |
+| **TailwindCSS**       | v4      | Utility-first CSS framework   |
+| **TweakFlux**         | v1      | Flux UI deep theming          |
+| **Jodit Text Editor** | v1      | Rich text editor (Livewire)   |
 
 ### Dev Tools
 
-| Package | Purpose |
-|---|---|
-| **Laravel Pint** | Code style fixer |
-| **Pest PHP v4** | Testing framework |
-| **Laravel Pail** | Real-time log tailing |
-| **Laravel Sail** | Docker development environment |
-| **Debugbar** | Request profiling |
-| **Laravel Boost** | AI-assisted development MCP |
+| Package           | Purpose                        |
+| ----------------- | ------------------------------ |
+| **Laravel Pint**  | Code style fixer               |
+| **Pest PHP v4**   | Testing framework              |
+| **Laravel Pail**  | Real-time log tailing          |
+| **Laravel Sail**  | Docker development environment |
+| **Debugbar**      | Request profiling              |
+| **Laravel Boost** | AI-assisted development MCP    |
 
 ### Third-party Integrations
 
-| Service | Purpose |
-|---|---|
-| **Midtrans** | Payment gateway (Snap) |
+| Service      | Purpose                             |
+| ------------ | ----------------------------------- |
+| **Midtrans** | Payment gateway (Snap)              |
 | **Biteship** | Shipping rates & real-time tracking |
 
 ---
@@ -281,43 +282,43 @@ REDIS_PORT=6379
 
 ### Storefront
 
-| URL | Description |
-|---|---|
-| `/` | Homepage |
-| `/explore` | All products catalog |
-| `/explore/{category}` | Products filtered by category |
-| `/product/{slug}` | Product detail |
-| `/cart` | Shopping cart |
-| `/checkout` | Checkout |
-| `/payment/{reference}` | Payment page (noindex) |
-| `/orders` | My orders (auth required) |
-| `/orders/check` | Guest order lookup by reference |
-| `/orders/{reference}` | Order detail (noindex) |
+| URL                    | Description                     |
+| ---------------------- | ------------------------------- |
+| `/`                    | Homepage                        |
+| `/explore`             | All products catalog            |
+| `/explore/{category}`  | Products filtered by category   |
+| `/product/{slug}`      | Product detail                  |
+| `/cart`                | Shopping cart                   |
+| `/checkout`            | Checkout                        |
+| `/payment/{reference}` | Payment page (noindex)          |
+| `/orders`              | My orders (auth required)       |
+| `/orders/check`        | Guest order lookup by reference |
+| `/orders/{reference}`  | Order detail (noindex)          |
 
 ### Settings
 
-| URL | Description |
-|---|---|
-| `/settings/profile` | Profile settings |
-| `/settings/password` | Change password |
+| URL                    | Description                     |
+| ---------------------- | ------------------------------- |
+| `/settings/profile`    | Profile settings                |
+| `/settings/password`   | Change password                 |
 | `/settings/two-factor` | Two-factor authentication (2FA) |
-| `/settings/appearance` | Appearance preferences |
+| `/settings/appearance` | Appearance preferences          |
 
 ### CMS / Admin
 
-| URL | Description |
-|---|---|
-| `/cms/dashboard` | CMS dashboard |
-| `/cms/product` | Product management |
-| `/cms/product/category` | Product category management |
-| `/cms/attribute/group` | Attribute group management |
-| `/cms/attribute/attribute` | Attribute management |
-| `/cms/shop` | Shop management |
-| `/cms/management/user` | User management |
-| `/cms/management/role` | Role management |
-| `/cms/management/permission` | Permission management |
-| `/cms/management/menu` | Navigation menu builder |
-| `/pulse` | Application monitoring (Laravel Pulse) |
+| URL                          | Description                            |
+| ---------------------------- | -------------------------------------- |
+| `/cms/dashboard`             | CMS dashboard                          |
+| `/cms/product`               | Product management                     |
+| `/cms/product/category`      | Product category management            |
+| `/cms/attribute/group`       | Attribute group management             |
+| `/cms/attribute/attribute`   | Attribute management                   |
+| `/cms/shop`                  | Shop management                        |
+| `/cms/management/user`       | User management                        |
+| `/cms/management/role`       | Role management                        |
+| `/cms/management/permission` | Permission management                  |
+| `/cms/management/menu`       | Navigation menu builder                |
+| `/pulse`                     | Application monitoring (Laravel Pulse) |
 
 ---
 
