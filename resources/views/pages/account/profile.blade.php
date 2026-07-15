@@ -31,12 +31,7 @@ render(function (View $view) {
     <div class="bg-gray-50 dark:bg-gray-900 min-h-screen py-8">
         <div class="max-w-6xl mx-auto px-4 md:px-6">
             <div class="flex items-start max-md:flex-col">
-                <div class="me-10 w-full pb-4 md:w-[220px]">
-                    <flux:navlist>
-                        <flux:navlist.item :href="route('orders.index')" wire:navigate>Daftar Transaksi</flux:navlist.item>
-                        <flux:navlist.item :href="route('account.profile')" current wire:navigate>Pengaturan Akun</flux:navlist.item>
-                    </flux:navlist>
-                </div>
+                <x-ecommerce.account-sidebar active="profile" />
 
                 <flux:separator class="md:hidden" />
 
