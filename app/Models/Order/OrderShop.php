@@ -53,4 +53,9 @@ class OrderShop extends Model
     {
         return $this->hasMany(OrderShopItem::class);
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(OrderReview::class);
+    }
 }

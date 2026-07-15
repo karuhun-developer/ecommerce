@@ -74,13 +74,25 @@
                         </div>
                     </div>
                     
-                    <div class="border-t p-3 flex justify-end gap-2 bg-gray-50">
+                    <div class="border-t p-3 flex justify-end gap-2 bg-gray-50 flex-wrap">
                         <a href="{{ route('orders.detail', ['reference' => $order->reference]) }}" wire:navigate class="text-sm font-bold text-gray-600 hover:text-gray-700 border border-gray-600 px-4 py-1.5 rounded-lg transition">Detail Transaksi</a>
                         @if (!$order->status && $order->latestPayment && (!$order->latestPayment->expired_at || $order->latestPayment->expired_at->isFuture()))
                             <a href="{{ route('payment.show', ['reference' => $order->reference]) }}" wire:navigate class="text-sm font-bold text-white bg-gray-600 hover:bg-gray-700 px-4 py-1.5 rounded-lg transition">Bayar Sekarang</a>
                         @endif
+                        
+                        @foreach($order->orderShops as $orderShop)
+                            @if ($order->status && $orderShop->shipping_status && $orderShop->waybill_number)
+                                <button type="button" @click="$flux.modal('review-modal-{{ $orderShop->id }}').show()" class="text-sm font-bold text-blue-600 hover:text-blue-700 border border-blue-600 px-4 py-1.5 rounded-lg transition">Tulis Ulasan ({{ $orderShop->shop->name ?? 'Toko' }})</button>
+                            @endif
+                        @endforeach
                     </div>
                 </div>
+                
+                @foreach($order->orderShops as $orderShop)
+                    @if ($order->status && $orderShop->shipping_status && $orderShop->waybill_number)
+                        <livewire:ecommerce.order-review :orderShop="$orderShop" :key="'review-'.$orderShop->id" lazy />
+                    @endif
+                @endforeach
             @empty
                 <div class="text-center py-12 border rounded-xl bg-gray-50">
                     <flux:icon.inbox class="w-12 h-12 text-gray-300 mx-auto mb-4" />

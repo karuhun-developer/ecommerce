@@ -4,6 +4,7 @@ namespace App\Models\Shop;
 
 use App\Models\Attribute\Attribute;
 use App\Models\Location\Location;
+use App\Models\Order\OrderReview;
 use App\Models\Product\Product;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -50,5 +51,10 @@ class Shop extends Model implements HasMedia
     public function attributes()
     {
         return $this->hasMany(Attribute::class);
+    }
+
+    public function reviews()
+    {
+        return $this->morphMany(OrderReview::class, 'reviewable');
     }
 }

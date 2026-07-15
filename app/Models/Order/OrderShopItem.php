@@ -38,4 +38,9 @@ class OrderShopItem extends Model
     {
         return $this->belongsTo(ProductFlat::class);
     }
+
+    public function reviews()
+    {
+        return $this->morphMany(OrderReview::class, 'reviewable');
+    }
 }

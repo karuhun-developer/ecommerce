@@ -70,9 +70,14 @@
             <div class="space-y-6">
                 @foreach($order->orderShops as $orderShop)
                     <div class="space-y-4">
-                        <div class="flex items-center gap-2">
-                            <flux:icon.building-storefront class="w-5 h-5 text-gray-500" />
-                            <span class="font-bold text-gray-900 text-sm">{{ $orderShop->shop->name ?? 'Toko' }}</span>
+                        <div class="flex items-center gap-2 justify-between">
+                            <div class="flex items-center gap-2">
+                                <flux:icon.building-storefront class="w-5 h-5 text-gray-500" />
+                                <span class="font-bold text-gray-900 text-sm">{{ $orderShop->shop->name ?? 'Toko' }}</span>
+                            </div>
+                            @if ($order->status && $orderShop->shipping_status && $orderShop->waybill_number)
+                                <button type="button" @click="$flux.modal('review-modal-{{ $orderShop->id }}').show()" class="text-xs font-bold text-blue-600 hover:text-blue-700 border border-blue-600 px-3 py-1 rounded-lg transition">Tulis Ulasan</button>
+                            @endif
                         </div>
                         @if($orderShop->latestShipment)
                             <div class="bg-gray-50 border rounded-lg p-3 text-sm flex gap-4 items-center">
@@ -202,4 +207,10 @@
         </div>
 
     </div>
+
+    @foreach($order->orderShops as $orderShop)
+        @if ($order->status && $orderShop->shipping_status && $orderShop->waybill_number)
+            <livewire:ecommerce.order-review :orderShop="$orderShop" :key="'review-detail-'.$orderShop->id" lazy />
+        @endif
+    @endforeach
 </div>
