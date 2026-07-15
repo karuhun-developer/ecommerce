@@ -1,44 +1,50 @@
 <?php
 
+use Illuminate\View\View;
 use function Laravel\Folio\name;
 use function Laravel\Folio\render;
-use Artesaos\SEOTools\Facades\SEOMeta;
-use Artesaos\SEOTools\Facades\OpenGraph;
-use Illuminate\View\View;
 
 name('cms.review.index');
 
+// Page title and breadcrumbs
 render(function (View $view) {
     $title = 'Review Management';
-    $description = 'Manage User Reviews';
-    
-    SEOMeta::setTitle($title . ' | ' . config('app.name'));
-    SEOMeta::setDescription($description);
-    SEOMeta::addMeta('robots', 'noindex, nofollow');
+    $description = 'Validate user reviews for products and shops.';
+    $breadcrumbs = [
+        [
+            'label' => 'Reviews',
+            'url' => '#'
+        ],
+        [
+            'label' => 'Management',
+            'url' => null
+        ],
+    ];
 
-    OpenGraph::setTitle($title . ' | ' . config('app.name'));
-    OpenGraph::setDescription($description);
-    
-    $view->with(compact('title'));
-});
-?>
+    $view->with(compact('title', 'description', 'breadcrumbs'));
+}); ?>
 
-<x-layouts.cms :title="$title . ' | ' . config('app.name')">
-    @section('seo')
-        {!! SEO::generate() !!}
-    @endsection
-
-    <flux:breadcrumbs>
-        <flux:breadcrumbs.item icon="home" href="{{ route('cms.dashboard') }}" />
-        <flux:breadcrumbs.item>Reviews</flux:breadcrumbs.item>
-    </flux:breadcrumbs>
-
-    <div class="flex items-center justify-between mt-5 mb-4">
-        <div>
-            <flux:heading size="xl" level="1">Review Management</flux:heading>
-            <flux:subheading size="lg" class="mb-6">Validate user reviews for products and shops.</flux:subheading>
+<x-layouts.app :$title>
+    <div class="w-full">
+        <div class="flex justify-between items-center mb-5">
+            <h1 class="text-3xl font-bold">{{ $title }}</h1>
+            <flux:breadcrumbs>
+                <flux:breadcrumbs.item href="{{ route('cms.dashboard') }}" icon="home" />
+                @foreach($breadcrumbs as $breadcrumb)
+                    @if($breadcrumb['url'])
+                        <flux:breadcrumbs.item href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['label'] }}</flux:breadcrumbs.item>
+                    @else
+                        <flux:breadcrumbs.item>{{ $breadcrumb['label'] }}</flux:breadcrumbs.item>
+                    @endif
+                @endforeach
+            </flux:breadcrumbs>
         </div>
+        <div class="border-gray-200 mb-6">
+            <flux:text>
+                {{ $description }}
+            </flux:text>
+        </div>
+        
+        <livewire:cms.review.table lazy />
     </div>
-
-    <livewire:cms.review.table lazy />
-</x-layouts.cms>
+</x-layouts.app>
