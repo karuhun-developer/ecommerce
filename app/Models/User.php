@@ -89,4 +89,10 @@ class User extends Authenticatable implements HasMedia, MustVerifyEmail
     {
         return $this->hasRole('user');
     }
+
+    #[Scope]
+    public function isShopOwner()
+    {
+        return $this->hasRole('shopowner');
+    }
 }

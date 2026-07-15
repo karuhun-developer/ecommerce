@@ -25,8 +25,8 @@ class ShopownerMenuSeeder extends Seeder
         // Create menu
         $this->dashboardMenu();
         $this->shopMenu();
-        $this->productMenu();
         $this->orderMenu();
+        $this->productMenu();
     }
 
     public function dashboardMenu()
@@ -51,6 +51,19 @@ class ShopownerMenuSeeder extends Seeder
             'icon' => 'building-storefront',
             'order' => 100,
             'active_pattern' => 'cms.shop',
+            'status' => 1,
+        ]);
+    }
+
+    public function orderMenu()
+    {
+        Menu::create([
+            'role_id' => $this->role->id,
+            'name' => 'Orders',
+            'url' => 'cms.order.index',
+            'icon' => 'shopping-bag',
+            'order' => 190,
+            'active_pattern' => 'cms.order.index,cms.order.show',
             'status' => 1,
         ]);
     }
@@ -80,19 +93,6 @@ class ShopownerMenuSeeder extends Seeder
             'url' => 'cms.product.index',
             'order' => 2,
             'active_pattern' => 'cms.product.index,cms.product.edit',
-            'status' => 1,
-        ]);
-    }
-
-    public function orderMenu()
-    {
-        Menu::create([
-            'role_id' => $this->role->id,
-            'name' => 'Orders',
-            'url' => 'cms.order.index',
-            'icon' => 'shopping-bag',
-            'order' => 250,
-            'active_pattern' => 'cms.order.index,cms.order.show',
             'status' => 1,
         ]);
     }

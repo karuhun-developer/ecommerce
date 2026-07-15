@@ -11,8 +11,8 @@
                 <flux:card>
                     <div class="flex justify-between items-start mb-4">
                         <div>
-                            @if($review->reviewable_type === \App\Models\Order\OrderShopItem::class && $review->reviewable)
-                                <div class="font-bold text-gray-900">{{ $review->reviewable->product_data['name'] ?? 'Produk' }}</div>
+                            @if($review->reviewable_type === \App\Models\Product\Product::class && $review->reviewable)
+                                <div class="font-bold text-gray-900">{{ $review->reviewable->name ?? 'Produk' }}</div>
                                 <div class="text-sm text-gray-500">Ulasan Produk</div>
                             @elseif($review->reviewable_type === \App\Models\Shop\Shop::class && $review->reviewable)
                                 <div class="font-bold text-gray-900">{{ $review->reviewable->name ?? 'Toko' }}</div>

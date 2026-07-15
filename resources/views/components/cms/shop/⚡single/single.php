@@ -13,6 +13,8 @@ new class extends Component
     // Model instance
     public $modelInstance = Shop::class;
 
+    public Shop $shop;
+
     public function mount()
     {
         Gate::authorize('view'.$this->modelInstance);
@@ -53,7 +55,7 @@ new class extends Component
 
     public function loadDefaultShop()
     {
-        $record = Shop::first();
+        $record = $this->shop ?? Shop::first();
 
         // If no shop record exists, we can choose to either create a default one or simply return without setting data.
         if (! $record) {

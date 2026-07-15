@@ -46,8 +46,11 @@ render(function (View $view) {
             </flux:text>
         </div>
         
-        @if(isSingleShop())
-            <livewire:cms.shop.single />
+        @if(isSingleShop() || auth()->user()->isShopOwner())
+            @php
+                $shop = auth()->user()->isShopOwner() ? \App\Models\Shop\Shop::where('user_id', auth()->id())->first() : \App\Models\Shop\Shop::first();
+            @endphp
+            <livewire:cms.shop.single :$shop />
         @else
             <livewire:cms.shop.table />
         @endif

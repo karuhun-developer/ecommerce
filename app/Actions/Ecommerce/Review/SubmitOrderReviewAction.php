@@ -3,9 +3,9 @@
 namespace App\Actions\Ecommerce\Review;
 
 use App\Models\Order\OrderReview;
-use App\Models\Shop\Shop;
 use App\Models\Order\OrderShop;
 use App\Models\Product\Product;
+use App\Models\Shop\Shop;
 use App\Traits\WithMediaCollection;
 use Illuminate\Support\Facades\DB;
 
@@ -61,7 +61,7 @@ class SubmitOrderReviewAction
             }
 
             // Store shop review
-            $shopKey = "App\\Models\\Shop\\Shop__{$orderShop->shop_id}";
+            $shopKey = "shop__{$orderShop->shop_id}";
             if (isset($data[$shopKey])) {
                 $shopReviewData = $data[$shopKey];
 

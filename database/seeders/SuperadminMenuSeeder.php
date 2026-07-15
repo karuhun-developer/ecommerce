@@ -21,10 +21,24 @@ class SuperadminMenuSeeder extends Seeder
         // Create menu
         $this->dashboardMenu();
         $this->shopMenu();
-        $this->productMenu();
         $this->orderMenu();
+        $this->productMenu();
         $this->attributeMenu();
+        $this->reviewMenu();
         $this->managementMenu();
+    }
+
+    public function reviewMenu()
+    {
+        Menu::create([
+            'role_id' => $this->role->id,
+            'name' => 'Reviews',
+            'url' => 'cms.management.review',
+            'icon' => 'star',
+            'order' => 195,
+            'active_pattern' => 'cms.management.review',
+            'status' => 1,
+        ]);
     }
 
     public function dashboardMenu()
@@ -49,6 +63,19 @@ class SuperadminMenuSeeder extends Seeder
             'icon' => 'building-storefront',
             'order' => 100,
             'active_pattern' => 'cms.shop',
+            'status' => 1,
+        ]);
+    }
+
+    public function orderMenu()
+    {
+        Menu::create([
+            'role_id' => $this->role->id,
+            'name' => 'Orders',
+            'url' => 'cms.order.index',
+            'icon' => 'shopping-bag',
+            'order' => 190,
+            'active_pattern' => 'cms.order.index,cms.order.show',
             'status' => 1,
         ]);
     }
@@ -107,19 +134,6 @@ class SuperadminMenuSeeder extends Seeder
             'url' => 'cms.attribute.attribute',
             'order' => 2,
             'active_pattern' => 'cms.attribute.attribute',
-            'status' => 1,
-        ]);
-    }
-
-    public function orderMenu()
-    {
-        Menu::create([
-            'role_id' => $this->role->id,
-            'name' => 'Orders',
-            'url' => 'cms.order.index',
-            'icon' => 'shopping-bag',
-            'order' => 250,
-            'active_pattern' => 'cms.order.index,cms.order.show',
             'status' => 1,
         ]);
     }
