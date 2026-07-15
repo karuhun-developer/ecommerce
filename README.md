@@ -55,6 +55,8 @@
 | Feature                                       | Status     |
 | --------------------------------------------- | ---------- |
 | Shop detail page (public storefront per shop) | 🔄 Ongoing |
+| Register as a shop owner (multi-shop mode)    | 🔄 Ongoing |
+| Banner management (CMS)                       | 🔄 Ongoing |
 
 ---
 
