@@ -53,7 +53,7 @@
 | Feature | Status |
 |---|---|
 | Dashboard (User/Analytics) | 🔄 Ongoing |
-| Review product & shop | 🔄 Ongoing |
+| Review product & shop | ✅ Done |
 | Shop detail page (public storefront per shop) | 🔄 Ongoing |
 
 ---
