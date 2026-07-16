@@ -3,10 +3,10 @@
 use App\Actions\Ecommerce\Review\SubmitOrderReviewAction;
 use App\Models\Order\OrderReview;
 use App\Models\Order\OrderShop;
+use Flux\Flux;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
-use Flux\Flux;
 use Livewire\WithFileUploads;
 
 new class extends Component
@@ -109,7 +109,6 @@ new class extends Component
             );
 
             $this->dispatch('toast', type: 'success', message: 'Ulasan berhasil dikirim! Menunggu persetujuan admin.');
-
 
             // Close the modal after successful submission
             Flux::modal("review-modal-{$this->orderShop->id}")->close();

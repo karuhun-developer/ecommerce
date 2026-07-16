@@ -33,9 +33,7 @@
     <div class="flex flex-col md:flex-row gap-4 justify-between items-center bg-gray-50 dark:bg-zinc-800/50 p-4 rounded-xl border border-gray-200 dark:border-zinc-700">
         <div class="font-bold text-lg">Statistik Penjualan</div>
         <div class="flex gap-4 items-center">
-            <flux:input type="date" wire:model.live="startDate" size="sm" />
-            <span>-</span>
-            <flux:input type="date" wire:model.live="endDate" size="sm" />
+            <x-ui.filter.date-range />
         </div>
     </div>
 

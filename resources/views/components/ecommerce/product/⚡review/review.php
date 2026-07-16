@@ -1,8 +1,8 @@
 <?php
 
-use Livewire\Component;
 use App\Models\Product\Product;
 use Livewire\Attributes\Computed;
+use Livewire\Component;
 use Livewire\WithPagination;
 
 new class extends Component
@@ -10,6 +10,7 @@ new class extends Component
     use WithPagination;
 
     public Product $product;
+
     public $filter = 'all'; // all, with_media
 
     public function setFilter($filter)
@@ -36,12 +37,12 @@ new class extends Component
 
         foreach ($ratings as $rating) {
             if ($rating->star >= 1 && $rating->star <= 5) {
-                $distribution[(int)$rating->star] = $rating->count;
+                $distribution[(int) $rating->star] = $rating->count;
             }
         }
-        
+
         $total = array_sum($distribution);
-        
+
         $percentages = [];
         foreach ($distribution as $star => $count) {
             $percentages[$star] = $total > 0 ? ($count / $total) * 100 : 0;
@@ -50,7 +51,7 @@ new class extends Component
         return [
             'counts' => $distribution,
             'percentages' => $percentages,
-            'total' => $total
+            'total' => $total,
         ];
     }
 

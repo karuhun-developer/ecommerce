@@ -1,13 +1,13 @@
 <?php
 
 use App\Actions\Ecommerce\Review\AcceptOrderReviewAction;
-use App\Actions\Ecommerce\Review\RejectOrderReviewAction;
 use App\Actions\Ecommerce\Review\DeleteOrderReviewAction;
-use App\Models\Order\OrderReview;
+use App\Actions\Ecommerce\Review\RejectOrderReviewAction;
 use App\Livewire\BaseComponent;
-use Livewire\Attributes\Url;
+use App\Models\Order\OrderReview;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
 
 new class extends BaseComponent
 {
@@ -34,9 +34,9 @@ new class extends BaseComponent
                 $q->where('status', $this->status);
             })
             ->when($this->search, function ($query) {
-                $query->whereHas('user', function($q) {
+                $query->whereHas('user', function ($q) {
                     $q->where('name', 'like', '%'.$this->search.'%')
-                      ->orWhere('email', 'like', '%'.$this->search.'%');
+                        ->orWhere('email', 'like', '%'.$this->search.'%');
                 })->orWhere('comment', 'like', '%'.$this->search.'%');
             })
             ->orderBy($this->paginationOrderBy, $this->paginationOrder);
@@ -55,7 +55,7 @@ new class extends BaseComponent
                 type: 'success',
                 message: 'Review accepted successfully.'
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->dispatch('toast',
                 type: 'error',
                 message: 'Failed to accept review: '.$e->getMessage()
@@ -74,7 +74,7 @@ new class extends BaseComponent
                 type: 'success',
                 message: 'Review rejected successfully.'
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->dispatch('toast',
                 type: 'error',
                 message: 'Failed to reject review: '.$e->getMessage()
@@ -93,7 +93,7 @@ new class extends BaseComponent
                 type: 'success',
                 message: 'Review deleted successfully.'
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->dispatch('toast',
                 type: 'error',
                 message: 'Failed to delete review: '.$e->getMessage()
