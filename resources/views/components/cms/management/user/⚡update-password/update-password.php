@@ -17,6 +17,8 @@ new class extends Component
     #[On('set-update-password')]
     public function setAction($id = null)
     {
+        $this->resetValidation();
+
         if ($id) {
             $this->isUpdate = true;
             $this->getRecordData($id);

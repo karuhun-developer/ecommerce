@@ -22,6 +22,8 @@ new class extends Component
     #[On('set-action')]
     public function setAction($id = null)
     {
+        $this->resetValidation();
+
         if ($id) {
             $this->isUpdate = true;
             $this->getRecordData($id);
