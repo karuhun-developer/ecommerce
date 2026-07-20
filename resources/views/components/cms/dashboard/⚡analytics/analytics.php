@@ -70,8 +70,8 @@ new class extends Component
         $paidQuery->whereHas('order', function ($q) {
             $q->where('status', true);
         })->whereBetween('created_at', [
-            Carbon::parse($this->startDateFilter),
-            Carbon::parse($this->endDateFilter),
+            Carbon::parse($this->startDateFilter)->startOfDay(),
+            Carbon::parse($this->endDateFilter)->endOfDay(),
         ]);
 
         $totalRevenue = $paidQuery->sum('total');
@@ -84,8 +84,8 @@ new class extends Component
                     $sq->whereNull('expired_at')->orWhere('expired_at', '>', now());
                 });
         })->whereBetween('created_at', [
-            Carbon::parse($this->startDateFilter),
-            Carbon::parse($this->endDateFilter),
+            Carbon::parse($this->startDateFilter)->startOfDay(),
+            Carbon::parse($this->endDateFilter)->endOfDay(),
         ]);
 
         $totalUnpaidSales = $unpaidQuery->count();
@@ -116,8 +116,8 @@ new class extends Component
     #[Computed]
     public function chartData()
     {
-        $start = Carbon::parse($this->startDateFilter);
-        $end = Carbon::parse($this->endDateFilter);
+        $start = Carbon::parse($this->startDateFilter)->startOfDay();
+        $end = Carbon::parse($this->endDateFilter)->endOfDay();
 
         $query = OrderShop::query();
         if (! $this->isSuperadmin) {
@@ -151,7 +151,7 @@ new class extends Component
 
         $current = $start->copy();
         while ($current <= $end) {
-            $dateStr = $current->format('Y-m-d H:i:s');
+            $dateStr = $current->format('Y-m-d');
             $dates[] = $current->format('d M');
             $paidSeries[] = $paidOrders[$dateStr] ?? 0;
             $unpaidSeries[] = $unpaidOrders[$dateStr] ?? 0;
