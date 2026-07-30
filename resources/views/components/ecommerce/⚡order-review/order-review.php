@@ -56,10 +56,6 @@ new class extends Component
     #[Computed]
     public function hasAlreadyReviewed()
     {
-        if (! auth()->check()) {
-            return false;
-        }
-
         return OrderReview::where('order_shop_id', $this->orderShop->id)
             ->where('user_id', auth()->id())
             ->exists();
@@ -76,6 +72,12 @@ new class extends Component
 
     public function submit(SubmitOrderReviewAction $action)
     {
+        if (! auth()->check()) { // Ensure the user is authenticated
+            $this->dispatch('toast', type: 'error', message: 'Anda harus masuk untuk memberikan ulasan.');
+
+            return;
+        }
+
         if ($this->hasAlreadyReviewed) {
             $this->dispatch('toast', type: 'error', message: 'Anda sudah memberikan ulasan.');
 
