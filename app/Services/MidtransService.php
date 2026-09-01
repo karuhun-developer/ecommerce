@@ -68,7 +68,7 @@ class MidtransService
         ];
 
         // Response
-        $response = Http::withBasicAuth($this->serverKey.':', '')->post($this->baseUrl.'/v2/charge', $params);
+        $response = Http::withBasicAuth($this->serverKey, '')->post($this->baseUrl.'/v2/charge', $params);
         $responseJson = $response->json();
 
         return [
