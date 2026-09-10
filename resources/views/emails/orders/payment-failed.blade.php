@@ -13,7 +13,7 @@ Halo, kami ingin menginformasikan bahwa pembayaran untuk pesanan Anda berikut in
 
 Jika Anda masih ingin melakukan pembelian, silakan buat pesanan baru.
 
-<x-mail::button :url="route('orders.detail', ['reference' => $order->reference])" color="primary">
+<x-mail::button :url="route('orders.detail', ['reference' => $order->reference, ...$order->guestRouteParameters()])" color="primary">
 Cek Detail Pesanan
 </x-mail::button>
 

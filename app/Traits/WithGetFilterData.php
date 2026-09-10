@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 
 trait WithGetFilterData
@@ -21,8 +22,18 @@ trait WithGetFilterData
         string $order = 'desc',
         int $paginate = 10,
         string $s = '',
-        string $paginateFunction = 'fastPaginate',
-    ) {
+    ): LengthAwarePaginator {
+        $allowedOrderColumns = collect($searchBy)
+            ->pluck('field')
+            ->filter(fn (mixed $field): bool => is_string($field) && $field !== '')
+            ->values()
+            ->all();
+        $orderBy = in_array($orderBy, $allowedOrderColumns, true)
+            ? $orderBy
+            : ($allowedOrderColumns[0] ?? 'id');
+        $order = in_array(strtolower($order), ['asc', 'desc'], true) ? strtolower($order) : 'desc';
+        $paginate = in_array($paginate, [10, 25, 50, 100], true) ? $paginate : 10;
+
         $model = $model->when(! empty($s) && ! empty($searchBy), function ($query) use ($s, $searchBy) {
             $query->where(function ($query) use ($s, $searchBy) {
                 foreach ($searchBy as $value) {
@@ -36,6 +47,6 @@ trait WithGetFilterData
 
         $model = $model->orderBy($orderBy, $order);
 
-        return $model->{$paginateFunction}($paginate);
+        return $model->fastPaginate($paginate);
     }
 }

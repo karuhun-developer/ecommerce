@@ -3,23 +3,36 @@
 namespace App\Actions\Cms\Product\Product;
 
 use App\Models\Attribute\Attribute;
+use App\Models\Attribute\AttributeGroup;
 use App\Models\Product\Product;
 use App\Models\Product\ProductAttribute;
 use App\Models\Product\ProductAttributeGroup;
 use App\Models\Product\ProductFlat;
+use App\Models\Shop\Shop;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 class StoreProductAction
 {
     /**
      * Handle the action.
      */
-    public function handle(array $data): Product
+    public function handle(Shop $shop, array $data): Product
     {
-        return DB::transaction(function () use ($data) {
+        Gate::authorize('create'.Product::class);
+
+        $user = auth()->user();
+        abort_unless($user instanceof User, 403);
+
+        $shop = Shop::query()->accessibleTo($user)->findOrFail($shop->getKey());
+
+        return DB::transaction(function () use ($shop, $data) {
             $product = Product::create([
                 'product_category_id' => $data['product_category_id'],
-                'shop_id' => $data['shop_id'],
+                'shop_id' => $shop->id,
                 'type' => $data['type'],
                 'name' => $data['name'],
                 'description' => $data['description'] ?? null,
@@ -49,23 +62,21 @@ class StoreProductAction
                     'stock' => 0,
                 ]);
             } else {
-                $groups = collect($data['attributes'] ?? [])->filter(fn ($g) => ! empty($g['attributes']));
+                $groups = collect($data['attributes'] ?? [])->filter(fn (array $group): bool => ! empty($group['attributes']));
 
-                $createdGroups = [];
                 $attributePools = [];
 
                 foreach ($groups as $groupData) {
+                    $attributeGroup = $this->resolveAttributeGroup($shop, $groupData);
                     $group = ProductAttributeGroup::create([
                         'product_id' => $product->id,
-                        'attribute_group_id' => $groupData['group_id'],
+                        'attribute_group_id' => $attributeGroup->id,
                     ]);
 
-                    $createdGroups[$groupData['group_id']] = $group->id;
-
-                    $attrs = Attribute::whereIn('id', $groupData['attributes'])->get();
-                    $attributePools[] = $attrs->map(function ($attr) use ($group) {
+                    $attributes = $this->resolveAttributes($shop, $attributeGroup, $groupData['attributes']);
+                    $attributePools[] = $attributes->map(function (Attribute $attribute) use ($group): array {
                         return [
-                            'attribute' => $attr,
+                            'attribute' => $attribute,
                             'group_id' => $group->id,
                         ];
                     })->toArray();
@@ -74,8 +85,6 @@ class StoreProductAction
                 $combinations = $this->cartesianProduct($attributePools);
 
                 foreach ($combinations as $combo) {
-                    // Combine names, e.g. "T-Shirt - Red, M"
-                    // $combo is array of attribute elements like [['attribute' => attr1, 'group_id' => x], ...]
                     if (! is_array($combo)) {
                         $combo = [$combo];
                     }
@@ -113,7 +122,51 @@ class StoreProductAction
         });
     }
 
-    private function cartesianProduct($arrays)
+    /**
+     * @param  array{group_id: int|string, attributes: array<int, int|string>}  $groupData
+     */
+    private function resolveAttributeGroup(Shop $shop, array $groupData): AttributeGroup
+    {
+        return AttributeGroup::query()
+            ->whereKey((int) $groupData['group_id'])
+            ->where(function ($query) use ($shop): void {
+                $query->whereNull('shop_id')->orWhere('shop_id', $shop->id);
+            })
+            ->firstOrFail();
+    }
+
+    /**
+     * @param  array<int, int|string>  $attributeIds
+     * @return Collection<int, Attribute>
+     */
+    private function resolveAttributes(Shop $shop, AttributeGroup $group, array $attributeIds): Collection
+    {
+        $attributeIds = collect($attributeIds)
+            ->map(fn (mixed $attributeId): int => (int) $attributeId)
+            ->unique()
+            ->values();
+
+        $attributes = $group->attributes()
+            ->whereIn('id', $attributeIds->all())
+            ->where(function ($query) use ($shop): void {
+                $query->whereNull('shop_id')->orWhere('shop_id', $shop->id);
+            })
+            ->get();
+
+        if ($attributes->count() !== $attributeIds->count()) {
+            throw ValidationException::withMessages([
+                'selectedAttributes' => 'The selected attributes are invalid.',
+            ]);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @param  array<int, array<int, mixed>>  $arrays
+     * @return array<int, array<int, mixed>>
+     */
+    private function cartesianProduct(array $arrays): array
     {
         if (empty($arrays)) {
             return [[]];

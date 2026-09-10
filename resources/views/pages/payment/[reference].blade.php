@@ -18,7 +18,8 @@ render(function (View $view, string $reference) {
     if (auth()->check()) {
         $order->where('user_id', auth()->id());
     } else {
-        $order->whereNull('user_id');
+        $order->whereNull('user_id')
+            ->where('access_token', request()->query('token'));
     }
 
     $order = $order->firstOrFail();

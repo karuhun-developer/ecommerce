@@ -12,8 +12,21 @@ new class extends Component
 
     public bool $isPaid = false;
 
-    public function mount()
+    public function mount(): void
     {
+        $token = request()->query('token');
+
+        if ($this->order->user_id !== null) {
+            abort_unless(auth()->id() === $this->order->user_id, 404);
+        } else {
+            abort_unless(
+                is_string($token)
+                && filled($this->order->access_token)
+                && hash_equals($this->order->access_token, $token),
+                404,
+            );
+        }
+
         $this->order->load(
             'user',
             'location',

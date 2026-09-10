@@ -162,7 +162,7 @@
                             </div>
                             <div class="text-right">
                                 <p class="text-sm text-gray-500 mb-1">Kuantitas</p>
-                                <p class="font-bold text-gray-900 dark:text-zinc-100 mb-3">{{ $item->qty }}</p>
+                                <p class="font-bold text-gray-900 dark:text-zinc-100 mb-3">{{ $item->quantity }}</p>
                                 
                                 <p class="text-sm text-gray-500 mb-1">Total Harga</p>
                                 <p class="font-bold text-gray-900 dark:text-zinc-100">Rp{{ numberToCurrency($item->total) }}</p>

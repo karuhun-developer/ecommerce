@@ -7,6 +7,7 @@ use App\Models\User;
 use Flux\Flux;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -16,6 +17,11 @@ new class extends Component
     public $modelInstance = User::class;
 
     public $isUpdate = false;
+
+    public function mount(): void
+    {
+        abort_unless(auth()->user()?->hasRole('superadmin'), 403);
+    }
 
     #[On('set-action')]
     public function setAction($id = null)
@@ -38,6 +44,7 @@ new class extends Component
     }
 
     // Record data
+    #[Locked]
     public $id;
 
     public $role;
@@ -53,7 +60,7 @@ new class extends Component
     {
         Gate::authorize('show'.$this->modelInstance);
 
-        $record = User::find($id);
+        $record = User::findOrFail($id);
         $this->fill(
             $record->only(
                 'id',
@@ -61,7 +68,7 @@ new class extends Component
                 'email',
             )
         );
-        $this->role = $record->getRoleNames()[0];
+        $this->role = $record->getRoleNames()->first();
         $this->reset('password');
     }
 
@@ -92,11 +99,20 @@ new class extends Component
         if ($this->isUpdate) {
             $updateAction->handle(
                 user: User::findOrFail($this->id),
-                data: $this->except('password'),
+                data: [
+                    'role' => $this->role,
+                    'name' => $this->name,
+                    'email' => $this->email,
+                ],
             );
         } else {
             $storeAction->handle(
-                data: $this->all(),
+                data: [
+                    'role' => $this->role,
+                    'name' => $this->name,
+                    'email' => $this->email,
+                    'password' => $this->password,
+                ],
             );
         }
 

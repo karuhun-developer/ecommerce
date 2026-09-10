@@ -1,12 +1,14 @@
 <?php
 
 use function Laravel\Folio\name;
+use function Laravel\Folio\middleware;
 use function Laravel\Folio\render;
 use Artesaos\SEOTools\Facades\SEOMeta;
 use Artesaos\SEOTools\Facades\OpenGraph;
 use Illuminate\View\View;
 
 name('account.reviews');
+middleware('auth');
 
 render(function (View $view) {
     $title = 'Ulasan Saya';

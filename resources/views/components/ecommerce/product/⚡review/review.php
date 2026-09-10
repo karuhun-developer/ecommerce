@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\Product\Product;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -9,18 +11,19 @@ new class extends Component
 {
     use WithPagination;
 
+    #[Locked]
     public Product $product;
 
-    public $filter = 'all'; // all, with_media
+    public string $filter = 'all';
 
-    public function setFilter($filter)
+    public function setFilter(string $filter): void
     {
-        $this->filter = $filter;
+        $this->filter = in_array($filter, ['all', 'with_media'], true) ? $filter : 'all';
         $this->resetPage();
     }
 
     #[Computed]
-    public function ratingDistribution()
+    public function ratingDistribution(): array
     {
         $distribution = [
             5 => 0,
@@ -56,7 +59,7 @@ new class extends Component
     }
 
     #[Computed]
-    public function reviews()
+    public function reviews(): LengthAwarePaginator
     {
         $query = $this->product->reviews()
             ->with(['user', 'media'])

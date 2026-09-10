@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Callback;
 use App\Actions\Api\V1\Callback\HandleBiteshipCallbackAction;
 use App\Http\Controllers\Controller;
 use App\Traits\WithReturnResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -12,32 +13,38 @@ class BiteshipController extends Controller
 {
     use WithReturnResponse;
 
-    public function callback(Request $request, HandleBiteshipCallbackAction $action)
+    public function callback(Request $request, HandleBiteshipCallbackAction $action): JsonResponse
     {
         $headerKey = config('services.biteship.webhook.header_key');
         $headerSecret = config('services.biteship.webhook.header_secret');
 
-        if ($headerKey && $headerSecret) {
-            $providedSecret = $request->header($headerKey);
+        if (blank($headerKey) || blank($headerSecret)) {
+            Log::warning('Biteship webhook authentication rejected', [
+                'reason' => 'configuration_missing',
+            ]);
 
-            if ($providedSecret !== $headerSecret) {
-                Log::warning('Invalid Biteship Webhook Signature', [
-                    'ip' => $request->ip(),
-                ]);
+            return $this->responseWithError('Unauthorized', 401);
+        }
 
-                return $this->responseWithError('Unauthorized', 401);
-            }
+        $providedSecret = $request->header((string) $headerKey);
+
+        if (! is_string($providedSecret) || blank($providedSecret) || ! hash_equals((string) $headerSecret, $providedSecret)) {
+            Log::warning('Biteship webhook authentication rejected', [
+                'reason' => blank($providedSecret) ? 'header_missing' : 'signature_invalid',
+            ]);
+
+            return $this->responseWithError('Unauthorized', 401);
         }
 
         try {
             $action->handle($request->all());
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Biteship Callback Error', [
-                'error' => $e->getMessage(),
+                'exception' => $e::class,
+                'code' => $e->getCode(),
             ]);
 
             $status = $e->getCode() ?: 400;
-            // Map common HTTP status codes, default to 400 for unknown exception codes
             if (! in_array($status, [400, 401, 403, 404, 500])) {
                 $status = 400;
             }

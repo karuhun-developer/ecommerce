@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class MidtransService
@@ -43,7 +42,7 @@ class MidtransService
         string $orderId,
         int $amount,
         string $bank = 'bca',
-    ) {
+    ): array {
         // Validate bank
         $validBanks = [
             'bca',
@@ -51,7 +50,7 @@ class MidtransService
             'bri',
             'cimb',
         ];
-        if (! in_array($bank, $validBanks)) {
+        if (! in_array($bank, $validBanks, true)) {
             throw new \Exception('Invalid bank. Valid banks are: '.implode(', ', $validBanks));
         }
 
@@ -68,7 +67,11 @@ class MidtransService
         ];
 
         // Response
-        $response = Http::withBasicAuth($this->serverKey, '')->post($this->baseUrl.'/v2/charge', $params);
+        $response = Http::withBasicAuth((string) $this->serverKey, '')
+            ->connectTimeout(5)
+            ->timeout(15)
+            ->retry(3, 200, throw: false)
+            ->post($this->baseUrl.'/v2/charge', $params);
         $responseJson = $response->json();
 
         return [
@@ -99,7 +102,7 @@ class MidtransService
     public function createQris(
         string $orderId,
         int $amount,
-    ) {
+    ): array {
         // Param
         $params = [
             'payment_type' => 'qris',
@@ -110,7 +113,11 @@ class MidtransService
         ];
 
         // Response
-        $response = Http::withBasicAuth($this->serverKey.':', '')->post($this->baseUrl.'/v2/charge', $params);
+        $response = Http::withBasicAuth((string) $this->serverKey, '')
+            ->connectTimeout(5)
+            ->timeout(15)
+            ->retry(3, 200, throw: false)
+            ->post($this->baseUrl.'/v2/charge', $params);
         $responseJson = $response->json();
 
         return [
@@ -143,7 +150,7 @@ class MidtransService
         string $orderId,
         int $amount,
         string $cardToken,
-    ) {
+    ): array {
         // Param
         $params = [
             'payment_type' => 'credit_card',
@@ -158,7 +165,11 @@ class MidtransService
         ];
 
         // Response
-        $response = Http::withBasicAuth($this->serverKey.':', '')->post($this->baseUrl.'/v2/charge', $params);
+        $response = Http::withBasicAuth((string) $this->serverKey, '')
+            ->connectTimeout(5)
+            ->timeout(15)
+            ->retry(3, 200, throw: false)
+            ->post($this->baseUrl.'/v2/charge', $params);
         $responseJson = $response->json();
 
         return [
@@ -173,8 +184,12 @@ class MidtransService
 
     public function validateSignature(string $orderId, string $statusCode, string $grossAmount, string $signatureKey): bool
     {
+        if (blank($this->serverKey) || blank($signatureKey)) {
+            return false;
+        }
+
         $hashedKey = hash('sha512', $orderId.$statusCode.$grossAmount.$this->serverKey);
 
-        return $hashedKey === $signatureKey;
+        return hash_equals($hashedKey, $signatureKey);
     }
 }

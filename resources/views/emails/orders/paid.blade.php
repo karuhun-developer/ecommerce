@@ -13,7 +13,7 @@ Halo, kami telah menerima pembayaran Anda untuk pesanan berikut. Pesanan Anda ak
 
 Untuk melihat status terbaru dan detail pesanan, silakan klik tombol di bawah ini:
 
-<x-mail::button :url="route('orders.detail', ['reference' => $order->reference])" color="success">
+<x-mail::button :url="route('orders.detail', ['reference' => $order->reference, ...$order->guestRouteParameters()])" color="success">
 Cek Detail Pesanan
 </x-mail::button>
 

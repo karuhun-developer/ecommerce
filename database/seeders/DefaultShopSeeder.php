@@ -22,21 +22,6 @@ class DefaultShopSeeder extends Seeder
                 'description' => 'This is the default shop created by the seeder.',
             ]);
 
-            $biteshipService = new BiteshipService;
-
-            // Create location in Biteship and local database
-            $biteshipLocation = $biteshipService->createLocation([
-                'name' => 'Default Shop Location',
-                'contact_name' => 'Default Shop Contact',
-                'contact_phone' => '081234567890',
-                'address' => 'Jl. Default Shop No. 1, Ngamprah, Bandung Barat, Jawa Barat. 40552',
-                'note' => 'This is the default shop location created by the seeder.',
-                'postal_code' => 40552,
-                'latitude' => -6.8498780780658,
-                'longitude' => 107.51830750045,
-                'type' => 'origin',
-            ]);
-
             Location::create([
                 'user_id' => $defaultShop->user_id,
                 'shop_id' => $defaultShop->id,
@@ -53,6 +38,23 @@ class DefaultShopSeeder extends Seeder
                 'longitude' => '107.51830750045',
                 'type' => 'origin',
             ]);
+
+            if (! blank(config('services.biteship.key'))) {
+                $biteshipService = new BiteshipService;
+
+                // Create location in Biteship and local database
+                $biteshipLocation = $biteshipService->createLocation([
+                    'name' => 'Default Shop Location',
+                    'contact_name' => 'Default Shop Contact',
+                    'contact_phone' => '081234567890',
+                    'address' => 'Jl. Default Shop No. 1, Ngamprah, Bandung Barat, Jawa Barat. 40552',
+                    'note' => 'This is the default shop location created by the seeder.',
+                    'postal_code' => 40552,
+                    'latitude' => -6.8498780780658,
+                    'longitude' => 107.51830750045,
+                    'type' => 'origin',
+                ]);
+            }
         }
     }
 }

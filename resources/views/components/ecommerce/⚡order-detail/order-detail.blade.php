@@ -9,7 +9,7 @@
             <flux:spacer />
         @endguest
         @if(!$isPaid)
-            <flux:button href="{{ route('payment.show', ['reference' => $order->reference]) }}" icon="credit-card" variant="primary" size="sm" wire:navigate>
+            <flux:button href="{{ route('payment.show', ['reference' => $order->reference, ...$order->guestRouteParameters()]) }}" icon="credit-card" variant="primary" size="sm" wire:navigate>
                 Bayar Sekarang
             </flux:button>
         @endif

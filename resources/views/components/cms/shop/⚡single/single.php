@@ -3,26 +3,36 @@
 use App\Actions\Cms\Shop\StoreShopAction;
 use App\Actions\Cms\Shop\UpdateShopAction;
 use App\Models\Shop\Shop;
+use App\Models\User;
 use App\Services\BiteshipService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 new class extends Component
 {
-    // Model instance
-    public $modelInstance = Shop::class;
+    #[Locked]
+    public string $modelInstance = Shop::class;
 
-    public Shop $shop;
+    #[Locked]
+    public ?Shop $shop = null;
 
-    public function mount()
+    public function mount(): void
     {
         Gate::authorize('view'.$this->modelInstance);
+
+        $user = auth()->user();
+        abort_unless($user instanceof User, 403);
+
+        if ($this->shop) {
+            $this->shop = Shop::query()->accessibleTo($user)->findOrFail($this->shop->getKey());
+        }
 
         $this->loadDefaultShop();
     }
 
-    // Record data
+    #[Locked]
     public $id;
 
     public $name;
@@ -51,16 +61,22 @@ new class extends Component
 
     public $searchArea;
 
-    public $areas = [];
+    public array $areas = [];
 
-    public function loadDefaultShop()
+    public function loadDefaultShop(): void
     {
-        $record = $this->shop ?? Shop::first();
+        $user = auth()->user();
+        abort_unless($user instanceof User, 403);
 
-        // If no shop record exists, we can choose to either create a default one or simply return without setting data.
+        $record = $this->shop
+            ? Shop::query()->accessibleTo($user)->findOrFail($this->shop->getKey())
+            : Shop::query()->accessibleTo($user)->first();
+
         if (! $record) {
             return;
         }
+
+        $this->shop = $record;
 
         $this->fill(
             $record->only(
@@ -88,8 +104,7 @@ new class extends Component
         $this->dispatch('update-jodit-content', $this->description);
     }
 
-    // Biteship area search
-    public function searchBiteshipArea(BiteshipService $biteshipService)
+    public function searchBiteshipArea(BiteshipService $biteshipService): void
     {
         $this->validate([
             'searchArea' => 'required|string|min:3',
@@ -100,17 +115,17 @@ new class extends Component
                 'input' => $this->searchArea,
             ]);
             $this->areas = $res['areas'] ?? [];
-        } catch (Exception $e) {
-            // Toast message
+        } catch (Throwable $exception) {
+            report($exception);
+
             $this->dispatch('toast',
                 type: 'error',
-                message: 'Failed to search areas: '.$e->getMessage()
+                message: 'Unable to search areas right now. Please try again.',
             );
         }
     }
 
-    // Select area from search results
-    public function selectArea($id, $name, $postal_code)
+    public function selectArea(string $id, string $name, string $postal_code): void
     {
         $this->biteship_area_id = $id;
         $this->area_string = $name;
@@ -119,7 +134,7 @@ new class extends Component
         $this->areas = [];
     }
 
-    public function submit(StoreShopAction $storeAction, UpdateShopAction $updateAction)
+    public function submit(StoreShopAction $storeAction, UpdateShopAction $updateAction): void
     {
         Gate::authorize('update'.$this->modelInstance);
 
@@ -137,21 +152,35 @@ new class extends Component
             'biteship_area_id' => 'required|string',
         ]);
 
-        // Create or update shop based on presence of ID
+        $shop = null;
+
         if ($this->id) {
-            $updateAction->handle(
-                shop: Shop::findOrFail($this->id),
-                data: $this->all(),
+            $user = auth()->user();
+            abort_unless($user instanceof User, 404);
+            $shop = Shop::query()->accessibleTo($user)->findOrFail($this->id);
+        }
+
+        try {
+            if ($shop) {
+                $this->shop = $updateAction->handle(shop: $shop, data: $this->shopPayload());
+
+                $message = 'Shop updated successfully.';
+            } else {
+                $this->shop = $storeAction->handle(data: $this->shopPayload());
+
+                $message = 'Shop created successfully.';
+                $this->loadDefaultShop();
+            }
+        } catch (Throwable $exception) {
+            report($exception);
+
+            $this->dispatch(
+                'toast',
+                type: 'error',
+                message: 'Unable to save the shop right now. Please try again.',
             );
 
-            $message = 'Shop updated successfully.';
-        } else {
-            $storeAction->handle(
-                data: $this->all(),
-            );
-
-            $message = 'Shop created successfully.';
-            $this->loadDefaultShop();
+            return;
         }
 
         // Forget default shop cache to reflect changes immediately
@@ -162,5 +191,23 @@ new class extends Component
             type: 'success',
             message: $message,
         );
+    }
+
+    private function shopPayload(): array
+    {
+        return [
+            'name' => $this->name,
+            'description' => $this->description,
+            'location_name' => $this->location_name,
+            'contact_name' => $this->contact_name,
+            'contact_phone' => $this->contact_phone,
+            'address' => $this->address,
+            'note' => $this->note,
+            'postal_code' => $this->postal_code,
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
+            'biteship_area_id' => $this->biteship_area_id,
+            'area_string' => $this->area_string,
+        ];
     }
 };

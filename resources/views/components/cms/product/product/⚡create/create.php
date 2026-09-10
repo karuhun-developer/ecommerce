@@ -5,18 +5,21 @@ use App\Models\Attribute\AttributeGroup;
 use App\Models\Product\Product;
 use App\Models\Product\ProductCategory;
 use App\Models\Shop\Shop;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 new class extends Component
 {
-    // Model instance
-    public $modelInstance = Product::class;
+    #[Locked]
+    public string $modelInstance = Product::class;
 
     #[On('reset-form')]
-    public function resetForm()
+    public function resetForm(): void
     {
         Gate::authorize('create'.$this->modelInstance);
 
@@ -25,9 +28,10 @@ new class extends Component
             'product_category_id',
             'name',
             'description',
+            'selectedAttributes',
         ]);
 
-        $this->shop_id = isSingleShop() ? getDefaultShop()?->id : null;
+        $this->shop_id = isSingleShop() ? $this->shops->first()?->id : null;
         $this->price = 0;
         $this->weight = 0;
         $this->length = 0;
@@ -36,33 +40,50 @@ new class extends Component
         $this->is_unlimited_stock = false;
         $this->type = 'simple';
 
-        $groups = AttributeGroup::with('attributes')->get();
-        foreach ($groups as $group) {
-            $this->selectedAttributes[$group->id] = $group->attributes->pluck('id')->toArray();
-        }
+        $this->resetSelectedAttributes();
 
         $this->dispatch('update-jodit-content', '');
     }
 
-    #[Computed]
-    public function attributeGroups()
+    public function updatedShopId(): void
     {
-        return AttributeGroup::with('attributes')->get();
+        $this->resetSelectedAttributes();
     }
 
     #[Computed]
-    public function shops()
+    public function attributeGroups(): Collection
     {
-        return Shop::all();
+        $shop = $this->selectedShop();
+
+        if (! $shop) {
+            return new Collection;
+        }
+
+        return AttributeGroup::query()
+            ->where(function ($query) use ($shop): void {
+                $query->whereNull('shop_id')->orWhere('shop_id', $shop->id);
+            })
+            ->with(['attributes' => function ($query) use ($shop): void {
+                $query->whereNull('shop_id')->orWhere('shop_id', $shop->id);
+            }])
+            ->get();
     }
 
     #[Computed]
-    public function categories()
+    public function shops(): Collection
+    {
+        $user = auth()->user();
+        abort_unless($user instanceof User, 403);
+
+        return Shop::query()->accessibleTo($user)->get();
+    }
+
+    #[Computed]
+    public function categories(): Collection
     {
         return ProductCategory::all();
     }
 
-    // Record data
     public $shop_id;
 
     public $product_category_id;
@@ -85,16 +106,16 @@ new class extends Component
 
     public $type; // simple or variable
 
-    public $selectedAttributes;
+    public array $selectedAttributes = [];
 
-    public function submit(StoreProductAction $storeAction)
+    public function submit(StoreProductAction $storeAction): void
     {
         Gate::authorize('create'.$this->modelInstance);
 
         $this->price = currencyToNumber($this->price);
 
         $this->validate([
-            'shop_id' => 'required|exists:shops,id',
+            'shop_id' => 'required|integer',
             'product_category_id' => 'required|exists:product_categories,id',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -105,7 +126,12 @@ new class extends Component
             'width' => 'required|numeric|min:0',
             'height' => 'required|numeric|min:0',
             'is_unlimited_stock' => 'required|boolean',
+            'selectedAttributes' => 'array',
+            'selectedAttributes.*' => 'array',
+            'selectedAttributes.*.*' => 'integer',
         ]);
+
+        $shop = $this->selectedShop() ?? abort(404);
 
         $attributesData = [];
         if ($this->type === 'variable') {
@@ -125,8 +151,18 @@ new class extends Component
         }
 
         $product = $storeAction->handle(
+            shop: $shop,
             data: [
-                ...$this->all(),
+                'product_category_id' => $this->product_category_id,
+                'type' => $this->type,
+                'name' => $this->name,
+                'description' => $this->description,
+                'price' => $this->price,
+                'weight' => $this->weight,
+                'length' => $this->length,
+                'width' => $this->width,
+                'height' => $this->height,
+                'is_unlimited_stock' => $this->is_unlimited_stock,
                 'attributes' => $attributesData,
             ],
         );
@@ -139,5 +175,28 @@ new class extends Component
 
         // Redirect to edit page
         $this->redirectRoute('cms.product.edit', ['product_id' => $product->id], navigate: true);
+    }
+
+    private function selectedShop(): ?Shop
+    {
+        $user = auth()->user();
+        abort_unless($user instanceof User, 403);
+
+        if (! $this->shop_id) {
+            return null;
+        }
+
+        return Shop::query()
+            ->accessibleTo($user)
+            ->find((int) $this->shop_id);
+    }
+
+    private function resetSelectedAttributes(): void
+    {
+        $this->selectedAttributes = [];
+
+        foreach ($this->attributeGroups as $group) {
+            $this->selectedAttributes[$group->id] = $group->attributes->pluck('id')->all();
+        }
     }
 };

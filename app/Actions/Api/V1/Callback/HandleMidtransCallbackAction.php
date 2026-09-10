@@ -7,8 +7,10 @@ use App\Mail\OrderPaymentFailed;
 use App\Models\Order\Order;
 use App\Models\Payment\Payment;
 use App\Services\MidtransService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use InvalidArgumentException;
 
 class HandleMidtransCallbackAction
 {
@@ -16,105 +18,138 @@ class HandleMidtransCallbackAction
         public readonly MidtransService $midtransService,
     ) {}
 
-    public function handle(array $payload)
+    /** @param array<string, mixed> $payload */
+    public function handle(array $payload): Payment
     {
-        Log::info('Midtrans Callback Received', [
-            'request' => $payload,
+        $this->validatePayload($payload);
+
+        $orderId = (string) $payload['order_id'];
+        $statusCode = (string) $payload['status_code'];
+        $grossAmount = (string) $payload['gross_amount'];
+        $signatureKey = (string) $payload['signature_key'];
+        $transactionStatus = (string) $payload['transaction_status'];
+
+        Log::info('Midtrans callback received', [
+            'order_id' => $orderId,
+            'status_code' => $statusCode,
+            'transaction_status' => $transactionStatus,
         ]);
 
-        // Validate signature key
-        if (! $this->midtransService->validateSignature(
-            $payload['order_id'],
-            $payload['status_code'],
-            $payload['gross_amount'],
-            $payload['signature_key'],
-        )) {
+        if (! $this->midtransService->validateSignature($orderId, $statusCode, $grossAmount, $signatureKey)) {
             throw new \Exception('Invalid signature key', 403);
         }
 
-        // Get the order ID without the suffix
-        $orderId = $payload['order_id'];
-        $orderId = explode('-', $orderId)[0];
+        return DB::transaction(function () use ($orderId, $transactionStatus): Payment {
+            $payment = Payment::query()
+                ->where('order_id', $orderId)
+                ->lockForUpdate()
+                ->first();
 
-        $payment = Payment::where('order_id', $orderId)->first();
+            if (! $payment) {
+                throw new \Exception('Transaction not found', 404);
+            }
 
-        if (! $payment) {
-            throw new \Exception('Transaction not found', 404);
-        }
+            $this->handlePaymentStatus($transactionStatus, $payment);
 
-        if ($payment->paid_at || ($payment->expires_at && $payment->expires_at?->isPast())) {
-            throw new \Exception('Transaction already paid or expired', 400);
-        }
-
-        $this->handlePaymentStatus($payload['transaction_status'], $payment);
-
-        return $payment;
+            return $payment->refresh();
+        });
     }
 
-    protected function handlePaymentStatus($transactionStatus, Payment $payment)
+    private function handlePaymentStatus(string $transactionStatus, Payment $payment): void
     {
-        switch ($transactionStatus) {
-            case 'capture':
-                $payment->update([
-                    'paid_at' => now(),
-                ]);
-                $this->capture($payment);
-                break;
-            case 'settlement':
-                $payment->update([
-                    'paid_at' => now(),
-                ]);
-                $this->capture($payment);
-                break;
-            case 'pending':
-                break;
-            case 'deny':
-                $payment->update([
-                    'expires_at' => now(),
-                ]);
-                $this->deny($payment);
-                break;
-            case 'expire':
-                $payment->update([
-                    'expires_at' => now(),
-                ]);
-                $this->deny($payment);
-                break;
-            case 'cancel':
-                $payment->update([
-                    'expires_at' => now(),
-                ]);
-                $this->deny($payment);
-                break;
+        if (in_array($transactionStatus, ['capture', 'settlement'], true)) {
+            $this->markPaid($payment);
+
+            return;
+        }
+
+        if (in_array($transactionStatus, ['deny', 'expire', 'cancel'], true)) {
+            $this->markFailed($payment);
+
+            return;
+        }
+
+        if ($transactionStatus !== 'pending') {
+            Log::warning('Midtrans callback has unsupported status', [
+                'order_id' => $payment->order_id,
+                'transaction_status' => $transactionStatus,
+            ]);
         }
     }
 
-    protected function capture(Payment $payment)
+    private function markPaid(Payment $payment): void
     {
-        if ($payment->payable_type === Order::class) {
-            $this->handleAfterOrderPaid($payment->payable);
+        if ($payment->paid_at !== null || $this->hasFailed($payment)) {
+            return;
         }
-    }
 
-    protected function handleAfterOrderPaid(Order $order)
-    {
-        $order->update([
-            'status' => true, // Mark the order as paid
+        $payment->update([
+            'paid_at' => now(),
         ]);
 
-        $email = $order->user->email ?? $order->guest_data['contact_email'] ?? null;
+        $order = $this->lockedOrder($payment);
+
+        if (! $order) {
+            return;
+        }
+
+        $order->update([
+            'status' => true,
+        ]);
+
+        $email = $order->user?->email ?? data_get($order->guest_data, 'contact_email');
+
         if ($email) {
-            Mail::to($email)->send(new OrderPaid($order));
+            DB::afterCommit(fn () => Mail::to($email)->send(new OrderPaid($order)));
         }
     }
 
-    protected function deny(Payment $payment)
+    private function markFailed(Payment $payment): void
     {
-        if ($payment->payable_type === Order::class) {
-            $order = $payment->payable;
-            $email = $order->user->email ?? $order->guest_data['contact_email'] ?? null;
-            if ($email) {
-                Mail::to($email)->send(new OrderPaymentFailed($order));
+        if ($payment->paid_at !== null || $this->hasFailed($payment)) {
+            return;
+        }
+
+        $payment->update([
+            'expired_at' => now(),
+        ]);
+
+        $order = $this->lockedOrder($payment);
+
+        if (! $order) {
+            return;
+        }
+
+        $email = $order->user?->email ?? data_get($order->guest_data, 'contact_email');
+
+        if ($email) {
+            DB::afterCommit(fn () => Mail::to($email)->send(new OrderPaymentFailed($order)));
+        }
+    }
+
+    private function hasFailed(Payment $payment): bool
+    {
+        return $payment->expired_at?->isPast() ?? false;
+    }
+
+    private function lockedOrder(Payment $payment): ?Order
+    {
+        if ($payment->payable_type !== Order::class) {
+            return null;
+        }
+
+        return Order::query()
+            ->with('user')
+            ->lockForUpdate()
+            ->find($payment->payable_id);
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function validatePayload(array $payload): void
+    {
+        foreach (['order_id', 'status_code', 'gross_amount', 'signature_key', 'transaction_status'] as $field) {
+            if (! isset($payload[$field]) || ! is_scalar($payload[$field])) {
+                throw new InvalidArgumentException("Missing Midtrans callback field: {$field}", 400);
             }
         }
     }

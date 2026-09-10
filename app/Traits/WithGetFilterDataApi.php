@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 
 trait WithGetFilterDataApi
@@ -15,8 +16,20 @@ trait WithGetFilterDataApi
         string $order = 'asc',
         int $paginate = 10,
         string $s = '',
-        string $paginateFunction = 'fastPaginate',
-    ) {
+    ): LengthAwarePaginator {
+        $allowedOrderColumns = array_values(array_filter(
+            $searchBy,
+            fn (mixed $field): bool => is_string($field) && $field !== '',
+        ));
+        $searchBySpecific = in_array($searchBySpecific, $allowedOrderColumns, true)
+            ? $searchBySpecific
+            : '';
+        $orderBy = in_array($orderBy, $allowedOrderColumns, true)
+            ? $orderBy
+            : ($allowedOrderColumns[0] ?? 'id');
+        $order = in_array(strtolower($order), ['asc', 'desc'], true) ? strtolower($order) : 'asc';
+        $paginate = in_array($paginate, [10, 25, 50, 100], true) ? $paginate : 10;
+
         $model = $model->where(function ($query) use ($s, $searchBy, $searchBySpecific) {
             if ($searchBySpecific) {
                 $query->where($searchBySpecific, 'like', "%$s%");
@@ -29,8 +42,6 @@ trait WithGetFilterDataApi
 
         $model = $model->orderBy($orderBy, $order);
 
-        // $model = $model->latest();
-
-        return $model->{$paginateFunction}($paginate);
+        return $model->fastPaginate($paginate);
     }
 }

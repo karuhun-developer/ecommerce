@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Shop\Shop;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 use function Laravel\Folio\name;
@@ -9,20 +12,29 @@ name('cms.shop');
 
 // Page title and breadcrumbs
 render(function (View $view) {
+    Gate::authorize('view'.Shop::class);
+
+    $user = auth()->user();
+    abort_unless($user instanceof User, 403);
+
     $title = 'Shop Management';
     $description = 'Manage your shop(s) and location details.';
+    $showSingleShop = isSingleShop() || $user->hasRole('shopowner');
+    $shop = $showSingleShop
+        ? Shop::query()->accessibleTo($user)->first()
+        : null;
     $breadcrumbs = [
         [
             'label' => 'Shop',
-            'url' => '#'
+            'url' => '#',
         ],
         [
             'label' => 'Management',
-            'url' => null
+            'url' => null,
         ],
     ];
 
-    $view->with(compact('title', 'description', 'breadcrumbs'));
+    $view->with(compact('title', 'description', 'breadcrumbs', 'showSingleShop', 'shop'));
 }); ?>
 
 <x-layouts.app :$title>
@@ -45,11 +57,8 @@ render(function (View $view) {
                 {{ $description }}
             </flux:text>
         </div>
-        
-        @if(isSingleShop() || auth()->user()->isShopOwner())
-            @php
-                $shop = auth()->user()->isShopOwner() ? \App\Models\Shop\Shop::where('user_id', auth()->id())->first() : \App\Models\Shop\Shop::first();
-            @endphp
+
+        @if($showSingleShop)
             <livewire:cms.shop.single :$shop />
         @else
             <livewire:cms.shop.table />

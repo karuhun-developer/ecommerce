@@ -34,10 +34,15 @@ class GetShippingRatesAction
 
         // --- Items: load weight/dimensions from ProductFlat ---
         $itemIds = collect($items)->keys()->toArray();
-        $flats = ProductFlat::whereIn('id', $itemIds)->get()->keyBy('id');
+        $flats = ProductFlat::query()
+            ->where('shop_id', $shop->id)
+            ->whereIn('id', $itemIds)
+            ->where('status', true)
+            ->get()
+            ->keyBy('id');
 
-        if ($flats->isEmpty()) {
-            throw new Exception('Item tidak ditemukan.');
+        if ($flats->count() !== count($itemIds)) {
+            throw new Exception('Item pengiriman tidak valid.');
         }
 
         $biteshipItems = $flats->map(fn ($flat) => [

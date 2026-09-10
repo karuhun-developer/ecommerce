@@ -38,6 +38,7 @@ new class extends BaseComponent
 
     public function mount()
     {
+        abort_unless(auth()->user()?->hasRole('superadmin'), 403);
         Gate::authorize('view'.$this->modelInstance);
 
         // Set default order by

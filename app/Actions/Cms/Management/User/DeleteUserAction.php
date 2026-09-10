@@ -11,6 +11,8 @@ class DeleteUserAction
      */
     public function handle(User $user): ?bool
     {
+        abort_unless(auth()->user()?->hasRole('superadmin'), 403);
+
         return $user->delete();
     }
 }

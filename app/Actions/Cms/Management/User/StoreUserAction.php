@@ -11,7 +11,13 @@ class StoreUserAction
      */
     public function handle(array $data): User
     {
-        $user = User::create($data);
+        abort_unless(auth()->user()?->hasRole('superadmin'), 403);
+
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+        ]);
 
         if (isset($data['role'])) {
             $user->syncRoles([$data['role']]);

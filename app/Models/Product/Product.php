@@ -4,12 +4,24 @@ namespace App\Models\Product;
 
 use App\Models\Order\OrderReview;
 use App\Models\Shop\Shop;
+use App\Models\User;
+use Database\Factories\Product\ProductFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\Sluggable\Attributes\Sluggable;
 
 #[Sluggable(from: 'name', to: 'slug')]
 class Product extends Model
 {
+    /** @use HasFactory<ProductFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'product_category_id',
         'shop_id',
@@ -44,33 +56,41 @@ class Product extends Model
         'status' => 'boolean',
     ];
 
-    public function shop()
+    public function shop(): BelongsTo
     {
         return $this->belongsTo(Shop::class);
     }
 
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(ProductCategory::class, 'product_category_id');
     }
 
-    public function productFlats()
+    public function productFlats(): HasMany
     {
         return $this->hasMany(ProductFlat::class);
     }
 
-    public function mainProductFlat()
+    public function mainProductFlat(): HasOne
     {
         return $this->hasOne(ProductFlat::class)->orderBy('id', 'asc');
     }
 
-    public function productAttributeGroups()
+    public function productAttributeGroups(): HasMany
     {
         return $this->hasMany(ProductAttributeGroup::class);
     }
 
-    public function reviews()
+    public function reviews(): MorphMany
     {
         return $this->morphMany(OrderReview::class, 'reviewable');
+    }
+
+    #[Scope]
+    protected function accessibleTo(Builder $query, User $user): void
+    {
+        if (! $user->hasRole('superadmin')) {
+            $query->whereHas('shop', fn (Builder $shopQuery) => $shopQuery->where('user_id', $user->id));
+        }
     }
 }

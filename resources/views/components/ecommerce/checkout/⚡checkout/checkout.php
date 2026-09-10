@@ -3,9 +3,9 @@
 use App\Actions\Ecommerce\Checkout\ResolveShopGroupsAction;
 use App\Actions\Ecommerce\Checkout\StoreCheckoutAction;
 use App\Actions\Ecommerce\Shipping\GetShippingRatesAction;
-use App\Models\Location\Location;
 use App\Models\Product\ProductFlat;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -26,6 +26,7 @@ new class extends Component
     /**
      * Resolved per-shop groups populated by resolveShopGroups().
      */
+    #[Locked]
     public $shopGroups = [];
 
     /**
@@ -97,7 +98,7 @@ new class extends Component
     #[On('shipping-address-selected')]
     public function onAddressSelected($locationId)
     {
-        $this->selectedLocationId = $locationId;
+        $this->selectedLocationId = (int) $locationId;
     }
 
     /**
@@ -105,8 +106,11 @@ new class extends Component
      */
     public function submit(?array $guestData, GetShippingRatesAction $getShippingRatesAction, StoreCheckoutAction $storeCheckoutAction)
     {
-        // Check if user is authenticated and no location is selected
-        if (auth()->check() && ! $this->selectedLocationId) {
+        $location = auth()->check()
+            ? auth()->user()->locations()->whereKey($this->selectedLocationId)->first()
+            : null;
+
+        if (auth()->check() && ! $location) {
             // Toast message
             $this->dispatch('toast',
                 type: 'error',
@@ -126,9 +130,24 @@ new class extends Component
             return;
         }
 
+        if (! auth()->check()) {
+            $guestData = Validator::make($guestData ?? [], [
+                'contact_name' => ['required', 'string', 'max:255'],
+                'contact_phone' => ['required', 'string', 'max:30'],
+                'email' => ['required', 'email', 'max:255'],
+                'address' => ['required', 'string', 'max:1000'],
+                'note' => ['nullable', 'string', 'max:1000'],
+                'postal_code' => ['required', 'string', 'max:20'],
+                'area_string' => ['required', 'string', 'max:255'],
+                'biteship_area_id' => ['required', 'string', 'max:255'],
+                'latitude' => ['required', 'numeric', 'between:-90,90'],
+                'longitude' => ['required', 'numeric', 'between:-180,180'],
+            ])->validate();
+        }
+
         // Validate the data before proceeding
         $this->validate([
-            'selectedLocationId' => 'nullable|integer|exists:locations,id',
+            'selectedLocationId' => 'nullable|integer',
             'shopRates' => 'required|array',
             'shopRates.*.courier_code' => 'required|string',
             'shopRates.*.courier_service_code' => 'required|string',
@@ -176,7 +195,7 @@ new class extends Component
 
             // Validate the shipping rates
             $destinationAreaId = auth()->check()
-                ? Location::find($this->selectedLocationId)?->biteship_area_id
+                ? $location?->biteship_area_id
                 : ($guestData['biteship_area_id'] ?? null);
 
             try {
@@ -194,7 +213,7 @@ new class extends Component
                 ]);
                 $this->dispatch('toast',
                     type: 'error',
-                    message: "Gagal mendapatkan tarif pengiriman untuk toko {$group['shop_name']}: ".$e->getMessage(),
+                    message: "Gagal mendapatkan tarif pengiriman untuk toko {$group['shop_name']}.",
                 );
 
                 return;
@@ -252,6 +271,7 @@ new class extends Component
             // Redirect to order detail page with the order reference
             return $this->redirectRoute('payment.show', [
                 'reference' => $checkout->reference,
+                ...$checkout->guestRouteParameters(),
             ], navigate: true);
         } catch (Exception $e) {
             // Log the error with additional context for debugging
@@ -259,7 +279,7 @@ new class extends Component
 
             $this->dispatch('toast',
                 type: 'error',
-                message: 'Gagal membuat order: '.$e->getMessage(),
+                message: 'Gagal membuat order. Silakan coba lagi.',
             );
 
             return;

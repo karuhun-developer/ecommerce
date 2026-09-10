@@ -12,16 +12,16 @@ abstract class BaseComponent extends Component
 {
     use WithChangeOrder, WithGetFilterData, WithPagination;
 
-    public $paginationOrderBy = 'id';
+    public string $paginationOrderBy = 'id';
 
-    public $paginationOrder = 'desc';
+    public string $paginationOrder = 'desc';
 
-    public $paginate = 10;
+    public int $paginate = 10;
 
-    public $search = '';
+    public string $search = '';
 
     #[On('reset-parent-page')]
-    public function resetParentPage()
+    public function resetParentPage(): void
     {
         $this->resetPage();
     }

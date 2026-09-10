@@ -18,7 +18,7 @@ Halo, pesanan Anda dari toko **{{ $orderShop->shop->name ?? 'Toko' }}** telah be
 
 Terima kasih telah berbelanja menggunakan layanan kami! Jangan lupa berikan ulasan untuk produk dan toko ya!
 
-<x-mail::button :url="route('orders.detail', ['reference' => $orderShop->order->reference])" color="success">
+<x-mail::button :url="route('orders.detail', ['reference' => $orderShop->order->reference, ...$orderShop->order->guestRouteParameters()])" color="success">
 Cek Detail Pesanan
 </x-mail::button>
 

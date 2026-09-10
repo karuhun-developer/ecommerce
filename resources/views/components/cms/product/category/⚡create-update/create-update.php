@@ -5,6 +5,7 @@ use App\Actions\Cms\Product\Category\UpdateCategoryAction;
 use App\Models\Product\ProductCategory;
 use Flux\Flux;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -13,13 +14,13 @@ new class extends Component
 {
     use WithFileUploads;
 
-    // Model instance
-    public $modelInstance = ProductCategory::class;
+    #[Locked]
+    public string $modelInstance = ProductCategory::class;
 
-    public $isUpdate = false;
+    public bool $isUpdate = false;
 
     #[On('set-action')]
-    public function setAction($id = null)
+    public function setAction(?int $id = null): void
     {
         $this->resetValidation();
 
@@ -33,7 +34,8 @@ new class extends Component
     }
 
     // Record data
-    public $id;
+    #[Locked]
+    public ?int $id = null;
 
     public $name;
 
@@ -46,11 +48,11 @@ new class extends Component
     public $image;
 
     // Get record data
-    public function getRecordData($id)
+    public function getRecordData(int $id): void
     {
         Gate::authorize('show'.$this->modelInstance);
 
-        $record = ProductCategory::find($id);
+        $record = ProductCategory::query()->findOrFail($id);
         $this->fill(
             $record->only(
                 'id',
@@ -63,7 +65,7 @@ new class extends Component
     }
 
     // Reset record data
-    public function resetRecordData()
+    public function resetRecordData(): void
     {
         $this->reset([
             'id',
@@ -76,7 +78,7 @@ new class extends Component
     }
 
     // Handle form submit
-    public function submit(StoreCategoryAction $storeAction, UpdateCategoryAction $updateAction)
+    public function submit(StoreCategoryAction $storeAction, UpdateCategoryAction $updateAction): void
     {
         Gate::authorize(($this->isUpdate ? 'update' : 'create').$this->modelInstance);
 
@@ -89,12 +91,12 @@ new class extends Component
 
         if ($this->isUpdate) {
             $updateAction->handle(
-                category: ProductCategory::findOrFail($this->id),
-                data: $this->all(),
+                category: ProductCategory::query()->findOrFail($this->id),
+                data: $this->categoryData(),
             );
         } else {
             $storeAction->handle(
-                data: $this->all(),
+                data: $this->categoryData(),
             );
         }
 
@@ -112,5 +114,16 @@ new class extends Component
 
         // Close modal
         Flux::modal('defaultModal')->close();
+    }
+
+    /** @return array{name: mixed, description: mixed, is_featured: mixed, image: mixed} */
+    private function categoryData(): array
+    {
+        return [
+            'name' => $this->name,
+            'description' => $this->description,
+            'is_featured' => $this->is_featured,
+            'image' => $this->image,
+        ];
     }
 };

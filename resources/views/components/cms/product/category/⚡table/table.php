@@ -3,16 +3,18 @@
 use App\Actions\Cms\Product\Category\DeleteCategoryAction;
 use App\Livewire\BaseComponent;
 use App\Models\Product\ProductCategory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 
 new class extends BaseComponent
 {
-    // Model instance
-    public $modelInstance = ProductCategory::class;
+    #[Locked]
+    public string $modelInstance = ProductCategory::class;
 
     // Pagination and Search
-    public $searchBy = [
+    public array $searchBy = [
         [
             'name' => 'Name',
             'field' => 'name',
@@ -27,7 +29,7 @@ new class extends BaseComponent
         ],
     ];
 
-    public function mount()
+    public function mount(): void
     {
         Gate::authorize('view'.$this->modelInstance);
 
@@ -35,7 +37,7 @@ new class extends BaseComponent
         $this->paginationOrderBy = 'name';
     }
 
-    public function render()
+    public function render(): View
     {
         if ($this->search != '') {
             $this->resetPage();
@@ -57,7 +59,7 @@ new class extends BaseComponent
     }
 
     #[On('delete')]
-    public function delete($id, DeleteCategoryAction $deleteAction)
+    public function delete(int $id, DeleteCategoryAction $deleteAction): void
     {
         Gate::authorize('delete'.$this->modelInstance);
 

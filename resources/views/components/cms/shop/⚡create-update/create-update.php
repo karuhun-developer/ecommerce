@@ -3,20 +3,24 @@
 use App\Actions\Cms\Shop\StoreShopAction;
 use App\Actions\Cms\Shop\UpdateShopAction;
 use App\Models\Shop\Shop;
+use App\Models\User;
 use App\Services\BiteshipService;
 use Flux\Flux;
+use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 new class extends Component
 {
-    // Model instance
-    public $modelInstance = Shop::class;
+    #[Locked]
+    public string $modelInstance = Shop::class;
 
-    public $isUpdate = false;
+    #[Locked]
+    public bool $isUpdate = false;
 
     #[On('set-action')]
-    public function setAction($id = null)
+    public function setAction(int|string|null $id = null): void
     {
         $this->resetValidation();
 
@@ -29,7 +33,7 @@ new class extends Component
         }
     }
 
-    // Record data
+    #[Locked]
     public $id;
 
     public $name;
@@ -58,13 +62,16 @@ new class extends Component
 
     public $searchArea;
 
-    public $areas = [];
+    public array $areas = [];
 
-    public function getRecordData($id)
+    public function getRecordData(int|string $id): void
     {
         Gate::authorize('show'.$this->modelInstance);
 
-        $record = Shop::findOrFail($id);
+        $user = auth()->user();
+        abort_unless($user instanceof User, 403);
+
+        $record = Shop::query()->accessibleTo($user)->findOrFail($id);
         $this->fill(
             $record->only(
                 'id',
@@ -92,7 +99,7 @@ new class extends Component
         $this->dispatch('update-jodit-content', $this->description);
     }
 
-    public function resetRecordData()
+    public function resetRecordData(): void
     {
         $this->reset([
             'id', 'name', 'description', 'location_name', 'contact_name',
@@ -107,8 +114,7 @@ new class extends Component
         $this->dispatch('update-jodit-content', '');
     }
 
-    // Biteship area search
-    public function searchBiteshipArea(BiteshipService $biteshipService)
+    public function searchBiteshipArea(BiteshipService $biteshipService): void
     {
         $this->validate([
             'searchArea' => 'required|string|min:3',
@@ -119,17 +125,17 @@ new class extends Component
                 'input' => $this->searchArea,
             ]);
             $this->areas = $res['areas'] ?? [];
-        } catch (Exception $e) {
-            // Toast message
+        } catch (Throwable $exception) {
+            report($exception);
+
             $this->dispatch('toast',
                 type: 'error',
-                message: 'Failed to search areas: '.$e->getMessage()
+                message: 'Unable to search areas right now. Please try again.',
             );
         }
     }
 
-    // Select area from search results
-    public function selectArea($id, $name, $postal_code)
+    public function selectArea(string $id, string $name, string $postal_code): void
     {
         $this->biteship_area_id = $id;
         $this->area_string = $name;
@@ -138,7 +144,7 @@ new class extends Component
         $this->areas = [];
     }
 
-    public function submit(StoreShopAction $storeAction, UpdateShopAction $updateAction)
+    public function submit(StoreShopAction $storeAction, UpdateShopAction $updateAction): void
     {
         Gate::authorize('update'.$this->modelInstance);
 
@@ -156,15 +162,30 @@ new class extends Component
             'biteship_area_id' => 'required|string',
         ]);
 
+        $shop = null;
+
         if ($this->isUpdate) {
-            $updateAction->handle(
-                shop: Shop::findOrFail($this->id),
-                data: $this->all(),
+            $user = auth()->user();
+            abort_unless($user instanceof User, 403);
+            $shop = Shop::query()->accessibleTo($user)->findOrFail($this->id);
+        }
+
+        try {
+            if ($shop) {
+                $updateAction->handle(shop: $shop, data: $this->shopPayload());
+            } else {
+                $storeAction->handle(data: $this->shopPayload());
+            }
+        } catch (Throwable $exception) {
+            report($exception);
+
+            $this->dispatch(
+                'toast',
+                type: 'error',
+                message: 'Unable to save the shop right now. Please try again.',
             );
-        } else {
-            $storeAction->handle(
-                data: $this->all(),
-            );
+
+            return;
         }
 
         // Toast message
@@ -178,5 +199,23 @@ new class extends Component
 
         // Close modal
         Flux::modal('defaultModal')->close();
+    }
+
+    private function shopPayload(): array
+    {
+        return [
+            'name' => $this->name,
+            'description' => $this->description,
+            'location_name' => $this->location_name,
+            'contact_name' => $this->contact_name,
+            'contact_phone' => $this->contact_phone,
+            'address' => $this->address,
+            'note' => $this->note,
+            'postal_code' => $this->postal_code,
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
+            'biteship_area_id' => $this->biteship_area_id,
+            'area_string' => $this->area_string,
+        ];
     }
 };

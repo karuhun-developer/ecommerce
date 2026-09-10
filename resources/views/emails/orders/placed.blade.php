@@ -37,7 +37,7 @@ Halo, terima kasih telah berbelanja di {{ config('app.name') }}. Kami telah mene
 
 Untuk melihat status terbaru dan detail pesanan, silakan klik tombol di bawah ini:
 
-<x-mail::button :url="route('orders.detail', ['reference' => $order->reference])" color="success">
+<x-mail::button :url="route('orders.detail', ['reference' => $order->reference, ...$order->guestRouteParameters()])" color="success">
 Cek Detail Pesanan
 </x-mail::button>
 

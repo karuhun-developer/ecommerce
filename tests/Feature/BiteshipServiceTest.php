@@ -101,7 +101,7 @@ it('throws an exception and logs error when HTTP request fails (e.g. 500 error)'
 
     // Memastikan function nge-throw Exception
     expect(fn () => $this->service->getMapsAreas(['input' => 'Bandung']))
-        ->toThrow(Exception::class, 'Failed to fetch from Biteship API: Internal Server Error');
+        ->toThrow(Exception::class, 'Biteship API request failed.');
 });
 
 it('throws an exception and logs error when API returns success = false', function () {
@@ -115,5 +115,5 @@ it('throws an exception and logs error when API returns success = false', functi
     Log::shouldReceive('error')->once();
 
     expect(fn () => $this->service->getLocation('random-id'))
-        ->toThrow(Exception::class, 'Biteship API returned an unsuccessful response');
+        ->toThrow(Exception::class, 'Biteship API request failed.');
 });

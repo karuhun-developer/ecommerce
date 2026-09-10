@@ -2,13 +2,19 @@
 
 namespace App\Models\Order;
 
+use Database\Factories\Order\OrderShopShipmentFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderShopShipment extends Model
 {
+    /** @use HasFactory<OrderShopShipmentFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'order_shop_id',
         'event',
+        'provider_event_key',
         'courier_tracking_id',
         'courier_waybill_id',
         'courier_name',

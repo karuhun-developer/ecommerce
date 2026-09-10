@@ -3,9 +3,11 @@
 use Illuminate\View\View;
 
 use function Laravel\Folio\name;
+use function Laravel\Folio\middleware;
 use function Laravel\Folio\render;
 
 name('cms.management.user');
+middleware(['role:superadmin']);
 
 // Page title and breadcrumbs
 render(function (View $view) {

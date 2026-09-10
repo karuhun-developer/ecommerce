@@ -41,10 +41,7 @@ class PermissionSeeder extends Seeder
     ];
 
     // List user permissions
-    private $userPermissions = [
-        'view'.User::class,
-        'update'.User::class,
-    ];
+    private $userPermissions = [];
 
     // List shop owner permissions
     private $shopOwnerPermissions = [
@@ -62,8 +59,6 @@ class PermissionSeeder extends Seeder
         'view'.Shop::class,
         'show'.Shop::class,
         'update'.Shop::class,
-        'view'.User::class,
-        'update'.User::class,
     ];
 
     /**
@@ -82,34 +77,19 @@ class PermissionSeeder extends Seeder
         $roleShopOwner = Role::findOrCreate('shopowner', $this->guardName);
         $roleUser = Role::findOrCreate('user', $this->guardName);
 
-        // Loop through each model and create permissions
+        $allPermissions = [];
+
         foreach ($this->prefixPermission as $permission) {
             foreach ($models as $model) {
                 $permissionName = $permission.$model;
-                Permission::query()
-                    ->where('name', $permissionName)
-                    ->where('guard_name', $this->guardName)
-                    ->firstOrCreate([
-                        'name' => $permissionName,
-                        'guard_name' => $this->guardName,
-                    ]);
-
-                // Assign permissions to roles
-                if (in_array($permissionName, $this->userPermissions)) {
-                    $roleUser->givePermissionTo($permissionName);
-                }
-
-                // Assign permissions to shop owner role
-                if (in_array($permissionName, $this->shopOwnerPermissions)) {
-                    $roleShopOwner->givePermissionTo($permissionName);
-                }
-
-                // Exclude superadmin permissions
-                if (! in_array($permissionName, $this->superAdminExcludePermission)) {
-                    $roleSuperAdmin->givePermissionTo($permissionName);
-                }
+                Permission::findOrCreate($permissionName, $this->guardName);
+                $allPermissions[] = $permissionName;
             }
         }
+
+        $roleUser->syncPermissions($this->userPermissions);
+        $roleShopOwner->syncPermissions($this->shopOwnerPermissions);
+        $roleSuperAdmin->syncPermissions(array_values(array_diff($allPermissions, $this->superAdminExcludePermission)));
     }
 
     /**

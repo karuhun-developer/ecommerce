@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Product\Product;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 use function Laravel\Folio\name;
@@ -10,15 +12,22 @@ name('cms.product.edit');
 
 // Page title and breadcrumbs
 render(function (View $view) {
+    Gate::authorize('show'.Product::class);
+
+    $user = auth()->user();
+    abort_unless($user instanceof User, 403);
+
     $title = 'Edit Product';
     $description = 'Edit product details, flat items, and media collections.';
-    
-    $product = Product::findOrFail(request('product_id'));
+
+    $product = Product::query()
+        ->accessibleTo($user)
+        ->findOrFail(request('product_id'));
 
     $breadcrumbs = [
         [
             'label' => 'Product',
-            'url' => route('cms.product.index')
+            'url' => route('cms.product.index'),
         ],
         [
             'label' => 'Edit',
@@ -58,7 +67,7 @@ render(function (View $view) {
                 {{ $description }}
             </flux:text>
         </div>
-        
+
         <livewire:cms.product.product.edit :$product />
     </div>
 </x-layouts.app>

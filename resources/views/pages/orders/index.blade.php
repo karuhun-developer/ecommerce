@@ -1,6 +1,7 @@
 <?php
 
 use function Laravel\Folio\name;
+use function Laravel\Folio\middleware;
 use function Laravel\Folio\render;
 use Artesaos\SEOTools\Facades\SEOMeta;
 use Artesaos\SEOTools\Facades\OpenGraph;
@@ -9,6 +10,7 @@ use Artesaos\SEOTools\Facades\JsonLd;
 use Illuminate\View\View;
 
 name('orders.index');
+middleware('auth');
 
 render(function (View $view) {
     $title = 'Daftar Transaksi';

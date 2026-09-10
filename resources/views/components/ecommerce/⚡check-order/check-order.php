@@ -7,6 +7,13 @@ new class extends Component
 {
     public string $reference = '';
 
+    public string $token = '';
+
+    public function mount(): void
+    {
+        $this->token = (string) request()->query('token', '');
+    }
+
     public function check()
     {
         $this->validate([
@@ -17,7 +24,7 @@ new class extends Component
         if (auth()->check()) {
             $orderQuery->where('user_id', auth()->id());
         } else {
-            $orderQuery->whereNull('user_id');
+            $orderQuery->whereNull('user_id')->where('access_token', $this->token);
         }
 
         if (! $orderQuery->exists()) {
@@ -26,6 +33,9 @@ new class extends Component
             return;
         }
 
-        return $this->redirectRoute('orders.detail', ['reference' => $this->reference], navigate: true);
+        return $this->redirectRoute('orders.detail', [
+            'reference' => $this->reference,
+            ...$orderQuery->firstOrFail()->guestRouteParameters(),
+        ], navigate: true);
     }
 };

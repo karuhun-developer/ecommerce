@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
 class BiteshipService
 {
@@ -17,6 +20,7 @@ class BiteshipService
         $this->apiKey = $apiKey ?? config('services.biteship.key');
     }
 
+    /** @return array<string, string> */
     public function getHeaders(): array
     {
         return [
@@ -26,47 +30,67 @@ class BiteshipService
     }
 
     /**
-     * Base request handler to keep things DRY
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
      */
-    private function sendRequest(string $method, string $endpoint, array $data = [])
+    private function sendRequest(string $method, string $endpoint, array $data = []): array
     {
         $url = "{$this->baseUrl}{$endpoint}";
 
-        $response = match (strtoupper($method)) {
-            'GET' => Http::withHeaders($this->getHeaders())->get($url, $data),
-            'POST' => Http::withHeaders($this->getHeaders())->post($url, $data),
-            'DELETE' => Http::withHeaders($this->getHeaders())->delete($url, $data),
-            default => throw new \InvalidArgumentException("Unsupported HTTP method: {$method}"),
-        };
-
-        if ($response->failed()) {
-            Log::error("Failed to fetch from Biteship API [{$method} {$endpoint}]", [
-                'status' => $response->status(),
-                'body' => $response->body(),
-                'payload' => $data,
+        try {
+            $response = match (strtoupper($method)) {
+                'GET' => $this->request()->get($url, $data),
+                'POST' => $this->request()->post($url, $data),
+                'DELETE' => $this->request()->delete($url, $data),
+                default => throw new \InvalidArgumentException("Unsupported HTTP method: {$method}"),
+            };
+        } catch (ConnectionException $exception) {
+            Log::error('Biteship API connection failed', [
+                'method' => strtoupper($method),
+                'endpoint' => $endpoint,
             ]);
 
-            throw new \Exception("Failed to fetch from Biteship API: {$response->body()}");
+            throw new RuntimeException('Biteship API request failed.', previous: $exception);
+        }
+
+        if ($response->failed()) {
+            Log::error('Biteship API request failed', [
+                'method' => strtoupper($method),
+                'endpoint' => $endpoint,
+                'status' => $response->status(),
+            ]);
+
+            throw new RuntimeException('Biteship API request failed.');
         }
 
         $responseData = $response->json();
 
-        if (isset($responseData['success']) && ! $responseData['success']) {
-            Log::error("Biteship API returned an unsuccessful response [{$method} {$endpoint}]", [
-                'response' => $responseData,
+        if (! is_array($responseData) || (isset($responseData['success']) && ! $responseData['success'])) {
+            Log::error('Biteship API returned an unsuccessful response', [
+                'method' => strtoupper($method),
+                'endpoint' => $endpoint,
+                'status' => $response->status(),
             ]);
 
-            throw new \Exception('Biteship API returned an unsuccessful response');
+            throw new RuntimeException('Biteship API request failed.');
         }
 
         return $responseData;
+    }
+
+    private function request(): PendingRequest
+    {
+        return Http::withHeaders($this->getHeaders())
+            ->connectTimeout(5)
+            ->timeout(15)
+            ->retry(3, 200, throw: false);
     }
 
     // ==========================================
     // COURIERS API
     // ==========================================
 
-    public function couriers()
+    public function couriers(): array
     {
         return Cache::remember('biteship:couriers', now()->addDay(), function () {
             $response = $this->sendRequest('GET', '/couriers');
@@ -79,7 +103,7 @@ class BiteshipService
     // RATES API
     // ==========================================
 
-    public function getRates(array $payload)
+    public function getRates(array $payload): array
     {
         return $this->sendRequest('POST', '/rates/couriers', $payload);
     }
@@ -88,22 +112,22 @@ class BiteshipService
     // LOCATIONS API
     // ==========================================
 
-    public function createLocation(array $payload)
+    public function createLocation(array $payload): array
     {
         return $this->sendRequest('POST', '/locations', $payload);
     }
 
-    public function getLocation(string $id)
+    public function getLocation(string $id): array
     {
         return $this->sendRequest('GET', "/locations/{$id}");
     }
 
-    public function updateLocation(string $id, array $payload)
+    public function updateLocation(string $id, array $payload): array
     {
         return $this->sendRequest('POST', "/locations/{$id}", $payload);
     }
 
-    public function deleteLocation(string $id)
+    public function deleteLocation(string $id): array
     {
         return $this->sendRequest('DELETE', "/locations/{$id}");
     }
@@ -112,7 +136,7 @@ class BiteshipService
     // MAPS API
     // ==========================================
 
-    public function getMapsAreas(array $query)
+    public function getMapsAreas(array $query): array
     {
         $query['type'] = 'single';
 
@@ -123,32 +147,32 @@ class BiteshipService
     // DRAFT ORDERS API
     // ==========================================
 
-    public function createDraftOrder(array $payload)
+    public function createDraftOrder(array $payload): array
     {
         return $this->sendRequest('POST', '/draft_orders', $payload);
     }
 
-    public function getDraftOrder(string $id)
+    public function getDraftOrder(string $id): array
     {
         return $this->sendRequest('GET', "/draft_orders/{$id}");
     }
 
-    public function updateDraftOrder(string $id, array $payload)
+    public function updateDraftOrder(string $id, array $payload): array
     {
         return $this->sendRequest('POST', "/draft_orders/{$id}", $payload);
     }
 
-    public function confirmDraftOrder(string $id)
+    public function confirmDraftOrder(string $id): array
     {
         return $this->sendRequest('POST', "/draft_orders/{$id}/confirm");
     }
 
-    public function deleteDraftOrder(string $id)
+    public function deleteDraftOrder(string $id): array
     {
         return $this->sendRequest('DELETE', "/draft_orders/{$id}");
     }
 
-    public function getDraftOrderRates(string $id)
+    public function getDraftOrderRates(string $id): array
     {
         return $this->sendRequest('GET', "/draft_orders/{$id}/rates");
     }
@@ -157,17 +181,17 @@ class BiteshipService
     // ORDERS API
     // ==========================================
 
-    public function createOrder(array $payload)
+    public function createOrder(array $payload): array
     {
         return $this->sendRequest('POST', '/orders', $payload);
     }
 
-    public function getOrder(string $id)
+    public function getOrder(string $id): array
     {
         return $this->sendRequest('GET', "/orders/{$id}");
     }
 
-    public function cancelOrder(string $id, string $reason = '')
+    public function cancelOrder(string $id, string $reason = ''): array
     {
         $payload = $reason ? ['cancellation_reason' => $reason] : [];
 
@@ -178,12 +202,12 @@ class BiteshipService
     // TRACKING API
     // ==========================================
 
-    public function getTrackingById(string $id)
+    public function getTrackingById(string $id): array
     {
         return $this->sendRequest('GET', "/tracking/{$id}");
     }
 
-    public function getTrackingByWaybill(string $waybillId, string $courierCode)
+    public function getTrackingByWaybill(string $waybillId, string $courierCode): array
     {
         return $this->sendRequest('GET', "/trackings/{$waybillId}/couriers/{$courierCode}");
     }

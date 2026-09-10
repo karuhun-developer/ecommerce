@@ -3,13 +3,16 @@
 use App\Actions\Cms\Shop\DeleteShopAction;
 use App\Livewire\BaseComponent;
 use App\Models\Shop\Shop;
+use App\Models\User;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 
 new class extends BaseComponent
 {
-    // Model instance
-    public $modelInstance = Shop::class;
+    #[Locked]
+    public string $modelInstance = Shop::class;
 
     // Pagination and Search
     public $searchBy = [
@@ -19,7 +22,7 @@ new class extends BaseComponent
         ],
     ];
 
-    public function mount()
+    public function mount(): void
     {
         Gate::authorize('view'.$this->modelInstance);
 
@@ -27,14 +30,17 @@ new class extends BaseComponent
         $this->paginationOrderBy = 'name';
     }
 
-    public function render()
+    public function render(): View
     {
         if ($this->search != '') {
             $this->resetPage();
         }
 
+        $user = auth()->user();
+        abort_unless($user instanceof User, 403);
+
         $data = $this->getDataWithFilter(
-            model: new Shop,
+            model: Shop::query()->accessibleTo($user),
             searchBy: $this->searchBy,
             orderBy: $this->paginationOrderBy,
             order: $this->paginationOrder,
@@ -48,12 +54,15 @@ new class extends BaseComponent
     }
 
     #[On('delete')]
-    public function delete($id, DeleteShopAction $deleteAction)
+    public function delete(int|string $id, DeleteShopAction $deleteAction): void
     {
         Gate::authorize('delete'.$this->modelInstance);
 
+        $user = auth()->user();
+        abort_unless($user instanceof User, 403);
+
         $deleteAction->handle(
-            shop: Shop::findOrFail($id),
+            shop: Shop::query()->accessibleTo($user)->findOrFail($id),
         );
 
         // Toast message

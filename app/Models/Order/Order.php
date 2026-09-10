@@ -5,14 +5,24 @@ namespace App\Models\Order;
 use App\Models\Location\Location;
 use App\Models\Payment\Payment;
 use App\Models\User;
+use Database\Factories\Order\OrderFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Order extends Model
 {
+    /** @use HasFactory<OrderFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'location_id',
         'reference',
+        'access_token',
         'ref_number',
         'guest_data',
         'total_checkout',
@@ -37,33 +47,45 @@ class Order extends Model
         'status' => 'boolean',
     ];
 
-    public function user()
+    protected $hidden = [
+        'access_token',
+    ];
+
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function location()
+    public function location(): BelongsTo
     {
         return $this->belongsTo(Location::class);
     }
 
-    public function orderShops()
+    public function orderShops(): HasMany
     {
         return $this->hasMany(OrderShop::class);
     }
 
-    public function items()
+    public function items(): HasMany
     {
         return $this->hasMany(OrderShopItem::class);
     }
 
-    public function payments()
+    public function payments(): MorphMany
     {
         return $this->morphMany(Payment::class, 'payable');
     }
 
-    public function latestPayment()
+    public function latestPayment(): MorphOne
     {
         return $this->morphOne(Payment::class, 'payable')->latestOfMany();
+    }
+
+    /** @return array<string, string> */
+    public function guestRouteParameters(): array
+    {
+        return $this->user_id === null && filled($this->access_token)
+            ? ['token' => $this->access_token]
+            : [];
     }
 }

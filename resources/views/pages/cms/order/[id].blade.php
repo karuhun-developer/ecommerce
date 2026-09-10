@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Order\OrderShop;
+use App\Models\User;
 use Illuminate\View\View;
 
 use function Laravel\Folio\name;
@@ -8,28 +9,26 @@ use function Laravel\Folio\render;
 
 name('cms.order.show');
 
-render(function (View $view, $id) {
-    // For now we just load the order shop
-    $orderShop = OrderShop::with(['order', 'shop', 'items.productFlat'])
-        ->where('id', $id)
-        ->firstOrFail();
+render(function (View $view, string $id) {
+    $user = auth()->user();
 
-    if (!isSingleShop() && auth()->user()->hasRole('shopowner')) {
-        if ($orderShop->shop->user_id !== auth()->id()) {
-            abort(404);
-        }
-    }
+    abort_unless($user instanceof User, 403);
 
-    $title = 'Detail Pesanan ' . $orderShop->order->reference;
+    $orderShop = OrderShop::query()
+        ->accessibleTo($user)
+        ->with(['order', 'shop', 'items.productFlat'])
+        ->findOrFail($id);
+
+    $title = 'Detail Pesanan '.$orderShop->order->reference;
     $description = 'Rincian pesanan dari pelanggan.';
     $breadcrumbs = [
         [
             'label' => 'Order',
-            'url' => route('cms.order.index')
+            'url' => route('cms.order.index'),
         ],
         [
             'label' => $orderShop->order->reference,
-            'url' => null
+            'url' => null,
         ],
     ];
 

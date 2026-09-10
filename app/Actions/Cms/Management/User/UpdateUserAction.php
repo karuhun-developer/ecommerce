@@ -11,7 +11,12 @@ class UpdateUserAction
      */
     public function handle(User $user, array $data): bool
     {
-        $updated = $user->update($data);
+        abort_unless(auth()->user()?->hasRole('superadmin'), 403);
+
+        $updated = $user->update([
+            'name' => $data['name'],
+            'email' => $data['email'],
+        ]);
 
         if (isset($data['role'])) {
             $user->syncRoles([$data['role']]);

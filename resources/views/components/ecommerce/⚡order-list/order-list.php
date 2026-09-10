@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Order\Order;
+use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -11,16 +13,21 @@ new class extends Component
     use WithPagination;
 
     #[Url]
-    public $status = 'semua'; // semua, berlangsung, berhasil, tidak-berhasil
+    public string $status = 'semua';
 
-    public function setStatus($status)
+    public function mount(): void
+    {
+        abort_unless(auth()->user() instanceof User, 403);
+    }
+
+    public function setStatus(string $status): void
     {
         $this->status = $status;
         $this->resetPage();
     }
 
     #[Computed]
-    public function orders()
+    public function orders(): LengthAwarePaginator
     {
         $query = Order::where('user_id', auth()->id())
             ->with(['orderShops.shop', 'orderShops.items', 'latestPayment'])

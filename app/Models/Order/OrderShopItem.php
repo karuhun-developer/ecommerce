@@ -3,10 +3,15 @@
 namespace App\Models\Order;
 
 use App\Models\Product\ProductFlat;
+use Database\Factories\Order\OrderShopItemFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class OrderShopItem extends Model
 {
+    /** @use HasFactory<OrderShopItemFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'order_id',
         'order_shop_id',

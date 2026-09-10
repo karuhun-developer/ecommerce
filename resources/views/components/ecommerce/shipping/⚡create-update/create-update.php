@@ -86,11 +86,12 @@ new class extends Component
         try {
             $res = $biteshipService->getMapsAreas(['input' => $this->searchArea]);
             $this->areas = $res['areas'] ?? [];
-        } catch (Exception $e) {
-            // Toast error message
+        } catch (Throwable $exception) {
+            report($exception);
+
             $this->dispatch('toast',
                 type: 'error',
-                message: 'Gagal mencari area: '.$e->getMessage(),
+                message: 'Gagal mencari area. Silakan coba lagi.',
             );
         }
     }

@@ -1,15 +1,17 @@
 <?php
 
 use App\Models\Product\Product;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 new class extends Component
 {
+    #[Locked]
     public Product $product;
 
-    public $variants = [];
+    public array $variants = [];
 
-    public function mount()
+    public function mount(): void
     {
         $this->product->load('productFlats.media', 'shop.location', 'productAttributeGroups.productAttributes.attribute');
 
@@ -21,6 +23,7 @@ new class extends Component
                 'product_flat_id' => $productFlatId,
                 'label' => $attributes->map(fn ($attr) => $attr->attribute->name)->join(' - '),
             ])
-            ->values();
+            ->values()
+            ->all();
     }
 };

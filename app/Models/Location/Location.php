@@ -4,10 +4,16 @@ namespace App\Models\Location;
 
 use App\Models\Shop\Shop;
 use App\Models\User;
+use Database\Factories\Location\LocationFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Location extends Model
 {
+    /** @use HasFactory<LocationFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'shop_id',
@@ -26,12 +32,12 @@ class Location extends Model
         'type',
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function shop()
+    public function shop(): BelongsTo
     {
         return $this->belongsTo(Shop::class);
     }

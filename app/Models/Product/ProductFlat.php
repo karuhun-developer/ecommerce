@@ -3,13 +3,18 @@
 namespace App\Models\Product;
 
 use App\Models\Shop\Shop;
+use Database\Factories\Product\ProductFlatFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
 class ProductFlat extends Model implements HasMedia
 {
-    use InteractsWithMedia;
+    /** @use HasFactory<ProductFlatFactory> */
+    use HasFactory, InteractsWithMedia;
 
     protected $fillable = [
         'shop_id',
@@ -43,17 +48,17 @@ class ProductFlat extends Model implements HasMedia
         'status' => 'boolean',
     ];
 
-    public function shop()
+    public function shop(): BelongsTo
     {
         return $this->belongsTo(Shop::class);
     }
 
-    public function product()
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function productAttributes()
+    public function productAttributes(): HasMany
     {
         return $this->hasMany(ProductAttribute::class);
     }

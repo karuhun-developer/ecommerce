@@ -2,6 +2,8 @@
 
 use App\Actions\Order\ShipOrderAction;
 use App\Models\Order\OrderShop;
+use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
@@ -13,25 +15,21 @@ new class extends Component
     use WithPagination;
 
     #[Url]
-    public $status = 'semua'; // semua, menunggu-pembayaran, proses, dikirim, sampai, gagal
+    public string $status = 'semua';
 
-    public function setStatus($status)
+    public function setStatus(string $status): void
     {
         $this->status = $status;
         $this->resetPage();
     }
 
     #[Computed]
-    public function orders()
+    public function orders(): LengthAwarePaginator
     {
-        $query = OrderShop::with(['order.latestPayment', 'order.user', 'shop', 'items'])
+        $query = OrderShop::query()
+            ->accessibleTo($this->currentUser())
+            ->with(['order.latestPayment', 'order.user', 'shop', 'items'])
             ->latest();
-
-        if (! isSingleShop() && auth()->user()->hasRole('shopowner')) {
-            $query->whereHas('shop', function ($q) {
-                $q->where('user_id', auth()->id());
-            });
-        }
 
         if ($this->status === 'menunggu-pembayaran') {
             $query->whereHas('order', function ($q) {
@@ -66,21 +64,38 @@ new class extends Component
     }
 
     #[On('kirimPesanan')]
-    public function kirimPesanan($id, ShipOrderAction $action)
+    public function kirimPesanan(int $id, ShipOrderAction $action): void
     {
         try {
-            $orderShop = OrderShop::findOrFail($id);
-            $action->execute($orderShop);
+            $user = $this->currentUser();
+            $orderShop = OrderShop::query()
+                ->accessibleTo($user)
+                ->findOrFail($id);
+
+            $action->execute($orderShop, $user);
+
+            unset($this->orders);
 
             $this->dispatch('toast',
                 type: 'success',
                 message: 'Pesanan berhasil dikirim melalui kurir Biteship.'
             );
-        } catch (Exception $e) {
+        } catch (Throwable $exception) {
+            report($exception);
+
             $this->dispatch('toast',
                 type: 'error',
-                message: 'Gagal mengirim pesanan: '.$e->getMessage()
+                message: 'Gagal mengirim pesanan. Silakan coba lagi.'
             );
         }
+    }
+
+    private function currentUser(): User
+    {
+        $user = auth()->user();
+
+        abort_unless($user instanceof User, 403);
+
+        return $user;
     }
 };

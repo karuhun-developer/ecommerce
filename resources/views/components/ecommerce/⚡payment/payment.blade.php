@@ -10,7 +10,7 @@
     },
 }" class="w-full">
     <div class="mb-6">
-        <a href="{{ route('orders.detail', ['reference' => $order->reference]) }}" class="text-gray-600 hover:text-gray-700 font-bold text-sm flex items-center gap-2" wire:navigate>
+        <a href="{{ route('orders.detail', ['reference' => $order->reference, ...$order->guestRouteParameters()]) }}" class="text-gray-600 hover:text-gray-700 font-bold text-sm flex items-center gap-2" wire:navigate>
             <flux:icon.arrow-left class="w-4 h-4" /> Kembali ke Detail Pesanan
         </a>
     </div>

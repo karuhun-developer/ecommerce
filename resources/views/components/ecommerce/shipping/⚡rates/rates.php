@@ -125,8 +125,7 @@ new class extends Component
                 destinationAreaId: $this->destinationAreaId,
                 items: $this->items,
             );
-        } catch (Exception $e) {
-            // Check if it's a known error message from the action
+        } catch (Throwable $exception) {
             $knownErrors = [
                 'Informasi lokasi toko belum lengkap.',
                 'Pilih alamat pengiriman terlebih dahulu.',
@@ -134,10 +133,11 @@ new class extends Component
                 'Tidak ada layanan kurir yang tersedia untuk rute ini.',
             ];
 
-            if (in_array($e->getMessage(), $knownErrors)) {
-                $this->error = $e->getMessage();
+            if (in_array($exception->getMessage(), $knownErrors, true)) {
+                $this->error = $exception->getMessage();
             } else {
-                $this->error = 'Gagal mengambil tarif pengiriman: '.$e->getMessage();
+                report($exception);
+                $this->error = 'Gagal mengambil tarif pengiriman. Silakan coba lagi.';
             }
         } finally {
             $this->loading = false;
