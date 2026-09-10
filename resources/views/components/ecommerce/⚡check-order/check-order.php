@@ -7,14 +7,7 @@ new class extends Component
 {
     public string $reference = '';
 
-    public string $token = '';
-
-    public function mount(): void
-    {
-        $this->token = (string) request()->query('token', '');
-    }
-
-    public function check()
+    public function check(): void
     {
         $this->validate([
             'reference' => 'required|string',
@@ -24,18 +17,20 @@ new class extends Component
         if (auth()->check()) {
             $orderQuery->where('user_id', auth()->id());
         } else {
-            $orderQuery->whereNull('user_id')->where('access_token', $this->token);
+            $orderQuery->whereNull('user_id');
         }
 
-        if (! $orderQuery->exists()) {
+        $order = $orderQuery->first();
+
+        if (! $order) {
             $this->addError('reference', 'Transaksi dengan nomor referensi tersebut tidak ditemukan.');
 
             return;
         }
 
-        return $this->redirectRoute('orders.detail', [
+        $this->redirectRoute('orders.detail', [
             'reference' => $this->reference,
-            ...$orderQuery->firstOrFail()->guestRouteParameters(),
+            ...$order->guestRouteParameters(),
         ], navigate: true);
     }
 };
