@@ -12,6 +12,7 @@ class Setting extends Model
 
     protected $fillable = [
         'data',
+        'key',
     ];
 
     protected $casts = [
