@@ -16,36 +16,36 @@
             <flux:field>
                 <flux:label badge="Required">Nama Lokasi</flux:label>
                 <flux:text>Nama lokasi ini untuk memudahkan kamu mengingat alamat ini, misal: Rumah, Kantor, dll.</flux:text>
-                <flux:input wire:model="location_name" type="text" placeholder="e.g. Rumah" />
-                <flux:error name="location_name" />
+                <flux:input wire:model="form.location_name" type="text" placeholder="e.g. Rumah" />
+                <flux:error name="form.location_name" />
             </flux:field>
 
             <!-- Contact -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <flux:field>
                     <flux:label badge="Wajib">Nama Penerima</flux:label>
-                    <flux:input wire:model="contact_name" type="text" placeholder="Nama lengkap penerima" />
-                    <flux:error name="contact_name" />
+                    <flux:input wire:model="form.contact_name" type="text" placeholder="Nama lengkap penerima" />
+                    <flux:error name="form.contact_name" />
                 </flux:field>
                 <flux:field>
                     <flux:label badge="Wajib">Nomor HP</flux:label>
-                    <flux:input wire:model="contact_phone" type="text" placeholder="08xxxxxxxxxx" />
-                    <flux:error name="contact_phone" />
+                    <flux:input wire:model="form.contact_phone" type="text" placeholder="08xxxxxxxxxx" />
+                    <flux:error name="form.contact_phone" />
                 </flux:field>
             </div>
 
             <!-- Address -->
             <flux:field>
                 <flux:label badge="Wajib">Alamat Lengkap</flux:label>
-                <flux:textarea wire:model="address" placeholder="Jl., Blok, No. Rumah, RT/RW" rows="3" />
-                <flux:error name="address" />
+                <flux:textarea wire:model="form.address" placeholder="Jl., Blok, No. Rumah, RT/RW" rows="3" />
+                <flux:error name="form.address" />
             </flux:field>
 
             <!-- Note -->
             <flux:field>
                 <flux:label>Catatan / Patokan</flux:label>
-                <flux:input wire:model="note" type="text" placeholder="Contoh: Dekat Indomaret, rumah cat kuning" />
-                <flux:error name="note" />
+                <flux:input wire:model="form.note" type="text" placeholder="Contoh: Dekat Indomaret, rumah cat kuning" />
+                <flux:error name="form.note" />
             </flux:field>
 
             <hr class="border-gray-100">
@@ -66,7 +66,7 @@
                     <div class="border rounded-xl bg-gray-50 shadow-sm max-h-52 overflow-y-auto">
                         <ul class="divide-y divide-gray-200">
                             @foreach($areas as $area)
-                                <li>
+                                <li wire:key="area-{{ $area['id'] }}">
                                     <button
                                         type="button"
                                         wire:click="selectArea('{{ $area['id'] }}', '{{ $area['name'] }}', '{{ $area['postal_code'] }}')"
@@ -81,14 +81,14 @@
                     </div>
                 @endif
 
-                @if($area_string)
+                @if($form->area_string)
                     <div class="flex items-center gap-2 p-3 bg-gray-50 text-gray-800 rounded-xl text-sm border border-gray-200">
                         <flux:icon.check-circle class="w-4 h-4 text-gray-600 shrink-0" />
-                        <span><span class="font-bold">Area terpilih:</span> {{ $area_string }} ({{ $postal_code }})</span>
+                        <span><span class="font-bold">Area terpilih:</span> {{ $form->area_string }} ({{ $form->postal_code }})</span>
                     </div>
                 @endif
 
-                <flux:error name="biteship_area_id" />
+                <flux:error name="form.biteship_area_id" />
             </div>
 
             <hr class="border-gray-100">
@@ -96,8 +96,8 @@
             <!-- Leaflet Map -->
             <div
                 x-data="{
-                    lat: $wire.entangle('latitude'),
-                    lng: $wire.entangle('longitude'),
+                    lat: $wire.entangle('form.latitude'),
+                    lng: $wire.entangle('form.longitude'),
                     map: null,
                     marker: null,
                     loadLeaflet() {
@@ -164,7 +164,7 @@
                     <span>Lat: <span x-text="lat ?? '-'"></span></span>
                     <span>Lng: <span x-text="lng ?? '-'"></span></span>
                 </div>
-                <flux:error name="latitude" />
+                <flux:error name="form.latitude" />
             </div>
 
             <!-- Actions -->

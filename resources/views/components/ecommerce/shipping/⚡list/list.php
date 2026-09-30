@@ -92,10 +92,11 @@ new class extends Component
     }
 
     #[On('deleteAddress')]
-    public function deleteAddress(DeleteLocationAction $deleteAction, $id)
+    public function deleteAddress(DeleteLocationAction $deleteAction, int $id): void
     {
         $deleteAction->handle(
-            location: Location::where('user_id', auth()->id())->findOrFail($id)
+            location: Location::where('user_id', auth()->id())->where('type', 'destination')->findOrFail($id),
+            actor: auth()->user(),
         );
 
         if ($this->selectedLocationId === $id) {

@@ -2,153 +2,86 @@
 
 use App\Actions\Ecommerce\Location\StoreLocationAction;
 use App\Actions\Ecommerce\Location\UpdateLocationAction;
+use App\Livewire\Forms\LocationForm;
 use App\Models\Location\Location;
+use App\Models\User;
 use App\Services\BiteshipService;
 use Flux\Flux;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 new class extends Component
 {
-    // Record data
-    public $id;
+    #[Locked]
+    public ?int $id = null;
 
-    public $location_name;
+    public LocationForm $form;
 
-    public $contact_name;
+    public string $searchArea = '';
 
-    public $contact_phone;
-
-    public $address;
-
-    public $note;
-
-    public $postal_code;
-
-    public $latitude;
-
-    public $longitude;
-
-    public $biteship_area_id;
-
-    public $area_string;
-
-    public $searchArea;
-
-    /** @var array<int, array<string, mixed>> */
+    #[Locked]
     public array $areas = [];
 
     #[On('shipping-edit')]
     public function loadForEdit(int $id): void
     {
-        $record = Location::where('user_id', auth()->id())->findOrFail($id);
-
+        $record = Location::query()->where('user_id', auth()->id())->where('type', 'destination')->findOrFail($id);
+        $this->resetValidation();
         $this->id = $record->id;
-        $this->location_name = $record->name;
-        $this->fill(
-            $record->only([
-                'contact_name',
-                'contact_phone',
-                'address',
-                'note',
-                'postal_code',
-                'latitude',
-                'longitude',
-                'biteship_area_id',
-                'area_string',
-            ])
-        );
-        $this->searchArea = $this->area_string;
+        $this->form->setLocation($record);
+        $this->searchArea = $this->form->area_string ?? '';
         $this->areas = [];
-
-        // Open the modal
         Flux::modal('shippingFormModal')->show();
     }
 
     #[On('shipping-create')]
     public function openCreate(): void
     {
-        // Reset all fields
-        $this->reset();
+        abort_unless(auth()->check(), 403);
+        $this->resetValidation();
+        $this->id = null;
+        $this->form->reset();
+        $this->searchArea = '';
         $this->areas = [];
-
-        // Open the modal
         Flux::modal('shippingFormModal')->show();
     }
 
-    // Search for areas using Biteship API
-    public function searchBiteshipArea(BiteshipService $biteshipService)
+    public function searchBiteshipArea(BiteshipService $biteshipService): void
     {
-        $this->validate([
-            'searchArea' => 'required|string|min:3',
-        ]);
-
+        $this->validate(['searchArea' => ['required', 'string', 'min:3', 'max:255']]);
         try {
-            $res = $biteshipService->getMapsAreas(['input' => $this->searchArea]);
-            $this->areas = $res['areas'] ?? [];
+            $this->areas = $biteshipService->getMapsAreas(['input' => $this->searchArea])['areas'] ?? [];
         } catch (Throwable $exception) {
             report($exception);
-
-            $this->dispatch('toast',
-                type: 'error',
-                message: 'Gagal mencari area. Silakan coba lagi.',
-            );
+            $this->dispatch('toast', type: 'error', message: 'Gagal mencari area. Silakan coba lagi.');
         }
     }
 
-    // Select an area from the search results
-    public function selectArea(string $id, string $name, string $postalCode)
+    public function selectArea(string $id, string $name, string $postal_code): void
     {
-        $this->biteship_area_id = $id;
-        $this->area_string = $name;
-        $this->postal_code = $postalCode;
-        $this->searchArea = $name;
+        $area = collect($this->areas)->firstWhere('id', $id);
+        abort_unless($area, 422);
+        $this->form->biteship_area_id = $area['id'];
+        $this->form->area_string = $area['name'];
+        $this->form->postal_code = (string) ($area['postal_code'] ?? '');
+        $this->searchArea = $area['name'];
         $this->areas = [];
     }
 
-    public function submit(StoreLocationAction $storeAction, UpdateLocationAction $updateAction)
+    public function submit(StoreLocationAction $storeAction, UpdateLocationAction $updateAction): void
     {
-        $this->validate([
-            'location_name' => 'required|string|max:255',
-            'contact_name' => 'required|string|max:255',
-            'contact_phone' => 'required|string|max:20',
-            'address' => 'required|string',
-            'note' => 'nullable|string',
-            'postal_code' => 'required|numeric',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'biteship_area_id' => 'required|string',
-        ]);
-
-        // Update or create the location record
+        $actor = auth()->user();
+        abort_unless($actor instanceof User, 403);
+        $data = $this->form->data();
         if ($this->id) {
-            $updateAction->handle(
-                location: Location::where('user_id', auth()->id())->findOrFail($this->id),
-                data: [
-                    ...$this->all(),
-                    'type' => 'destination',
-                ]
-            );
+            $location = Location::query()->where('user_id', $actor->id)->where('type', 'destination')->findOrFail($this->id);
+            $updateAction->handle($location, $data, $actor);
         } else {
-            $storeAction->handle(
-                data: [
-                    ...$this->all(),
-                    'user_id' => auth()->id(),
-                    'type' => 'destination',
-                ]
-            );
+            $storeAction->handle($data, $actor);
         }
-
-        // Toast message
-        $this->dispatch('toast',
-            type: 'success',
-            message: $this->id ? 'Alamat berhasil diperbarui.' : 'Alamat berhasil ditambahkan.',
-        );
-
-        // Reset shipping list
+        $this->dispatch('toast', type: 'success', message: $this->id ? 'Alamat berhasil diperbarui.' : 'Alamat berhasil ditambahkan.');
         $this->dispatch('shipping-list-refresh');
-
-        // Close modal
         Flux::modal('shippingFormModal')->close();
     }
 };

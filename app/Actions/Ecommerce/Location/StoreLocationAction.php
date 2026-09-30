@@ -2,50 +2,34 @@
 
 namespace App\Actions\Ecommerce\Location;
 
+use App\Data\Location\LocationData;
 use App\Models\Location\Location;
+use App\Models\Shop\Shop;
+use App\Models\User;
 use App\Services\BiteshipService;
+use Illuminate\Support\Facades\Gate;
 
 class StoreLocationAction
 {
-    public function __construct(
-        public readonly BiteshipService $biteshipService,
-    ) {}
+    public function __construct(private readonly BiteshipService $biteshipService) {}
 
-    /**
-     * Handle the action.
-     */
-    public function handle(array $data): Location
+    public function handle(LocationData $data, User $actor): Location
     {
-        // Create location in Biteship and local database
-        $biteshipLocation = $this->biteshipService->createLocation([
-            'name' => $data['location_name'],
-            'contact_name' => $data['contact_name'],
-            'contact_phone' => $data['contact_phone'],
-            'address' => $data['address'],
-            'note' => $data['note'] ?? '',
-            'postal_code' => (int) $data['postal_code'],
-            'latitude' => (float) $data['latitude'],
-            'longitude' => (float) $data['longitude'],
-            'type' => 'origin',
-        ]);
+        if ($data->shop_id !== null) {
+            Gate::forUser($actor)->authorize('create'.Shop::class);
+            Shop::query()->accessibleTo($actor)->findOrFail($data->shop_id);
+            abort_unless($data->type === 'origin', 422);
+        } else {
+            abort_unless($data->type === 'destination', 422);
+        }
 
-        $location = Location::create([
-            'user_id' => auth()->id(),
-            'shop_id' => $data['shop_id'] ?? null,
-            'biteship_location_id' => $biteshipLocation['id'] ?? null,
-            'biteship_area_id' => $data['biteship_area_id'],
-            'area_string' => $data['area_string'],
-            'name' => $data['location_name'],
-            'contact_name' => $data['contact_name'],
-            'contact_phone' => $data['contact_phone'],
-            'address' => $data['address'],
-            'note' => $data['note'] ?? null,
-            'postal_code' => $data['postal_code'],
-            'latitude' => $data['latitude'],
-            'longitude' => $data['longitude'],
-            'type' => $data['type'] ?? 'origin', // Default to 'origin' if not provided // origin or destination
-        ]);
+        $providerLocation = $this->biteshipService->createLocation($data->providerPayload());
 
-        return $location;
+        return Location::create([
+            ...$data->attributes(),
+            'user_id' => $actor->id,
+            'shop_id' => $data->shop_id,
+            'biteship_location_id' => $providerLocation['id'] ?? null,
+        ]);
     }
 }

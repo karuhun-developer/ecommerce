@@ -3,25 +3,31 @@
 namespace App\Actions\Ecommerce\Location;
 
 use App\Models\Location\Location;
+use App\Models\Shop\Shop;
+use App\Models\User;
 use App\Services\BiteshipService;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Gate;
+use Throwable;
 
 class DeleteLocationAction
 {
-    public function __construct(
-        public readonly BiteshipService $biteshipService,
-    ) {}
+    public function __construct(private readonly BiteshipService $biteshipService) {}
 
-    /**
-     * Handle the action.
-     */
-    public function handle(Location $location): bool
+    public function handle(Location $location, User $actor): bool
     {
-        try {
-            $this->biteshipService->deleteLocation($location->biteship_location_id);
-        } catch (\Exception $e) {
-            Log::error('Failed to delete biteship location: '.$e->getMessage());
-            // Optionally, we can proceed to delete local record anyway
+        if ($location->shop_id !== null) {
+            Gate::forUser($actor)->authorize('delete'.Shop::class);
+            Shop::query()->accessibleTo($actor)->findOrFail($location->shop_id);
+        } else {
+            abort_unless($location->user_id === $actor->id && $location->type === 'destination', 404);
+        }
+
+        if ($location->biteship_location_id) {
+            try {
+                $this->biteshipService->deleteLocation($location->biteship_location_id);
+            } catch (Throwable $exception) {
+                report($exception);
+            }
         }
 
         return $location->delete();

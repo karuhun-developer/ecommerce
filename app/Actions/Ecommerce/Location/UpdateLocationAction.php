@@ -2,43 +2,30 @@
 
 namespace App\Actions\Ecommerce\Location;
 
+use App\Data\Location\LocationData;
 use App\Models\Location\Location;
+use App\Models\Shop\Shop;
+use App\Models\User;
 use App\Services\BiteshipService;
+use Illuminate\Support\Facades\Gate;
 
 class UpdateLocationAction
 {
-    public function __construct(
-        public readonly BiteshipService $biteshipService,
-    ) {}
+    public function __construct(private readonly BiteshipService $biteshipService) {}
 
-    /**
-     * Handle the action.
-     */
-    public function handle(Location $location, array $data): bool
+    public function handle(Location $location, LocationData $data, User $actor): bool
     {
-        $this->biteshipService->updateLocation($location->biteship_location_id, [
-            'name' => $data['location_name'],
-            'contact_name' => $data['contact_name'],
-            'contact_phone' => $data['contact_phone'],
-            'address' => $data['address'],
-            'note' => $data['note'] ?? '',
-            'postal_code' => (int) $data['postal_code'],
-            'latitude' => (float) $data['latitude'],
-            'longitude' => (float) $data['longitude'],
-            'type' => 'origin',
-        ]);
+        if ($location->shop_id !== null) {
+            Gate::forUser($actor)->authorize('update'.Shop::class);
+            Shop::query()->accessibleTo($actor)->findOrFail($location->shop_id);
+            abort_unless($data->shop_id === $location->shop_id && $data->type === 'origin', 422);
+        } else {
+            abort_unless($location->user_id === $actor->id && $location->type === 'destination', 404);
+            abort_unless($data->shop_id === null && $data->type === 'destination', 422);
+        }
 
-        return $location->update([
-            'biteship_area_id' => $data['biteship_area_id'],
-            'area_string' => $data['area_string'],
-            'name' => $data['location_name'],
-            'contact_name' => $data['contact_name'],
-            'contact_phone' => $data['contact_phone'],
-            'address' => $data['address'],
-            'note' => $data['note'] ?? null,
-            'postal_code' => $data['postal_code'],
-            'latitude' => $data['latitude'],
-            'longitude' => $data['longitude'],
-        ]);
+        $this->biteshipService->updateLocation($location->biteship_location_id, $data->providerPayload());
+
+        return $location->update($data->attributes());
     }
 }
