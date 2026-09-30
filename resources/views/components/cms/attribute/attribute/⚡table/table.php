@@ -63,6 +63,7 @@ new class extends BaseComponent
 
         $deleteAction->handle(
             attribute: Attribute::findOrFail($id),
+            actor: auth()->user(),
         );
 
         // Toast message

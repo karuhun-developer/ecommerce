@@ -2,6 +2,7 @@
 
 use App\Actions\Cms\Management\Menu\StoreMenuAction;
 use App\Actions\Cms\Management\Menu\UpdateMenuAction;
+use App\Data\Cms\MenuData;
 use App\Models\Menu\Menu;
 use App\Models\Spatie\Role;
 use Flux\Flux;
@@ -9,18 +10,21 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 new class extends Component
 {
     // Model instance
-    public $modelInstance = Menu::class;
+    #[Locked]
+    public string $modelInstance = Menu::class;
 
-    public $isUpdate = false;
+    #[Locked]
+    public bool $isUpdate = false;
 
     #[On('set-action')]
-    public function setAction($id = null)
+    public function setAction(?int $id = null): void
     {
         $this->resetValidation();
 
@@ -48,7 +52,8 @@ new class extends Component
     }
 
     // Record data
-    public $id;
+    #[Locked]
+    public ?int $id = null;
 
     public $role_id;
 
@@ -65,11 +70,11 @@ new class extends Component
     public $status;
 
     // Get record data
-    public function getRecordData($id)
+    private function getRecordData(int $id): void
     {
         Gate::authorize('show'.$this->modelInstance);
 
-        $record = Menu::find($id);
+        $record = Menu::findOrFail($id);
         $this->fill(
             $record->only(
                 'id',
@@ -85,7 +90,7 @@ new class extends Component
     }
 
     // Reset record data
-    public function resetRecordData()
+    private function resetRecordData(): void
     {
         $this->reset([
             'id',
@@ -101,11 +106,11 @@ new class extends Component
     }
 
     // Handle form submit
-    public function submit(StoreMenuAction $storeAction, UpdateMenuAction $updateAction)
+    public function submit(StoreMenuAction $storeAction, UpdateMenuAction $updateAction): void
     {
         Gate::authorize(($this->isUpdate ? 'update' : 'create').$this->modelInstance);
 
-        $this->validate([
+        $validated = $this->validate([
             'role_id' => 'required|exists:roles,id',
             'name' => 'required|string|max:255',
             'url' => 'required|string|max:255',
@@ -118,11 +123,13 @@ new class extends Component
         if ($this->isUpdate) {
             $updateAction->handle(
                 menu: Menu::findOrFail($this->id),
-                data: $this->all(),
+                data: MenuData::fromArray($validated),
+                actor: auth()->user(),
             );
         } else {
             $storeAction->handle(
-                data: $this->all(),
+                data: MenuData::fromArray($validated),
+                actor: auth()->user(),
             );
         }
 

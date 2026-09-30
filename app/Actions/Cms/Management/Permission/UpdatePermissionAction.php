@@ -2,15 +2,17 @@
 
 namespace App\Actions\Cms\Management\Permission;
 
+use App\Data\Cms\PermissionData;
 use App\Models\Spatie\Permission;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 class UpdatePermissionAction
 {
-    /**
-     * Handle the action.
-     */
-    public function handle(Permission $permission, array $data): bool
+    public function handle(Permission $permission, PermissionData $data, User $actor): bool
     {
-        return $permission->update($data);
+        Gate::forUser($actor)->authorize('update'.Permission::class);
+
+        return $permission->update($data->attributes());
     }
 }

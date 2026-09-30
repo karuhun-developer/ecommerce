@@ -2,15 +2,17 @@
 
 namespace App\Actions\Cms\Management\MenuSub;
 
+use App\Data\Cms\MenuSubData;
 use App\Models\Menu\MenuSub;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 class StoreMenuSubAction
 {
-    /**
-     * Handle the action.
-     */
-    public function handle(array $data): MenuSub
+    public function handle(MenuSubData $data, User $actor): MenuSub
     {
-        return MenuSub::create($data);
+        Gate::forUser($actor)->authorize('create'.MenuSub::class);
+
+        return MenuSub::create($data->attributes());
     }
 }

@@ -2,22 +2,23 @@
 
 namespace App\Actions\Cms\Product\Category;
 
+use App\Data\Cms\CategoryData;
 use App\Models\Product\ProductCategory;
+use App\Models\User;
 use App\Traits\WithMediaCollection;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class UpdateCategoryAction
 {
     use WithMediaCollection;
 
-    /**
-     * Handle the action.
-     */
-    public function handle(ProductCategory $category, array $data): ProductCategory
+    public function handle(ProductCategory $category, CategoryData $data, User $actor): ProductCategory
     {
-        // Upload the image if provided
-        $image = $data['image'] ?? null;
+        Gate::forUser($actor)->authorize('update'.ProductCategory::class);
+
+        $image = $data->image;
         if ($image instanceof UploadedFile || $image instanceof TemporaryUploadedFile) {
             $this->saveMedia(
                 model: $category,
@@ -26,7 +27,7 @@ class UpdateCategoryAction
             );
         }
 
-        $category->update($data);
+        $category->update($data->attributes());
 
         return $category->fresh();
     }

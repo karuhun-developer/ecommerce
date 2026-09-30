@@ -2,23 +2,27 @@
 
 use App\Actions\Cms\Attribute\Attribute\StoreAttributeAction;
 use App\Actions\Cms\Attribute\Attribute\UpdateAttributeAction;
+use App\Data\Cms\AttributeData;
 use App\Models\Attribute\Attribute;
 use App\Models\Attribute\AttributeGroup;
 use Flux\Flux;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 new class extends Component
 {
     // Model instance
-    public $modelInstance = Attribute::class;
+    #[Locked]
+    public string $modelInstance = Attribute::class;
 
-    public $isUpdate = false;
+    #[Locked]
+    public bool $isUpdate = false;
 
     #[On('set-action')]
-    public function setAction($id = null)
+    public function setAction(?int $id = null): void
     {
         $this->resetValidation();
 
@@ -32,7 +36,8 @@ new class extends Component
     }
 
     // Record data
-    public $id;
+    #[Locked]
+    public ?int $id = null;
 
     public $attribute_group_id;
 
@@ -49,11 +54,11 @@ new class extends Component
     }
 
     // Get record data
-    public function getRecordData($id)
+    private function getRecordData(int $id): void
     {
         Gate::authorize('show'.$this->modelInstance);
 
-        $record = Attribute::find($id);
+        $record = Attribute::findOrFail($id);
         $this->fill(
             $record->only(
                 'id',
@@ -66,7 +71,7 @@ new class extends Component
     }
 
     // Reset record data
-    public function resetRecordData()
+    private function resetRecordData(): void
     {
         $this->reset([
             'id',
@@ -78,11 +83,11 @@ new class extends Component
     }
 
     // Handle form submit
-    public function submit(StoreAttributeAction $storeAction, UpdateAttributeAction $updateAction)
+    public function submit(StoreAttributeAction $storeAction, UpdateAttributeAction $updateAction): void
     {
         Gate::authorize(($this->isUpdate ? 'update' : 'create').$this->modelInstance);
 
-        $this->validate([
+        $validated = $this->validate([
             'attribute_group_id' => 'required|exists:attribute_groups,id',
             'name' => 'required|string|max:255',
             'value' => 'required|string|max:255',
@@ -92,11 +97,13 @@ new class extends Component
         if ($this->isUpdate) {
             $updateAction->handle(
                 attribute: Attribute::findOrFail($this->id),
-                data: $this->all(),
+                data: AttributeData::fromArray($validated),
+                actor: auth()->user(),
             );
         } else {
             $storeAction->handle(
-                data: $this->all(),
+                data: AttributeData::fromArray($validated),
+                actor: auth()->user(),
             );
         }
 

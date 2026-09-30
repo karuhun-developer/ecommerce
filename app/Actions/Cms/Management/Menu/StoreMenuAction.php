@@ -2,15 +2,17 @@
 
 namespace App\Actions\Cms\Management\Menu;
 
+use App\Data\Cms\MenuData;
 use App\Models\Menu\Menu;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 class StoreMenuAction
 {
-    /**
-     * Handle the action.
-     */
-    public function handle(array $data): Menu
+    public function handle(MenuData $data, User $actor): Menu
     {
-        return Menu::create($data);
+        Gate::forUser($actor)->authorize('create'.Menu::class);
+
+        return Menu::create($data->attributes());
     }
 }

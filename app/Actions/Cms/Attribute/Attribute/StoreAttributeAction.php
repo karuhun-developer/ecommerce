@@ -2,15 +2,17 @@
 
 namespace App\Actions\Cms\Attribute\Attribute;
 
+use App\Data\Cms\AttributeData;
 use App\Models\Attribute\Attribute;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 class StoreAttributeAction
 {
-    /**
-     * Handle the action.
-     */
-    public function handle(array $data): Attribute
+    public function handle(AttributeData $data, User $actor): Attribute
     {
-        return Attribute::create($data);
+        Gate::forUser($actor)->authorize('create'.Attribute::class);
+
+        return Attribute::create($data->attributes());
     }
 }

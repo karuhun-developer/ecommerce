@@ -3,10 +3,11 @@
 namespace App\Traits;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\UploadedFile;
 
 trait WithMediaCollection
 {
-    public function saveMedia(Model $model, $file, $collection = 'images', $deleteOlderMedia = true)
+    private function saveMedia(Model $model, UploadedFile $file, string $collection = 'images', bool $deleteOlderMedia = true): void
     {
         if ($deleteOlderMedia) {
             $model->clearMediaCollection($collection);
@@ -15,7 +16,7 @@ trait WithMediaCollection
         $model->addMedia($file)->toMediaCollection($collection);
     }
 
-    public function deleteMedia(Model $model, $collection = 'images')
+    private function deleteMedia(Model $model, string $collection = 'images'): void
     {
         $model->clearMediaCollection($collection);
     }

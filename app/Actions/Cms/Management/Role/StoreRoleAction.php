@@ -2,15 +2,17 @@
 
 namespace App\Actions\Cms\Management\Role;
 
+use App\Data\Cms\RoleData;
 use App\Models\Spatie\Role;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 class StoreRoleAction
 {
-    /**
-     * Handle the action.
-     */
-    public function handle(array $data): Role
+    public function handle(RoleData $data, User $actor): Role
     {
-        return Role::create($data);
+        Gate::forUser($actor)->authorize('create'.Role::class);
+
+        return Role::create($data->attributes());
     }
 }

@@ -87,6 +87,7 @@ new class extends BaseComponent
 
         $deleteAction->handle(
             menu: Menu::findOrFail($id),
+            actor: auth()->user(),
         );
 
         // Flush cache

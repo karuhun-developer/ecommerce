@@ -2,15 +2,17 @@
 
 namespace App\Actions\Cms\Management\Role;
 
+use App\Data\Cms\RoleData;
 use App\Models\Spatie\Role;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 class UpdateRoleAction
 {
-    /**
-     * Handle the action.
-     */
-    public function handle(Role $role, array $data): bool
+    public function handle(Role $role, RoleData $data, User $actor): bool
     {
-        return $role->update($data);
+        Gate::forUser($actor)->authorize('update'.Role::class);
+
+        return $role->update($data->attributes());
     }
 }

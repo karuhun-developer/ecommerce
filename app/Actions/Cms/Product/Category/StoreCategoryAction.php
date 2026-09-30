@@ -2,24 +2,25 @@
 
 namespace App\Actions\Cms\Product\Category;
 
+use App\Data\Cms\CategoryData;
 use App\Models\Product\ProductCategory;
+use App\Models\User;
 use App\Traits\WithMediaCollection;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class StoreCategoryAction
 {
     use WithMediaCollection;
 
-    /**
-     * Handle the action.
-     */
-    public function handle(array $data): ProductCategory
+    public function handle(CategoryData $data, User $actor): ProductCategory
     {
-        $category = ProductCategory::create($data);
+        Gate::forUser($actor)->authorize('create'.ProductCategory::class);
 
-        // Upload the image if provided
-        $image = $data['image'] ?? null;
+        $category = ProductCategory::create($data->attributes());
+
+        $image = $data->image;
         if ($image instanceof UploadedFile || $image instanceof TemporaryUploadedFile) {
             $this->saveMedia(
                 model: $category,

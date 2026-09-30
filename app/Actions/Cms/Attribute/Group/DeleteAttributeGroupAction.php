@@ -3,14 +3,15 @@
 namespace App\Actions\Cms\Attribute\Group;
 
 use App\Models\Attribute\AttributeGroup;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 class DeleteAttributeGroupAction
 {
-    /**
-     * Handle the action.
-     */
-    public function handle(AttributeGroup $attributeGroup): bool
+    public function handle(AttributeGroup $attributeGroup, User $actor): bool
     {
+        Gate::forUser($actor)->authorize('delete'.AttributeGroup::class);
+
         return $attributeGroup->delete();
     }
 }

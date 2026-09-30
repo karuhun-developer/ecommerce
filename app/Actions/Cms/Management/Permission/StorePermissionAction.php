@@ -2,15 +2,17 @@
 
 namespace App\Actions\Cms\Management\Permission;
 
+use App\Data\Cms\PermissionData;
 use App\Models\Spatie\Permission;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 class StorePermissionAction
 {
-    /**
-     * Handle the action.
-     */
-    public function handle(array $data): Permission
+    public function handle(PermissionData $data, User $actor): Permission
     {
-        return Permission::create($data);
+        Gate::forUser($actor)->authorize('create'.Permission::class);
+
+        return Permission::create($data->attributes());
     }
 }

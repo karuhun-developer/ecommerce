@@ -65,6 +65,7 @@ new class extends BaseComponent
 
         $deleteAction->handle(
             category: ProductCategory::findOrFail($id),
+            actor: auth()->user(),
         );
 
         // Toast message

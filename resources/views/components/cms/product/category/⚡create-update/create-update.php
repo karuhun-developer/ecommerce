@@ -2,6 +2,7 @@
 
 use App\Actions\Cms\Product\Category\StoreCategoryAction;
 use App\Actions\Cms\Product\Category\UpdateCategoryAction;
+use App\Data\Cms\CategoryData;
 use App\Models\Product\ProductCategory;
 use Flux\Flux;
 use Illuminate\Support\Facades\Gate;
@@ -17,6 +18,7 @@ new class extends Component
     #[Locked]
     public string $modelInstance = ProductCategory::class;
 
+    #[Locked]
     public bool $isUpdate = false;
 
     #[On('set-action')]
@@ -48,7 +50,7 @@ new class extends Component
     public $image;
 
     // Get record data
-    public function getRecordData(int $id): void
+    private function getRecordData(int $id): void
     {
         Gate::authorize('show'.$this->modelInstance);
 
@@ -65,7 +67,7 @@ new class extends Component
     }
 
     // Reset record data
-    public function resetRecordData(): void
+    private function resetRecordData(): void
     {
         $this->reset([
             'id',
@@ -82,7 +84,7 @@ new class extends Component
     {
         Gate::authorize(($this->isUpdate ? 'update' : 'create').$this->modelInstance);
 
-        $this->validate([
+        $validated = $this->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'is_featured' => 'boolean',
@@ -92,11 +94,13 @@ new class extends Component
         if ($this->isUpdate) {
             $updateAction->handle(
                 category: ProductCategory::query()->findOrFail($this->id),
-                data: $this->categoryData(),
+                data: CategoryData::fromArray($validated),
+                actor: auth()->user(),
             );
         } else {
             $storeAction->handle(
-                data: $this->categoryData(),
+                data: CategoryData::fromArray($validated),
+                actor: auth()->user(),
             );
         }
 
@@ -114,16 +118,5 @@ new class extends Component
 
         // Close modal
         Flux::modal('defaultModal')->close();
-    }
-
-    /** @return array{name: mixed, description: mixed, is_featured: mixed, image: mixed} */
-    private function categoryData(): array
-    {
-        return [
-            'name' => $this->name,
-            'description' => $this->description,
-            'is_featured' => $this->is_featured,
-            'image' => $this->image,
-        ];
     }
 };

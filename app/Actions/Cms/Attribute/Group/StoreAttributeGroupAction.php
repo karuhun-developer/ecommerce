@@ -2,15 +2,17 @@
 
 namespace App\Actions\Cms\Attribute\Group;
 
+use App\Data\Cms\AttributeGroupData;
 use App\Models\Attribute\AttributeGroup;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 
 class StoreAttributeGroupAction
 {
-    /**
-     * Handle the action.
-     */
-    public function handle(array $data): AttributeGroup
+    public function handle(AttributeGroupData $data, User $actor): AttributeGroup
     {
-        return AttributeGroup::create($data);
+        Gate::forUser($actor)->authorize('create'.AttributeGroup::class);
+
+        return AttributeGroup::create($data->attributes());
     }
 }
