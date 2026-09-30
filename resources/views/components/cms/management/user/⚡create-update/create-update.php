@@ -2,9 +2,11 @@
 
 use App\Actions\Cms\Management\User\StoreUserAction;
 use App\Actions\Cms\Management\User\UpdateUserAction;
+use App\Livewire\Forms\Cms\UserForm;
 use App\Models\Spatie\Role;
 use App\Models\User;
 use Flux\Flux;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -13,10 +15,13 @@ use Livewire\Component;
 
 new class extends Component
 {
-    // Model instance
-    public $modelInstance = User::class;
+    public UserForm $form;
 
-    public $isUpdate = false;
+    #[Locked]
+    public ?int $id = null;
+
+    #[Locked]
+    public bool $isUpdate = false;
 
     public function mount(): void
     {
@@ -24,108 +29,41 @@ new class extends Component
     }
 
     #[On('set-action')]
-    public function setAction($id = null)
+    public function setAction(?int $id = null): void
     {
+        abort_unless(auth()->user()?->hasRole('superadmin'), 403);
         $this->resetValidation();
+        $this->form->reset();
+        $this->id = $id;
+        $this->isUpdate = $id !== null;
 
-        if ($id) {
-            $this->isUpdate = true;
-            $this->getRecordData($id);
-        } else {
-            $this->isUpdate = false;
-            $this->resetRecordData();
+        if ($id !== null) {
+            Gate::authorize('show'.User::class);
+            $this->form->setUser(User::findOrFail($id));
         }
     }
 
     #[Computed]
-    public function roles()
+    public function roles(): Collection
     {
-        return Role::all();
+        return Role::query()->where('guard_name', 'api')->orderBy('name')->get();
     }
 
-    // Record data
-    #[Locked]
-    public $id;
-
-    public $role;
-
-    public $name;
-
-    public $email;
-
-    public $password;
-
-    // Get record data
-    public function getRecordData($id)
+    public function submit(StoreUserAction $storeAction, UpdateUserAction $updateAction): void
     {
-        Gate::authorize('show'.$this->modelInstance);
-
-        $record = User::findOrFail($id);
-        $this->fill(
-            $record->only(
-                'id',
-                'name',
-                'email',
-            )
-        );
-        $this->role = $record->getRoleNames()->first();
-        $this->reset('password');
-    }
-
-    // Reset record dataw
-    public function resetRecordData()
-    {
-        $this->reset([
-            'id',
-            'role',
-            'name',
-            'email',
-            'password',
-        ]);
-    }
-
-    // Handle form submit
-    public function submit(StoreUserAction $storeAction, UpdateUserAction $updateAction)
-    {
-        Gate::authorize(($this->isUpdate ? 'update' : 'create').$this->modelInstance);
-
-        $this->validate([
-            'role' => 'required|string|exists:roles,name',
-            'name' => 'required|string|max:255',
-            'email' => $this->isUpdate ? 'required|string|email|max:255|unique:users,email,'.$this->id : 'required|string|email|max:255|unique:users,email',
-            'password' => $this->isUpdate ? 'nullable' : 'required|string|min:8',
-        ]);
+        Gate::authorize(($this->isUpdate ? 'update' : 'create').User::class);
+        $data = $this->form->data($this->id);
+        $actor = auth()->user();
 
         if ($this->isUpdate) {
-            $updateAction->handle(
-                user: User::findOrFail($this->id),
-                data: [
-                    'role' => $this->role,
-                    'name' => $this->name,
-                    'email' => $this->email,
-                ],
-            );
+            $updateAction->handle(User::findOrFail($this->id), $data, $actor);
         } else {
-            $storeAction->handle(
-                data: [
-                    'role' => $this->role,
-                    'name' => $this->name,
-                    'email' => $this->email,
-                    'password' => $this->password,
-                ],
-            );
+            $storeAction->handle($data, $actor);
         }
 
-        // Toast message
-        $this->dispatch('toast',
-            type: 'success',
-            message: $this->isUpdate ? 'User updated successfully.' : 'User created successfully.',
-        );
-
-        // Reset data table
+        $this->dispatch('toast', type: 'success', message: $this->isUpdate ? 'User updated successfully.' : 'User created successfully.');
         $this->dispatch('reset-parent-page');
-
-        // Close modal
+        $this->form->password = '';
         Flux::modal('defaultModal')->close();
     }
 };

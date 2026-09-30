@@ -1,117 +1,58 @@
 <?php
 
-use App\Actions\Cms\Management\RolePermission\UpdateRolePermissionsAction;
-use App\Livewire\BaseComponent;
+use App\Actions\Cms\Management\RolePermission\AssignAllRolePermissionsAction;
+use App\Actions\Cms\Management\RolePermission\AssignRolePermissionAction;
+use App\Actions\Cms\Management\RolePermission\RevokeAllRolePermissionsAction;
+use App\Actions\Cms\Management\RolePermission\RevokeRolePermissionAction;
 use App\Models\Spatie\Permission;
 use App\Models\Spatie\Role;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Computed;
+use Livewire\Component;
 
-new class extends BaseComponent
+new class extends Component
 {
-    // Model instance
-    public $modelInstance = Permission::class;
-
-    // List permissions
-    public $permissions = [];
-
-    // Role instance
     public Role $role;
 
-    public function mount()
+    public function mount(): void
     {
-        Gate::authorize('view'.$this->modelInstance);
-
-        // Get role permissions
-        $this->getPermissions();
+        Gate::authorize('view'.Permission::class);
     }
 
-    protected function getPermissions()
+    #[Computed]
+    public function permissions(): Collection
     {
-        $permission = Permission::all();
-
-        // Get all permission that avaliable
-        foreach ($permission as $perm) {
-            $perm = explode('App\\', $perm->name);
-            $model = 'App\\'.$perm[1];
-            $permssion = $perm[0];
-
-            $this->permissions[$model][$permssion] = false;
-        }
-
-        // Check if role has permissions
-        foreach ($this->role->permissions->pluck('name') as $permission) {
-            $perm = explode('App\\', $permission);
-            $model = 'App\\'.$perm[1];
-            $permssion = $perm[0];
-
-            $this->permissions[$model][$permssion] = true;
-        }
+        return Permission::query()->where('guard_name', $this->role->guard_name)->orderBy('name')->get();
     }
 
-    // Check all
-    public function checkAll(UpdateRolePermissionsAction $action)
+    #[Computed]
+    public function assignedPermissions(): array
     {
-        $action->assignAll($this->role);
+        return $this->role->permissions()->pluck('id')->all();
+    }
 
-        // Alert success message
+    public function checkAll(AssignAllRolePermissionsAction $action): void
+    {
+        $action->handle($this->role, auth()->user());
+        unset($this->assignedPermissions);
         $this->dispatch('toast', type: 'success', message: 'All permissions have been granted.');
     }
 
-    // Uncheck all
-    public function uncheckAll(UpdateRolePermissionsAction $action)
+    public function uncheckAll(RevokeAllRolePermissionsAction $action): void
     {
-        $action->revokeAll($this->role);
-
-        // Alert success message
+        $action->handle($this->role, auth()->user());
+        unset($this->assignedPermissions);
         $this->dispatch('toast', type: 'success', message: 'All permissions have been revoked.');
     }
 
-    // Check
-    public function check($action, $model)
+    public function toggle(int $permissionId, AssignRolePermissionAction $assign, RevokeRolePermissionAction $revoke): void
     {
-        $permission = $action.$model;
-        $this->isPermissionExist($permission);
-        $this->role->givePermissionTo($permission);
-
-        activity()
-            ->causedBy(auth()->user())
-            ->performedOn($this->role)
-            ->withProperties([
-                'permission' => $permission,
-            ])
-            ->event('check-permission')
-            ->log('Add permission');
-
-        // Alert success message
-        $this->dispatch('toast', type: 'success', message: 'Permission has been granted.');
-    }
-
-    // Uncheck
-    public function uncheck($action, $model)
-    {
-        $permission = $action.$model;
-        $this->isPermissionExist($permission);
-        $this->role->revokePermissionTo($permission);
-
-        activity()
-            ->causedBy(auth()->user())
-            ->performedOn($this->role)
-            ->withProperties([
-                'permission' => $permission,
-            ])
-            ->event('uncheck-permission')
-            ->log('Remove permission');
-
-        // Alert success message
-        $this->dispatch('toast', type: 'success', message: 'Permission has been revoked.');
-    }
-
-    // Is Permission Exist
-    public function isPermissionExist($permission)
-    {
-        $isPermissionExist = Permission::where('name', $permission)->first();
-        if (is_null($isPermissionExist)) {
-            return false;
-        }
+        $permission = Permission::query()->where('guard_name', $this->role->guard_name)->findOrFail($permissionId);
+        $action = $this->role->hasPermissionTo($permission) ? $revoke : $assign;
+        $action->handle($this->role, $permission, auth()->user());
+        $this->role->unsetRelation('permissions');
+        unset($this->assignedPermissions);
+        $this->dispatch('toast', type: 'success', message: 'Permission updated.');
     }
 };

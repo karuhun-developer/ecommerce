@@ -72,12 +72,13 @@ new class extends BaseComponent
     }
 
     #[On('delete')]
-    public function delete($id, DeleteUserAction $deleteAction)
+    public function delete(int $id, DeleteUserAction $deleteAction): void
     {
         Gate::authorize('delete'.$this->modelInstance);
 
         $deleteAction->handle(
             user: User::findOrFail($id),
+            actor: auth()->user(),
         );
 
         // Toast message
@@ -85,12 +86,13 @@ new class extends BaseComponent
     }
 
     #[On('verifyEmail')]
-    public function verifyEmail($id, ValidateUserEmailAction $validateEmailAction)
+    public function verifyEmail(int $id, ValidateUserEmailAction $validateEmailAction): void
     {
         Gate::authorize('validate'.$this->modelInstance);
 
         $validateEmailAction->handle(
             user: User::findOrFail($id),
+            actor: auth()->user(),
         );
 
         // Toast message

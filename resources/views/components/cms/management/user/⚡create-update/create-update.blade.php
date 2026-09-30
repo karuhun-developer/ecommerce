@@ -18,32 +18,32 @@
 
             <flux:field>
                 <flux:label badge="Required">Role</flux:label>
-                <flux:select wire:model="role" placeholder="Select role ....">
+                <flux:select wire:model="form.role" placeholder="Select role ....">
                     <flux:select.option value="">-- Select Role --</flux:select.option>
                     @foreach ($this->roles as $role)
-                        <flux:select.option value="{{ $role->name }}">{{ $role->name }}</flux:select.option>
+                        <flux:select.option wire:key="role-{{ $role->id }}" value="{{ $role->name }}">{{ $role->name }}</flux:select.option>
                     @endforeach
                 </flux:select>
-                <flux:error name="role" />
+                <flux:error name="form.role" />
             </flux:field>
 
             <flux:field>
                 <flux:label badge="Required">Name</flux:label>
-                <flux:input wire:model="name" type="text" />
-                <flux:error name="name" />
+                <flux:input wire:model="form.name" type="text" />
+                <flux:error name="form.name" />
             </flux:field>
 
             <flux:field>
                 <flux:label badge="Required">Email</flux:label>
-                <flux:input wire:model="email" type="email" />
-                <flux:error name="email" />
+                <flux:input wire:model="form.email" type="email" />
+                <flux:error name="form.email" />
             </flux:field>
 
             @if (!$isUpdate)
                 <flux:field>
                     <flux:label badge="Required">Password</flux:label>
-                    <flux:input wire:model="password" type="password" />
-                    <flux:error name="password" />
+                    <flux:input wire:model="form.password" type="password" />
+                    <flux:error name="form.password" />
                 </flux:field>
             @endif
 

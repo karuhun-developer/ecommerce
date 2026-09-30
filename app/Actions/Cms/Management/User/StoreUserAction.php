@@ -2,25 +2,23 @@
 
 namespace App\Actions\Cms\Management\User;
 
+use App\Data\Cms\UserData;
 use App\Models\User;
 
 class StoreUserAction
 {
-    /**
-     * Handle the action.
-     */
-    public function handle(array $data): User
+    public function handle(UserData $data, User $actor): User
     {
-        abort_unless(auth()->user()?->hasRole('superadmin'), 403);
+        abort_unless($actor->hasRole('superadmin'), 403);
 
         $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => $data['password'],
+            'name' => $data->name,
+            'email' => $data->email,
+            'password' => $data->password,
         ]);
 
-        if (isset($data['role'])) {
-            $user->syncRoles([$data['role']]);
+        if ($data->role !== null) {
+            $user->syncRoles([$data->role]);
         }
 
         return $user;

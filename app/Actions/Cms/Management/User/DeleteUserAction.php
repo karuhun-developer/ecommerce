@@ -6,12 +6,9 @@ use App\Models\User;
 
 class DeleteUserAction
 {
-    /**
-     * Handle the action.
-     */
-    public function handle(User $user): ?bool
+    public function handle(User $user, User $actor): ?bool
     {
-        abort_unless(auth()->user()?->hasRole('superadmin'), 403);
+        abort_unless($actor->hasRole('superadmin'), 403);
 
         return $user->delete();
     }

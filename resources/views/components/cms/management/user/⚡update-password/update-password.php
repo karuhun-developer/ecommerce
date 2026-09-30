@@ -1,66 +1,38 @@
 <?php
 
 use App\Actions\Cms\Management\User\UpdateUserPasswordAction;
+use App\Data\Auth\PasswordData;
 use App\Models\User;
 use Flux\Flux;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 new class extends Component
 {
-    // Model instance
-    public $modelInstance = User::class;
+    #[Locked]
+    public ?int $id = null;
 
-    public $isUpdate = false;
+    public string $password = '';
 
     #[On('set-update-password')]
-    public function setAction($id = null)
+    public function setAction(?int $id = null): void
     {
+        abort_unless(auth()->user()?->hasRole('superadmin'), 403);
+        Gate::authorize('show'.User::class);
         $this->resetValidation();
-
-        if ($id) {
-            $this->isUpdate = true;
-            $this->getRecordData($id);
-        } else {
-            $this->isUpdate = false;
-            $this->resetRecordData();
-        }
+        $this->password = '';
+        $this->id = $id === null ? null : User::findOrFail($id)->id;
     }
 
-    // Record data
-    public $id;
-
-    public $password;
-
-    // Get record data
-    public function getRecordData($id)
+    public function submit(UpdateUserPasswordAction $action): void
     {
-        Gate::authorize('show'.$this->modelInstance);
-
-        $record = User::find($id);
-        $this->id = $record->id;
-        $this->reset('password');
-    }
-
-    // Handle change password submit
-    public function submit(UpdateUserPasswordAction $updatePasswordAction)
-    {
-        // Validation rules
-        $this->validate([
-            'password' => 'required|string|min:8',
-        ]);
-
-        // Find user and update password
-        $updatePasswordAction->handle(
-            user: User::findOrFail($this->id),
-            password: $this->password,
-        );
-
-        // Toast message
+        Gate::authorize('update'.User::class);
+        $validated = $this->validate(['password' => ['required', 'string', 'min:8']]);
+        $action->handle(User::findOrFail($this->id), new PasswordData($validated['password']), auth()->user());
+        $this->password = '';
         $this->dispatch('toast', type: 'success', message: 'Password changed successfully.');
-
-        // Close modal
         Flux::modal('changePasswordModal')->close();
     }
 };
