@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Ecommerce\Review\SubmitOrderReviewAction;
+use App\Livewire\Forms\ReviewForm;
 use App\Models\Order\OrderReview;
 use App\Models\Order\OrderShop;
 use App\Models\User;
@@ -19,9 +20,7 @@ new class extends Component
     #[Locked]
     public OrderShop $orderShop;
 
-    public array $reviewData = [];
-
-    public array $images = [];
+    public ReviewForm $form;
 
     public function mount(OrderShop $orderShop): void
     {
@@ -46,20 +45,20 @@ new class extends Component
 
         foreach ($this->orderShop->items as $item) {
             $key = "shopitem__{$item->id}";
-            $this->reviewData[$key] = [
+            $this->form->reviewData[$key] = [
                 'rating' => 5,
                 'comment' => '',
             ];
-            $this->images[$key] = [];
+            $this->form->images[$key] = [];
         }
 
         if ($this->orderShop->shop) {
             $shopKey = "shop__{$this->orderShop->shop_id}";
-            $this->reviewData[$shopKey] = [
+            $this->form->reviewData[$shopKey] = [
                 'rating' => 5,
                 'comment' => '',
             ];
-            $this->images[$shopKey] = [];
+            $this->form->images[$shopKey] = [];
         }
     }
 
@@ -73,9 +72,9 @@ new class extends Component
 
     public function removeImage(string $key, int $index): void
     {
-        if (isset($this->images[$key][$index])) {
-            unset($this->images[$key][$index]);
-            $this->images[$key] = array_values($this->images[$key]);
+        if (isset($this->form->images[$key][$index])) {
+            unset($this->form->images[$key][$index]);
+            $this->form->images[$key] = array_values($this->form->images[$key]);
         }
     }
 
@@ -95,23 +94,12 @@ new class extends Component
             return;
         }
 
-        $rules = [];
-
-        foreach (array_keys($this->reviewData) as $key) {
-            $rules["reviewData.{$key}"] = ['required', 'array'];
-            $rules["reviewData.{$key}.rating"] = ['required', 'numeric', 'between:1,5', 'multiple_of:0.5'];
-            $rules["reviewData.{$key}.comment"] = ['nullable', 'string', 'max:2000'];
-            $rules["images.{$key}"] = ['array', 'max:5'];
-            $rules["images.{$key}.*"] = ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'];
-        }
-
-        $this->validate($rules);
+        $data = $this->form->data();
 
         try {
             $action->handle(
                 orderShop: $this->orderShop,
-                data: $this->reviewData,
-                uploadedImages: $this->images,
+                data: $data,
                 reviewer: $user,
             );
 

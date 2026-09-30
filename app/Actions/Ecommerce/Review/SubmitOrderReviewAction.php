@@ -2,6 +2,8 @@
 
 namespace App\Actions\Ecommerce\Review;
 
+use App\Data\Review\ReviewData;
+use App\Data\Review\ReviewSubmissionData;
 use App\Models\Order\OrderReview;
 use App\Models\Order\OrderShop;
 use App\Models\User;
@@ -10,20 +12,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class SubmitOrderReviewAction
 {
     /**
-     * @param  array<string, mixed>  $data
-     * @param  array<string, mixed>  $uploadedImages
      * @return Collection<int, OrderReview>
      */
-    public function handle(OrderShop $orderShop, array $data, array $uploadedImages, User $reviewer): Collection
+    public function handle(OrderShop $orderShop, ReviewSubmissionData $data, User $reviewer): Collection
     {
         try {
-            return DB::transaction(function () use ($orderShop, $data, $uploadedImages, $reviewer): Collection {
+            return DB::transaction(function () use ($orderShop, $data, $reviewer): Collection {
                 $lockedOrderShop = OrderShop::query()
                     ->whereKey($orderShop->getKey())
                     ->whereHas('order', fn (Builder $query) => $query->where('user_id', $reviewer->id))
@@ -42,7 +41,7 @@ class SubmitOrderReviewAction
                 foreach ($lockedOrderShop->items as $item) {
                     $key = "shopitem__{$item->id}";
 
-                    if (! array_key_exists($key, $data)) {
+                    if (! array_key_exists($key, $data->reviews)) {
                         continue;
                     }
 
@@ -58,20 +57,18 @@ class SubmitOrderReviewAction
                         orderShop: $lockedOrderShop,
                         reviewer: $reviewer,
                         reviewable: $product,
-                        reviewData: $this->validateReviewData($data[$key], $key),
-                        uploadedImages: $this->validateUploadedImages($uploadedImages[$key] ?? [], $key),
+                        reviewData: $data->reviews[$key],
                     ));
                 }
 
                 $shopKey = "shop__{$lockedOrderShop->shop_id}";
 
-                if (array_key_exists($shopKey, $data)) {
+                if (array_key_exists($shopKey, $data->reviews)) {
                     $createdReviews->push($this->createReview(
                         orderShop: $lockedOrderShop,
                         reviewer: $reviewer,
                         reviewable: $lockedOrderShop->shop,
-                        reviewData: $this->validateReviewData($data[$shopKey], $shopKey),
-                        uploadedImages: $this->validateUploadedImages($uploadedImages[$shopKey] ?? [], $shopKey),
+                        reviewData: $data->reviews[$shopKey],
                     ));
                 }
 
@@ -90,55 +87,13 @@ class SubmitOrderReviewAction
         }
     }
 
-    /**
-     * @return array{rating: int|float, comment: string|null}
-     */
-    private function validateReviewData(mixed $reviewData, string $key): array
-    {
-        return Validator::make(
-            ['review' => $reviewData],
-            [
-                'review' => ['required', 'array'],
-                'review.rating' => ['required', 'numeric', 'between:1,5', 'multiple_of:0.5'],
-                'review.comment' => ['nullable', 'string', 'max:2000'],
-            ],
-            [],
-            [
-                'review.rating' => "rating {$key}",
-                'review.comment' => "komentar {$key}",
-            ],
-        )->validate()['review'];
-    }
-
-    /** @return array<int, mixed> */
-    private function validateUploadedImages(mixed $uploadedImages, string $key): array
-    {
-        if (! is_array($uploadedImages)) {
-            throw ValidationException::withMessages([
-                "images.{$key}" => 'Data gambar ulasan tidak valid.',
-            ]);
-        }
-
-        if (count($uploadedImages) > 5) {
-            throw ValidationException::withMessages([
-                "images.{$key}" => 'Maksimal 5 foto per ulasan.',
-            ]);
-        }
-
-        return $uploadedImages;
-    }
-
-    /**
-     * @param  array{rating: int|float, comment: string|null}  $reviewData
-     * @param  array<int, mixed>  $uploadedImages
-     */
     private function createReview(
         OrderShop $orderShop,
         User $reviewer,
         Model $reviewable,
-        array $reviewData,
-        array $uploadedImages,
+        ReviewData $reviewData,
     ): OrderReview {
+        $reviewData->validate();
         $alreadyReviewed = OrderReview::query()
             ->where('user_id', $reviewer->id)
             ->where('order_shop_id', $orderShop->id)
@@ -157,12 +112,12 @@ class SubmitOrderReviewAction
             'order_shop_id' => $orderShop->id,
             'reviewable_type' => $reviewable->getMorphClass(),
             'reviewable_id' => $reviewable->getKey(),
-            'rating' => $reviewData['rating'],
-            'comment' => $reviewData['comment'] ?? null,
+            'rating' => $reviewData->rating,
+            'comment' => $reviewData->comment,
             'status' => 'pending',
         ]);
 
-        foreach ($uploadedImages as $image) {
+        foreach ($reviewData->images as $image) {
             $review->addMedia($image)->toMediaCollection('review_images');
         }
 

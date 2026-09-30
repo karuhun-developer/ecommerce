@@ -31,7 +31,7 @@
                                 <div>
                                     <label class="block text-sm font-medium mb-2">Rating</label>
                                     <div x-data="{
-                                            rating: @entangle('reviewData.'.$key.'.rating'),
+                                            rating: @entangle('form.reviewData.'.$key.'.rating'),
                                             hoverRating: 0,
                                             stars: [1, 2, 3, 4, 5],
                                             setRating(star, event) {
@@ -76,12 +76,12 @@
                                         </template>
                                         <span class="ml-3 font-bold text-gray-700" x-text="Number(rating).toFixed(1)"></span>
                                     </div>
-                                    @error('reviewData.'.$key.'.rating') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                    @error('form.reviewData.'.$key.'.rating') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                                 
                                 <!-- Comment -->
                                 <div>
-                                    <flux:textarea wire:model="reviewData.{{ $key }}.comment" label="Komentar" placeholder="Bagaimana kualitas produk ini?" rows="3" />
+                                    <flux:textarea wire:model="form.reviewData.{{ $key }}.comment" label="Komentar" placeholder="Bagaimana kualitas produk ini?" rows="3" />
                                 </div>
                                 
                                 <!-- Images -->
@@ -89,31 +89,31 @@
                                     <label class="block text-sm font-medium mb-2">Foto (Max 5)</label>
                                     
                                     <div class="flex flex-wrap gap-4 items-start">
-                                        @if(isset($images[$key]))
-                                            @foreach($images[$key] as $index => $image)
+                                        @if(isset($form->images[$key]))
+                                            @foreach($form->images[$key] as $index => $image)
                                                 <div class="relative group w-24 h-24 rounded-lg overflow-hidden border bg-white">
                                                     <img src="{{ $image->temporaryUrl() }}" class="w-full h-full object-cover">
-                                                    <button type="button" wire:click="removeImage('{{ addslashes($key) }}', {{ $index }})" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                                    <button type="button" wire:click="removeImage('{{ addslashes($key) }}', {{ $index }})" class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
                                                         <flux:icon.trash class="w-6 h-6 text-white" />
                                                     </button>
                                                 </div>
                                             @endforeach
                                         @endif
                                         
-                                        @if(!isset($images[$key]) || count($images[$key]) < 5)
+                                        @if(!isset($form->images[$key]) || count($form->images[$key]) < 5)
                                             <div class="relative w-24 h-24 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 flex flex-col items-center justify-center bg-gray-50 cursor-pointer overflow-hidden transition">
                                                 <flux:icon.plus class="w-6 h-6 text-gray-400" />
                                                 <span class="text-xs text-gray-500 mt-1">Upload</span>
-                                                <input type="file" wire:model="images.{{ $key }}" multiple accept="image/jpeg,image/jpg,image/png" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                                <input type="file" wire:model="form.images.{{ $key }}" multiple accept="image/jpeg,image/jpg,image/png" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                                             </div>
                                         @endif
                                     </div>
                                     
-                                    <div wire:loading wire:target="images.{{ $key }}" class="text-sm text-gray-500 mt-2">
+                                    <div wire:loading wire:target="form.images.{{ $key }}" class="text-sm text-gray-500 mt-2">
                                         Uploading...
                                     </div>
-                                    @error('images.'.$key.'.*') <span class="text-red-500 text-xs block mt-1">{{ $message }}</span> @enderror
-                                    @error('images.'.$key) <span class="text-red-500 text-xs block mt-1">{{ $message }}</span> @enderror
+                                    @error('form.images.'.$key.'.*') <span class="text-red-500 text-xs block mt-1">{{ $message }}</span> @enderror
+                                    @error('form.images.'.$key) <span class="text-red-500 text-xs block mt-1">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                         </flux:card>
@@ -137,7 +137,7 @@
                                 <div>
                                     <label class="block text-sm font-medium mb-2">Rating Pelayanan Toko</label>
                                     <div x-data="{
-                                            rating: @entangle('reviewData.'.$shopKey.'.rating'),
+                                            rating: @entangle('form.reviewData.'.$shopKey.'.rating'),
                                             hoverRating: 0,
                                             stars: [1, 2, 3, 4, 5],
                                             setRating(star, event) {
@@ -182,12 +182,12 @@
                                         </template>
                                         <span class="ml-3 font-bold text-gray-700" x-text="Number(rating).toFixed(1)"></span>
                                     </div>
-                                    @error('reviewData.'.$shopKey.'.rating') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                                    @error('form.reviewData.'.$shopKey.'.rating') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                                 
                                 <!-- Comment -->
                                 <div>
-                                    <flux:textarea wire:model="reviewData.{{ $shopKey }}.comment" label="Komentar" placeholder="Bagaimana pelayanan toko ini?" rows="3" />
+                                    <flux:textarea wire:model="form.reviewData.{{ $shopKey }}.comment" label="Komentar" placeholder="Bagaimana pelayanan toko ini?" rows="3" />
                                 </div>
                                 
                                 <!-- Images -->
@@ -195,31 +195,31 @@
                                     <label class="block text-sm font-medium mb-2">Foto (Max 5)</label>
                                     
                                     <div class="flex flex-wrap gap-4 items-start">
-                                        @if(isset($images[$shopKey]))
-                                            @foreach($images[$shopKey] as $index => $image)
+                                        @if(isset($form->images[$shopKey]))
+                                            @foreach($form->images[$shopKey] as $index => $image)
                                                 <div class="relative group w-24 h-24 rounded-lg overflow-hidden border bg-white">
                                                     <img src="{{ $image->temporaryUrl() }}" class="w-full h-full object-cover">
-                                                    <button type="button" wire:click="removeImage('{{ addslashes($shopKey) }}', {{ $index }})" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                                    <button type="button" wire:click="removeImage('{{ addslashes($shopKey) }}', {{ $index }})" class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
                                                         <flux:icon.trash class="w-6 h-6 text-white" />
                                                     </button>
                                                 </div>
                                             @endforeach
                                         @endif
                                         
-                                        @if(!isset($images[$shopKey]) || count($images[$shopKey]) < 5)
+                                        @if(!isset($form->images[$shopKey]) || count($form->images[$shopKey]) < 5)
                                             <div class="relative w-24 h-24 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 flex flex-col items-center justify-center bg-gray-50 cursor-pointer overflow-hidden transition">
                                                 <flux:icon.plus class="w-6 h-6 text-gray-400" />
                                                 <span class="text-xs text-gray-500 mt-1">Upload</span>
-                                                <input type="file" wire:model="images.{{ $shopKey }}" multiple accept="image/jpeg,image/jpg,image/png" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                                <input type="file" wire:model="form.images.{{ $shopKey }}" multiple accept="image/jpeg,image/jpg,image/png" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                                             </div>
                                         @endif
                                     </div>
                                     
-                                    <div wire:loading wire:target="images.{{ $shopKey }}" class="text-sm text-gray-500 mt-2">
+                                    <div wire:loading wire:target="form.images.{{ $shopKey }}" class="text-sm text-gray-500 mt-2">
                                         Uploading...
                                     </div>
-                                    @error('images.'.$shopKey.'.*') <span class="text-red-500 text-xs block mt-1">{{ $message }}</span> @enderror
-                                    @error('images.'.$shopKey) <span class="text-red-500 text-xs block mt-1">{{ $message }}</span> @enderror
+                                    @error('form.images.'.$shopKey.'.*') <span class="text-red-500 text-xs block mt-1">{{ $message }}</span> @enderror
+                                    @error('form.images.'.$shopKey) <span class="text-red-500 text-xs block mt-1">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                         </flux:card>

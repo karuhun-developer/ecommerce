@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class DeleteOrderReviewAction
 {
-    public function execute(OrderReview $review, User $moderator): bool
+    public function handle(OrderReview $review, User $moderator): bool
     {
         return DB::transaction(function () use ($review, $moderator): bool {
             $lockedReview = $this->accessibleReview($review, $moderator);

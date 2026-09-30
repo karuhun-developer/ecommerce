@@ -1,6 +1,8 @@
 <?php
 
 use App\Actions\Ecommerce\Review\SubmitOrderReviewAction;
+use App\Data\Review\ReviewData;
+use App\Data\Review\ReviewSubmissionData;
 use App\Models\Order\Order;
 use App\Models\Order\OrderReview;
 use App\Models\Order\OrderShop;
@@ -10,6 +12,7 @@ use App\Models\Product\ProductFlat;
 use App\Models\Shop\Shop;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
@@ -74,9 +77,9 @@ it('rejects invalid review ratings', function (float $rating) {
     $itemKey = 'shopitem__'.$fixture['item']->id;
 
     Livewire::test('ecommerce.order-review', ['orderShop' => $fixture['orderShop']])
-        ->set("reviewData.{$itemKey}.rating", $rating)
+        ->set("form.reviewData.{$itemKey}.rating", $rating)
         ->call('submit')
-        ->assertHasErrors("reviewData.{$itemKey}.rating");
+        ->assertHasErrors("form.reviewData.{$itemKey}.rating");
 
     expect(OrderReview::query()->count())->toBe(0);
 })->with([
@@ -91,7 +94,7 @@ it('stores half-step ratings against canonical product and shop targets', functi
     $itemKey = 'shopitem__'.$fixture['item']->id;
 
     Livewire::test('ecommerce.order-review', ['orderShop' => $fixture['orderShop']])
-        ->set("reviewData.{$itemKey}.rating", 4.5)
+        ->set("form.reviewData.{$itemKey}.rating", 4.5)
         ->call('submit')
         ->assertDispatched(
             'toast',
@@ -129,9 +132,9 @@ it('rejects duplicate reviews for the same order target', function () {
     $images = [$itemKey => [], $shopKey => []];
     $action = app(SubmitOrderReviewAction::class);
 
-    $action->handle($fixture['orderShop'], $data, $images, $fixture['buyer']);
+    $action->handle($fixture['orderShop'], ReviewSubmissionData::fromArray($data, $images), $fixture['buyer']);
 
-    expect(fn () => $action->handle($fixture['orderShop'], $data, $images, $fixture['buyer']))
+    expect(fn () => $action->handle($fixture['orderShop'], ReviewSubmissionData::fromArray($data, $images), $fixture['buyer']))
         ->toThrow(ValidationException::class)
         ->and(OrderReview::query()->count())->toBe(2);
 });
@@ -142,8 +145,7 @@ it('rejects direct review submission for another buyers order', function () {
 
     expect(fn () => app(SubmitOrderReviewAction::class)->handle(
         $fixture['orderShop'],
-        [$itemKey => ['rating' => 5, 'comment' => null]],
-        [$itemKey => []],
+        ReviewSubmissionData::fromArray([$itemKey => ['rating' => 5, 'comment' => null]], [$itemKey => []]),
         User::factory()->create(),
     ))->toThrow(ModelNotFoundException::class);
 });
@@ -165,4 +167,27 @@ it('does not expose internal review submission exceptions', function () {
             message: 'Ulasan gagal dikirim. Silakan coba lagi.',
         )
         ->assertDontSee('review-secret-detail');
+});
+
+it('validates ratings and uploads even for directly constructed review DTOs', function (string $case) {
+    $fixture = createEcommerceOrderReviewFixture();
+    $review = new ReviewData(
+        $case === 'rating' ? 4.3 : 5,
+        null,
+        $case === 'upload' ? [UploadedFile::fake()->create('unsafe.pdf', 10, 'application/pdf')] : [],
+    );
+    expect(fn () => app(SubmitOrderReviewAction::class)->handle(
+        $fixture['orderShop'], new ReviewSubmissionData(['shopitem__'.$fixture['item']->id => $review]), $fixture['buyer'],
+    ))->toThrow(ValidationException::class);
+    expect(OrderReview::count())->toBe(0);
+})->with(['rating', 'upload']);
+
+it('rejects forged review targets outside the purchased order', function () {
+    $fixture = createEcommerceOrderReviewFixture();
+    expect(fn () => app(SubmitOrderReviewAction::class)->handle(
+        $fixture['orderShop'],
+        new ReviewSubmissionData(['shopitem__99999' => new ReviewData(5, null)]),
+        $fixture['buyer'],
+    ))->toThrow(ValidationException::class);
+    expect(OrderReview::count())->toBe(0);
 });

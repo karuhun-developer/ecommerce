@@ -72,7 +72,7 @@ new class extends Component
                 ->accessibleTo($user)
                 ->findOrFail($id);
 
-            $action->execute($orderShop, $user);
+            $action->handle($orderShop, $user);
 
             unset($this->orders);
 

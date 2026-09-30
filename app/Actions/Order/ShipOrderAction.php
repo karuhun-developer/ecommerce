@@ -22,7 +22,7 @@ class ShipOrderAction
     /**
      * @return array{success: bool, message: string, shipment: OrderShopShipment|null, response: array<string, mixed>}
      */
-    public function execute(OrderShop $orderShop, User $user): array
+    public function handle(OrderShop $orderShop, User $user): array
     {
         return Cache::lock($this->lockKey($orderShop), 120)->block(5, function () use ($orderShop, $user): array {
             $orderShop = OrderShop::query()

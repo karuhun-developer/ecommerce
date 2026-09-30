@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class RejectOrderReviewAction
 {
-    public function execute(OrderReview $review, User $moderator): OrderReview
+    public function handle(OrderReview $review, User $moderator): OrderReview
     {
         return DB::transaction(function () use ($review, $moderator): OrderReview {
             $lockedReview = $this->accessibleReview($review, $moderator);

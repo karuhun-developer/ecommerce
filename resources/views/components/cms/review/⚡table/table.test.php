@@ -84,7 +84,7 @@ it('rejects direct moderation actions for another tenant', function (string $act
     $owner = User::factory()->create();
     $foreign = createCmsReviewRecord(User::factory()->create(), 'foreign-direct-action-review');
 
-    expect(fn () => app($actionClass)->execute($foreign['review'], $owner))
+    expect(fn () => app($actionClass)->handle($foreign['review'], $owner))
         ->toThrow(ModelNotFoundException::class);
 })->with([
     AcceptOrderReviewAction::class,
@@ -135,7 +135,7 @@ it('does not expose internal moderation exceptions', function (string $method, s
     $this->actingAs($owner);
 
     mock($actionClass)
-        ->shouldReceive('execute')
+        ->shouldReceive('handle')
         ->once()
         ->andThrow(new RuntimeException('moderation-secret-detail'));
 

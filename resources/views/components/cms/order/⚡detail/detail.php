@@ -40,7 +40,7 @@ new class extends Component
             abort_unless($id === $this->orderShopId, 404);
 
             $user = $this->currentUser();
-            $action->execute($this->orderShop, $user);
+            $action->handle($this->orderShop, $user);
 
             unset($this->orderShop);
 

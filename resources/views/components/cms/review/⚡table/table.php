@@ -61,7 +61,7 @@ new class extends BaseComponent
         try {
             $user = $this->currentUser();
             $review = $this->accessibleReviews($user)->findOrFail($id);
-            $action->execute($review, $user);
+            $action->handle($review, $user);
 
             unset($this->data);
 
@@ -85,7 +85,7 @@ new class extends BaseComponent
         try {
             $user = $this->currentUser();
             $review = $this->accessibleReviews($user)->findOrFail($id);
-            $action->execute($review, $user);
+            $action->handle($review, $user);
 
             unset($this->data);
 
@@ -109,7 +109,7 @@ new class extends BaseComponent
         try {
             $user = $this->currentUser();
             $review = $this->accessibleReviews($user)->findOrFail($id);
-            $action->execute($review, $user);
+            $action->handle($review, $user);
 
             unset($this->data);
 
