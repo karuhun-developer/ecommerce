@@ -5,9 +5,11 @@ namespace App\Models\Product;
 use App\Models\Order\OrderReview;
 use App\Models\Shop\Shop;
 use App\Models\User;
+use App\Services\Content\SanitizeHtml;
 use Database\Factories\Product\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -55,6 +57,14 @@ class Product extends Model
         'is_unlimited_stock' => 'boolean',
         'status' => 'boolean',
     ];
+
+    protected function description(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value): string => app(SanitizeHtml::class)->handle($value),
+            set: fn (?string $value): string => app(SanitizeHtml::class)->handle($value),
+        );
+    }
 
     public function shop(): BelongsTo
     {

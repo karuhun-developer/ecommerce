@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "13fc35a400047e23ad2e4f521d9ef7d4",
+    "content-hash": "c1d242a44cb66b80493e79a492ad94f4",
     "packages": [
         {
             "name": "artesaos/seotools",
@@ -6416,6 +6416,78 @@
                 }
             ],
             "time": "2026-08-21T12:16:08+00:00"
+        },
+        {
+            "name": "symfony/html-sanitizer",
+            "version": "v8.1.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/html-sanitizer.git",
+                "reference": "c67061a71d3f8b55f899faee3167422efa4db027"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/html-sanitizer/zipball/c67061a71d3f8b55f899faee3167422efa4db027",
+                "reference": "c67061a71d3f8b55f899faee3167422efa4db027",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*",
+                "league/uri": "^6.5|^7.0",
+                "php": ">=8.4.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\HtmlSanitizer\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Titouan Galopin",
+                    "email": "galopintitouan@gmail.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Provides an object-oriented API to sanitize untrusted HTML input for safe insertion into a document's DOM.",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "Purifier",
+                "html",
+                "sanitizer"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/html-sanitizer/tree/v8.1.8"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-09-28T08:00:04+00:00"
         },
         {
             "name": "symfony/http-foundation",
