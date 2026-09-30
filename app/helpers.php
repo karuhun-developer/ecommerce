@@ -3,6 +3,7 @@
 use App\Enums\CommonStatusEnum;
 use App\Models\Menu\Menu;
 use App\Models\Shop\Shop;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 
 function numberToCurrency($value)
@@ -15,7 +16,7 @@ function currencyToNumber($value)
     return (int) str_replace('.', '', $value);
 }
 
-function getMenus()
+function getMenus(): Collection
 {
     $roles = auth()->user()->roles->pluck('id')->toArray();
 
@@ -25,7 +26,10 @@ function getMenus()
         ->where('status', CommonStatusEnum::ACTIVE)
         ->orderBy('order', 'asc')
         ->get()
-    );
+    )->unique(fn (Menu $menu): string => filled($menu->url) && $menu->url !== '#' && $menu->subMenu->isEmpty()
+        ? 'link:'.$menu->url
+        : 'menu:'.$menu->id
+    )->values();
 }
 
 function getDefaultShop()
