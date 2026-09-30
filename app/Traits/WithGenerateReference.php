@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 trait WithGenerateReference
 {
-    public function generateReference(Model|Builder $model, string $prefix = '', string $suffix = '', $field = 'ref_number'): array
+    private function generateReference(Model|Builder $model, string $prefix = '', string $suffix = '', string $field = 'ref_number'): array
     {
         $reference = $prefix;
         $latest = $model->orderBy($field, 'desc')->first();

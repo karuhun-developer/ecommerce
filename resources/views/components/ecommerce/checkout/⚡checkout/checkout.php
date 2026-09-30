@@ -3,9 +3,14 @@
 use App\Actions\Ecommerce\Checkout\ResolveShopGroupsAction;
 use App\Actions\Ecommerce\Checkout\StoreCheckoutAction;
 use App\Actions\Ecommerce\Shipping\GetShippingRatesAction;
-use App\Models\Product\ProductFlat;
+use App\Data\Checkout\CartData;
+use App\Data\Checkout\CheckoutData;
+use App\Data\Checkout\CheckoutItemData;
+use App\Data\Checkout\CheckoutShopData;
+use App\Data\Checkout\ShippingRateData;
+use App\Data\Checkout\ShippingRatesData;
+use App\Livewire\Forms\CheckoutForm;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -15,39 +20,24 @@ new class extends Component
 {
     private const MAX_PURCHASABLE_QUANTITY = 100;
 
-    // CONSTANTS
     #[Locked]
-    public $insuranceFee = 2500;
+    public int $insuranceFee = 2500;
 
     #[Locked]
-    public $applicationFee = 1000;
+    public int $applicationFee = 1000;
 
-    // Selected product flat ids to checkout
     #[Locked]
     public mixed $selectedIds = '';
 
-    /**
-     * Resolved per-shop groups populated by resolveShopGroups().
-     */
     #[Locked]
-    public $shopGroups = [];
+    public array $shopGroups = [];
 
-    /**
-     * Per-shop selected rate: [ shopId => [ courier_code, price, name, etd ] ]
-     *
-     * @var array<int, array<string, mixed>>
-     */
-    public $shopRates = [];
+    public CheckoutForm $form;
 
     /**
      * Total ongkir dari semua toko.
      */
-    public $totalShippingCost = 0;
-
-    /**
-     * Selected location ID from the shipping list.
-     */
-    public $selectedLocationId = null;
+    public int $totalShippingCost = 0;
 
     /**
      * Parsed array of selected IDs.
@@ -78,7 +68,7 @@ new class extends Component
         $selectedIds = $this->getSelectedIdsArrayProperty();
 
         $this->shopGroups = $this->normalizeShopGroups(
-            $resolveShopGroupsAction->handle($this->normalizeCartItems($cartItems), $selectedIds),
+            $resolveShopGroupsAction->handle(CartData::fromArray($this->normalizeCartItems($cartItems), $selectedIds)),
         );
     }
 
@@ -86,12 +76,11 @@ new class extends Component
      * Called from the shipping-rates child component when a rate is selected.
      */
     #[On('shipping-rate-selected')]
-    public function onRateSelected(array $payload)
+    public function onRateSelected(array $payload): void
     {
         $shopId = $payload['shopId'];
 
-        // Group shop rates by shop_id
-        $this->shopRates[$shopId] = [
+        $this->form->shopRates[$shopId] = [
             'courier_code' => $payload['courier_code'],
             'courier_service_code' => $payload['courier_service_code'],
             'price' => (int) $payload['price'],
@@ -99,29 +88,27 @@ new class extends Component
             'etd' => $payload['etd'],
         ];
 
-        // Calculate total shipping cost from all selected rates
-        $this->totalShippingCost = (int) collect($this->shopRates)->sum('price');
+        $this->totalShippingCost = (int) collect($this->form->shopRates)->sum('price');
     }
 
     #[On('shipping-address-selected')]
-    public function onAddressSelected($locationId)
+    public function onAddressSelected(int $locationId): void
     {
-        $this->selectedLocationId = (int) $locationId;
+        $this->form->selectedLocationId = (int) $locationId;
     }
 
     /**
      * Submit checkout
      */
-    public function submit(?array $guestData, GetShippingRatesAction $getShippingRatesAction, StoreCheckoutAction $storeCheckoutAction)
+    public function submit(?array $guestData, GetShippingRatesAction $getShippingRatesAction, StoreCheckoutAction $storeCheckoutAction): void
     {
         $this->shopGroups = $this->normalizeShopGroups($this->shopGroups);
 
         $location = auth()->check()
-            ? auth()->user()->locations()->whereKey($this->selectedLocationId)->first()
+            ? auth()->user()->locations()->whereKey($this->form->selectedLocationId)->first()
             : null;
 
         if (auth()->check() && ! $location) {
-            // Toast message
             $this->dispatch('toast',
                 type: 'error',
                 message: 'Silakan pilih alamat tujuan pengiriman terlebih dahulu.',
@@ -130,7 +117,6 @@ new class extends Component
             return;
         }
 
-        // Check if guest data is provided for guest checkout
         if (! auth()->check() && ! $guestData) {
             $this->dispatch('toast',
                 type: 'error',
@@ -140,46 +126,15 @@ new class extends Component
             return;
         }
 
-        if (! auth()->check()) {
-            $guestData = Validator::make($guestData ?? [], [
-                'contact_name' => ['required', 'string', 'max:255'],
-                'contact_phone' => ['required', 'string', 'max:30'],
-                'email' => ['required', 'email', 'max:255'],
-                'address' => ['required', 'string', 'max:1000'],
-                'note' => ['nullable', 'string', 'max:1000'],
-                'postal_code' => ['required', 'string', 'max:20'],
-                'area_string' => ['required', 'string', 'max:255'],
-                'biteship_area_id' => ['required', 'string', 'max:255'],
-                'latitude' => ['required', 'numeric', 'between:-90,90'],
-                'longitude' => ['required', 'numeric', 'between:-180,180'],
-            ])->validate();
-        }
+        $guestData = auth()->check() ? null : $guestData;
+        $guest = $this->form->guestData($guestData);
+        $this->form->validateCheckout($this->shopGroups);
 
-        // Validate the data before proceeding
-        $this->validate([
-            'selectedLocationId' => 'nullable|integer',
-            'shopRates' => 'required|array',
-            'shopRates.*.courier_code' => 'required|string',
-            'shopRates.*.courier_service_code' => 'required|string',
-            'shopRates.*.price' => 'required|integer|min:0',
-            'shopRates.*.name' => 'required|string',
-            'shopRates.*.etd' => 'nullable|string',
-            'shopGroups' => 'required|array',
-            'shopGroups.*.shop_id' => 'required|integer|exists:shops,id',
-            'shopGroups.*.items' => 'required|array',
-            'shopGroups.*.items.*' => 'required|integer|min:1|max:'.self::MAX_PURCHASABLE_QUANTITY, // value is qty, key is product_flat_id
-        ]);
-
-        // Validate that each shop in shopGroups has a corresponding rate in shopRates
-        $totalCheckout = 0;
-        $totalRates = 0;
-
-        // Submited shop groups
-        $submitedShopGroups = [];
+        $submittedShops = [];
 
         foreach ($this->shopGroups as $group) {
             $shopId = $group['shop_id'];
-            if (! isset($this->shopRates[$shopId])) {
+            if (! isset($this->form->shopRates[$shopId])) {
                 $this->dispatch('toast',
                     type: 'error',
                     message: "Kurir untuk toko {$group['shop_name']} belum dipilih. Silakan pilih kurir terlebih dahulu.",
@@ -188,31 +143,13 @@ new class extends Component
                 return;
             }
 
-            // Validate the items in the group against the checkoutItems
-            $totalCheckoutShop = 0;
-            foreach ($group['items'] as $productFlatId => $qty) {
-                $productFlat = ProductFlat::findOrFail($productFlatId);
-                $totalCheckoutShop += $productFlat->price * $qty;
-
-                // Store the submitted shop groups with product details for later use
-                $submitedShopGroups[$shopId]['items'][$productFlatId] = [
-                    'price' => $productFlat->price,
-                    'qty' => $qty,
-                    'total' => $productFlat->price * $qty,
-                    'raw' => $productFlat->toArray(), // Store the raw product flat data for later use
-                ];
-            }
-
-            // Validate the shipping rates
             $destinationAreaId = auth()->check()
                 ? $location?->biteship_area_id
-                : ($guestData['biteship_area_id'] ?? null);
+                : $guest?->areaId;
 
             try {
                 $availableRates = $getShippingRatesAction->handle(
-                    shopId: $shopId,
-                    destinationAreaId: $destinationAreaId,
-                    items: $group['items'],
+                    ShippingRatesData::fromArray($shopId, $destinationAreaId ?? '', $group['items']),
                 );
             } catch (Exception $e) {
                 Log::error('Failed to get shipping rates.', [
@@ -232,7 +169,7 @@ new class extends Component
                 return;
             }
 
-            $selectedRate = $this->shopRates[$shopId];
+            $selectedRate = $this->form->shopRates[$shopId];
 
             $matchedRate = collect($availableRates)->first(function ($rate) use ($selectedRate) {
                 return $rate['courier_code'] === $selectedRate['courier_code'] &&
@@ -248,37 +185,24 @@ new class extends Component
                 return;
             }
 
-            // Make sure the price is updated to the matched rate's price
-            $submitedShopGroups[$shopId]['selected_rate'] = $matchedRate;
-            $submitedShopGroups[$shopId]['total_checkout'] = $totalCheckoutShop;
-            $submitedShopGroups[$shopId]['total_shipping'] = $matchedRate['price'];
-            $submitedShopGroups[$shopId]['total'] = $totalCheckoutShop + $matchedRate['price'];
-
-            $totalCheckout += $totalCheckoutShop;
-            $totalRates += $matchedRate['price'];
+            $submittedShops[] = new CheckoutShopData(
+                (int) $shopId,
+                ShippingRateData::fromArray($matchedRate),
+                collect($group['items'])->map(fn (int $quantity, int $flatId): CheckoutItemData => new CheckoutItemData($flatId, $quantity))->values()->all(),
+            );
         }
 
-        // Store order
-        $submitedData = [
-            'shop_groups' => $submitedShopGroups,
-            'total_checkout' => $totalCheckout,
-            'total_rates' => $totalRates,
-            'application_fee' => $this->applicationFee,
-            'insurance_fee' => $this->insuranceFee,
-            'selected_location_id' => $this->selectedLocationId,
-            'guest_data' => $guestData,
-        ];
+        $data = new CheckoutData($this->form->selectedLocationId, $guest, $submittedShops);
 
         try {
-            $checkout = $storeCheckoutAction->handle($submitedData);
-            $purchasedIds = collect($submitedShopGroups)
-                ->flatMap(fn (array $shopGroup): array => array_keys($shopGroup['items']))
+            $checkout = $storeCheckoutAction->handle($data, auth()->user());
+            $purchasedIds = collect($submittedShops)
+                ->flatMap(fn (CheckoutShopData $shop): array => array_map(fn (CheckoutItemData $item): int => $item->productFlatId, $shop->items))
                 ->map(fn (int|string $productFlatId): int => (int) $productFlatId)
                 ->unique()
                 ->values()
                 ->all();
 
-            // Dispatch success message
             $this->dispatch('toast',
                 type: 'success',
                 message: 'Order berhasil dibuat. Silakan lanjutkan ke pembayaran.',
@@ -290,21 +214,22 @@ new class extends Component
                 $this->dispatch('delete-localstorage', key: 'checkout_guest_address');
             }
 
-            // Redirect to order detail page with the order reference
-            return $this->redirectRoute('payment.show', [
+            $this->redirectRoute('payment.show', [
                 'reference' => $checkout->reference,
                 ...$checkout->guestRouteParameters(),
             ], navigate: true);
+
+            return;
         } catch (Exception $e) {
             Log::error('Failed to store order.', [
                 'checkout_actor' => auth()->check() ? 'user' : 'guest',
-                'shop_ids' => collect(array_keys($submitedShopGroups))
+                'shop_ids' => collect($submittedShops)->map(fn (CheckoutShopData $shop): int => $shop->shopId)
                     ->map(fn (int|string $shopId): int => (int) $shopId)
                     ->sort()
                     ->values()
                     ->all(),
-                'product_flat_ids' => collect($submitedShopGroups)
-                    ->flatMap(fn (array $shopGroup): array => array_keys($shopGroup['items']))
+                'product_flat_ids' => collect($submittedShops)
+                    ->flatMap(fn (CheckoutShopData $shop): array => array_map(fn (CheckoutItemData $item): int => $item->productFlatId, $shop->items))
                     ->map(fn (int|string $productFlatId): int => (int) $productFlatId)
                     ->unique()
                     ->sort()

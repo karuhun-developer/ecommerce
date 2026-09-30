@@ -3,12 +3,16 @@
 use App\Actions\Ecommerce\Checkout\ResolveShopGroupsAction;
 use App\Actions\Ecommerce\Checkout\StoreCheckoutAction;
 use App\Actions\Ecommerce\Shipping\GetShippingRatesAction;
+use App\Data\Checkout\CartData;
+use App\Data\Checkout\CheckoutData;
+use App\Data\Checkout\ShippingRatesData;
 use App\Models\Location\Location;
 use App\Models\Order\Order;
 use App\Models\Product\Product;
 use App\Models\Product\ProductFlat;
 use App\Models\Shop\Shop;
 use App\Models\User;
+use Dom\HTMLDocument;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Process;
@@ -42,11 +46,11 @@ it('resolves only selected cart items across shops', function () {
     $unselectedFlat = ProductFlat::factory()->for($firstProduct)->create(['shop_id' => $firstShop->id]);
     $otherSelectedFlat = ProductFlat::factory()->for($secondProduct)->create(['shop_id' => $secondShop->id]);
 
-    $groups = app(ResolveShopGroupsAction::class)->handle([
+    $groups = app(ResolveShopGroupsAction::class)->handle(CartData::fromArray([
         ['id' => $selectedFlat->id, 'qty' => 2],
         ['id' => $unselectedFlat->id, 'qty' => 3],
         ['id' => $otherSelectedFlat->id, 'qty' => 4],
-    ], [$selectedFlat->id, $otherSelectedFlat->id]);
+    ], [$selectedFlat->id, $otherSelectedFlat->id]));
 
     expect($groups)->toHaveCount(2)
         ->and($groups[0]['items'])->toBe([$selectedFlat->id => 2])
@@ -127,9 +131,9 @@ it('dispatches only purchased cart ids after a successful checkout', function ()
     $storeCheckoutAction = Mockery::mock(StoreCheckoutAction::class);
     $storeCheckoutAction->shouldReceive('handle')
         ->once()
-        ->with(Mockery::on(function (array $data) use ($selectedFlat, $shop): bool {
-            return array_keys($data['shop_groups'][$shop->id]['items']) === [$selectedFlat->id];
-        }))
+        ->with(Mockery::on(function (CheckoutData $data) use ($selectedFlat, $shop): bool {
+            return $data->shops[0]->shopId === $shop->id && $data->shops[0]->items[0]->productFlatId === $selectedFlat->id;
+        }), $user)
         ->andReturn($checkout);
     app()->instance(StoreCheckoutAction::class, $storeCheckoutAction);
 
@@ -141,8 +145,8 @@ it('dispatches only purchased cart ids after a successful checkout', function ()
             ['id' => $selectedFlat->id, 'qty' => 2],
             ['id' => $unselectedFlat->id, 'qty' => 1],
         ])
-        ->set('selectedLocationId', $location->id)
-        ->set('shopRates', [$shop->id => $selectedRate])
+        ->set('form.selectedLocationId', $location->id)
+        ->set('form.shopRates', [$shop->id => $selectedRate])
         ->call('submit', null)
         ->assertDispatched('remove-cart-items', ids: [$selectedFlat->id])
         ->assertNotDispatched('delete-localstorage');
@@ -209,7 +213,7 @@ it('logs checkout storage failures without guest PII or raw submitted data', fun
         'selectedIds' => (new Sqids)->encode([$productFlat->id]),
     ])
         ->call('resolveShopGroups', [['id' => $productFlat->id, 'qty' => 2]])
-        ->set('shopRates', [$shop->id => $selectedRate])
+        ->set('form.shopRates', [$shop->id => $selectedRate])
         ->call('submit', $guestData)
         ->assertDispatched('toast', type: 'error', message: 'Gagal membuat order. Silakan coba lagi.')
         ->assertNotDispatched('delete-localstorage');
@@ -271,7 +275,7 @@ it('logs shipping lookup failures without guest PII or raw submitted data', func
         'selectedIds' => (new Sqids)->encode([$productFlat->id]),
     ])
         ->call('resolveShopGroups', [['id' => $productFlat->id, 'qty' => 2]])
-        ->set('shopRates', [$shop->id => $selectedRate])
+        ->set('form.shopRates', [$shop->id => $selectedRate])
         ->call('submit', $guestData)
         ->assertDispatched(
             'toast',
@@ -466,7 +470,7 @@ it('keeps checkout summary rows and resolution on the initial cart snapshot', fu
     $component = Livewire::test('ecommerce.checkout.checkout', [
         'selectedIds' => (new Sqids)->encode([$productFlat->id]),
     ])->call('resolveShopGroups', $cartItems);
-    $document = Dom\HTMLDocument::createFromString($component->html(true), LIBXML_NOERROR);
+    $document = HTMLDocument::createFromString($component->html(true), LIBXML_NOERROR);
     $root = $document->querySelector('[x-data*="maximumQuantity"]');
     $nestedDataExpression = collect(iterator_to_array($document->querySelectorAll('[x-data]')))
         ->map(fn ($element): string => (string) $element->getAttribute('x-data'))
@@ -567,14 +571,14 @@ it('submits the resolved checkout quantity snapshot', function () {
     $shippingRatesAction = Mockery::mock(GetShippingRatesAction::class);
     $shippingRatesAction->shouldReceive('handle')
         ->once()
-        ->with($shop->id, $location->biteship_area_id, [$productFlat->id => 2])
+        ->with(Mockery::on(fn (ShippingRatesData $data): bool => $data->shopId === $shop->id && $data->destinationAreaId === $location->biteship_area_id && $data->items[0]->productFlatId === $productFlat->id && $data->items[0]->quantity === 2))
         ->andReturn([$selectedRate]);
     app()->instance(GetShippingRatesAction::class, $shippingRatesAction);
 
     $storeCheckoutAction = Mockery::mock(StoreCheckoutAction::class);
     $storeCheckoutAction->shouldReceive('handle')
         ->once()
-        ->with(Mockery::on(fn (array $data): bool => $data['shop_groups'][$shop->id]['items'][$productFlat->id]['qty'] === 2))
+        ->with(Mockery::on(fn (CheckoutData $data): bool => $data->shops[0]->shopId === $shop->id && $data->shops[0]->items[0]->productFlatId === $productFlat->id && $data->shops[0]->items[0]->quantity === 2), $user)
         ->andReturn($checkout);
     app()->instance(StoreCheckoutAction::class, $storeCheckoutAction);
 
@@ -583,8 +587,8 @@ it('submits the resolved checkout quantity snapshot', function () {
             'selectedIds' => (new Sqids)->encode([$productFlat->id]),
         ])
         ->call('resolveShopGroups', [['id' => $productFlat->id, 'qty' => 2]])
-        ->set('selectedLocationId', $location->id)
-        ->set('shopRates', [$shop->id => $selectedRate])
+        ->set('form.selectedLocationId', $location->id)
+        ->set('form.shopRates', [$shop->id => $selectedRate])
         ->call('submit', null);
 });
 
@@ -613,7 +617,7 @@ it('persists the canonical maximum quantity through checkout', function () {
     $shippingRatesAction = Mockery::mock(GetShippingRatesAction::class);
     $shippingRatesAction->shouldReceive('handle')
         ->once()
-        ->with($shop->id, $location->biteship_area_id, [$productFlat->id => 100])
+        ->with(Mockery::on(fn (ShippingRatesData $data): bool => $data->shopId === $shop->id && $data->destinationAreaId === $location->biteship_area_id && $data->items[0]->productFlatId === $productFlat->id && $data->items[0]->quantity === 100))
         ->andReturn([$selectedRate]);
     app()->instance(GetShippingRatesAction::class, $shippingRatesAction);
 
@@ -622,8 +626,8 @@ it('persists the canonical maximum quantity through checkout', function () {
             'selectedIds' => (new Sqids)->encode([$productFlat->id]),
         ])
         ->call('resolveShopGroups', [['id' => $productFlat->id, 'qty' => 999]])
-        ->set('selectedLocationId', $location->id)
-        ->set('shopRates', [$shop->id => $selectedRate])
+        ->set('form.selectedLocationId', $location->id)
+        ->set('form.shopRates', [$shop->id => $selectedRate])
         ->call('submit', null);
 
     $order = Order::query()->latest('id')->firstOrFail();
@@ -679,7 +683,7 @@ it('clears the saved guest address only after successful checkout', function () 
         'selectedIds' => (new Sqids)->encode([$productFlat->id]),
     ])
         ->call('resolveShopGroups', [['id' => $productFlat->id, 'qty' => 2]])
-        ->set('shopRates', [$shop->id => $selectedRate])
+        ->set('form.shopRates', [$shop->id => $selectedRate])
         ->call('submit', $guestData)
         ->assertDispatched('delete-localstorage', key: 'checkout_guest_address');
 
@@ -695,10 +699,10 @@ it('rejects a delivery location owned by another user', function () {
     $foreignLocation = Location::factory()->create();
     $this->actingAs($user);
 
-    expect(fn () => app(StoreCheckoutAction::class)->handle([
+    expect(fn () => app(StoreCheckoutAction::class)->handle(CheckoutData::fromArray([
         'selected_location_id' => $foreignLocation->id,
         'shop_groups' => [],
-    ]))->toThrow(ValidationException::class);
+    ]), $user))->toThrow(ValidationException::class);
 });
 
 it('recalculates product prices totals and fees from canonical data', function () {
@@ -716,7 +720,7 @@ it('recalculates product prices totals and fees from canonical data', function (
     ]);
     $this->actingAs($user);
 
-    $order = app(StoreCheckoutAction::class)->handle([
+    $order = app(StoreCheckoutAction::class)->handle(CheckoutData::fromArray([
         'selected_location_id' => $location->id,
         'shop_groups' => [
             $shop->id => [
@@ -744,7 +748,7 @@ it('recalculates product prices totals and fees from canonical data', function (
         'total_rates' => 1,
         'application_fee' => 0,
         'insurance_fee' => 0,
-    ]);
+    ]), $user);
 
     $orderItem = $order->items()->firstOrFail();
 
@@ -770,7 +774,7 @@ it('creates a tokenized guest order and normalizes the email field', function ()
         'status' => true,
     ]);
 
-    $order = app(StoreCheckoutAction::class)->handle([
+    $order = app(StoreCheckoutAction::class)->handle(CheckoutData::fromArray([
         'selected_location_id' => null,
         'guest_data' => [
             'contact_name' => 'Guest Buyer',
@@ -798,7 +802,7 @@ it('creates a tokenized guest order and normalizes the email field', function ()
                 ],
             ],
         ],
-    ]);
+    ]), null);
 
     expect($order->user_id)->toBeNull()
         ->and($order->access_token)->toHaveLength(64)

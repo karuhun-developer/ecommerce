@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Ecommerce\Shipping\GetShippingRatesAction;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
 use function Pest\Laravel\mock;
@@ -21,3 +22,33 @@ it('does not expose unexpected shipping provider failures', function () {
         ->assertSet('loading', false)
         ->assertDontSee('provider-secret-detail');
 });
+
+it('uses provider values when a client submits a forged shipping price', function () {
+    mock(GetShippingRatesAction::class)->shouldReceive('handle')->once()->andReturn([
+        ['courier_code' => 'jne', 'courier_service_code' => 'reg', 'price' => 23000, 'name' => 'JNE Regular', 'etd' => '2-3 days'],
+    ]);
+
+    Livewire::test('ecommerce.shipping.rates', ['shopId' => 1, 'items' => [1 => 2]])
+        ->call('fetchRates')
+        ->call('selectRate', 'jne', 'reg', 1, 'Fake', 'Instant')
+        ->assertSet('selectedPrice', 23000)
+        ->assertSet('selectedName', 'JNE Regular')
+        ->assertSet('selectedEtd', '2-3 days')
+        ->assertDispatched('shipping-rate-selected', fn (string $event, array $params): bool => $params[0]['price'] === 23000 && $params[0]['shopId'] === 1);
+});
+
+it('rejects unknown shipping services', function () {
+    Livewire::test('ecommerce.shipping.rates', ['shopId' => 1])
+        ->call('selectRate', 'fake', 'fake', 0, 'Fake', '')
+        ->assertStatus(422)
+        ->assertNotDispatched('shipping-rate-selected');
+});
+
+it('locks shipping data against client hydration', function (string $property, mixed $value) {
+    expect(fn () => Livewire::test('ecommerce.shipping.rates', ['shopId' => 1, 'items' => [1 => 2]])->set($property, $value))
+        ->toThrow(CannotUpdateLockedPropertyException::class);
+})->with([
+    'shop' => ['shopId', 99],
+    'items' => ['items', [99 => 1]],
+    'rates' => ['rates', [['price' => 0]]],
+]);

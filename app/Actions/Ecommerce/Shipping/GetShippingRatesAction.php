@@ -2,6 +2,8 @@
 
 namespace App\Actions\Ecommerce\Shipping;
 
+use App\Data\Checkout\CheckoutItemData;
+use App\Data\Checkout\ShippingRatesData;
 use App\Models\Product\ProductFlat;
 use App\Models\Shop\Shop;
 use App\Services\BiteshipService;
@@ -11,28 +13,28 @@ class GetShippingRatesAction
 {
     private const COURIERS = 'jne,tiki,lion,ninja,jnt,sicepat';
 
-    /**
-     * Get shipping rates from Biteship API for a specific shop and items.
-     *
-     * @param  array  $items  Array with product flat IDs as keys and quantities as values.
-     *
-     * @throws Exception
-     */
-    public function handle(int $shopId, string $destinationAreaId, array $items): array
+    public function __construct(private BiteshipService $biteshipService) {}
+
+    public function handle(ShippingRatesData $data): array
     {
-        // --- Origin: shop location ---
+        $shopId = $data->shopId;
+        $destinationAreaId = $data->destinationAreaId;
+        $items = collect($data->items)->mapWithKeys(fn (CheckoutItemData $item): array => [$item->productFlatId => $item->quantity])->all();
+        foreach ($items as $quantity) {
+            if ($quantity < 1 || $quantity > 100) {
+                throw new Exception('Item pengiriman tidak valid.');
+            }
+        }
         $shop = Shop::with('location')->find($shopId);
 
         if (! $shop || ! $shop->location || ! $shop->location->biteship_area_id) {
             throw new Exception('Informasi lokasi toko belum lengkap.');
         }
 
-        // --- Destination ---
         if (blank($destinationAreaId)) {
             throw new Exception('Pilih alamat pengiriman terlebih dahulu.');
         }
 
-        // --- Items: load weight/dimensions from ProductFlat ---
         $itemIds = collect($items)->keys()->toArray();
         $flats = ProductFlat::query()
             ->where('shop_id', $shop->id)
@@ -64,10 +66,8 @@ class GetShippingRatesAction
 
         $cacheKey = 'biteship_rates_'.md5(json_encode($requestPayload));
 
-        $biteshipService = app(BiteshipService::class);
-
-        $response = cache()->remember($cacheKey, now()->addHours(24), function () use ($biteshipService, $requestPayload) {
-            return $biteshipService->getRates($requestPayload);
+        $response = cache()->remember($cacheKey, now()->addHours(24), function () use ($requestPayload) {
+            return $this->biteshipService->getRates($requestPayload);
         });
 
         $rates = collect($response['pricing'] ?? [])

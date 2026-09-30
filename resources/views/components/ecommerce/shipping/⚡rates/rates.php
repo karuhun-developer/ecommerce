@@ -1,7 +1,9 @@
 <?php
 
 use App\Actions\Ecommerce\Shipping\GetShippingRatesAction;
+use App\Data\Checkout\ShippingRatesData;
 use App\Models\Location\Location;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -16,6 +18,7 @@ use Livewire\Component;
  */
 new class extends Component
 {
+    #[Locked]
     public int $shopId;
 
     /**
@@ -23,6 +26,7 @@ new class extends Component
      *
      * @var array<int>
      */
+    #[Locked]
     public array $items = [];
 
     /**
@@ -35,6 +39,7 @@ new class extends Component
     public string $destinationPostalCode = '';
 
     /** @var array<int, array<string, mixed>> */
+    #[Locked]
     public array $rates = [];
 
     public bool $loading = false;
@@ -56,7 +61,6 @@ new class extends Component
 
     public function mount(): void
     {
-        // For authenticated users, auto-resolve destination from selected location
         if (auth()->check()) {
             $this->resolveAuthDestination();
         }
@@ -64,8 +68,6 @@ new class extends Component
 
     private function resolveAuthDestination(): void
     {
-        // The shipping component emits the selected location ID via event
-        // We also accept it on mount if a location is already selected
         $location = Location::where('user_id', auth()->id())
             ->where('type', 'destination')
             ->latest()
@@ -121,9 +123,7 @@ new class extends Component
         $this->loading = true;
         try {
             $this->rates = $getShippingRatesAction->handle(
-                shopId: $this->shopId,
-                destinationAreaId: $this->destinationAreaId,
-                items: $this->items,
+                ShippingRatesData::fromArray($this->shopId, $this->destinationAreaId, $this->items),
             );
         } catch (Throwable $exception) {
             $knownErrors = [
@@ -146,6 +146,11 @@ new class extends Component
 
     public function selectRate(string $courierCode, string $serviceCode, int $price, string $name, string $etd): void
     {
+        $rate = collect($this->rates)->first(fn (array $rate): bool => $rate['courier_code'] === $courierCode && $rate['courier_service_code'] === $serviceCode);
+        abort_unless($rate, 422);
+        $price = (int) $rate['price'];
+        $name = $rate['name'];
+        $etd = $rate['etd'] ?? '';
         $this->selectedCourierCode = $courierCode;
         $this->selectedServiceCode = $serviceCode;
         $this->selectedPrice = $price;

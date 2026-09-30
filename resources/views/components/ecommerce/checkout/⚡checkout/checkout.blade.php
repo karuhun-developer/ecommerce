@@ -189,8 +189,8 @@
                             </div>
 
                             {{-- Per-shop breakdown if multiple shops --}}
-                            @if(count($shopRates) > 1)
-                                @foreach($shopRates as $sId => $rate)
+                            @if(count($form->shopRates) > 1)
+                                @foreach($form->shopRates as $sId => $rate)
                                     <div class="flex justify-between text-gray-500 text-xs pl-3">
                                         <span>{{ $shopGroups[array_search($sId, array_column($shopGroups, 'shop_id'))]['shop_name'] ?? 'Toko' }} — {{ $rate['name'] }}</span>
                                         <span>Rp{{ number_format($rate['price'], 0, ',', '.') }}</span>
@@ -218,13 +218,13 @@
                         <flux:button
                             variant="primary"
                             class="w-full"
-                            x-bind:disabled="submitting || checkoutItems.length === 0 || {{ count($shopGroups) > 0 && count($shopRates) < count($shopGroups) ? 'true' : 'false' }}"
+                            x-bind:disabled="submitting || checkoutItems.length === 0 || {{ count($shopGroups) > 0 && count($form->shopRates) < count($shopGroups) ? 'true' : 'false' }}"
                             x-on:click="submitOrder"
                         >
                             Pilih Pembayaran
                         </flux:button>
 
-                        @if(count($shopGroups) > 0 && count($shopRates) < count($shopGroups))
+                        @if(count($shopGroups) > 0 && count($form->shopRates) < count($shopGroups))
                             <p class="text-xs text-amber-600 text-center mt-2">Pilih kurir untuk semua toko</p>
                         @endif
                     </div>

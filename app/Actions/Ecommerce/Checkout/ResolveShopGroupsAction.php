@@ -2,6 +2,8 @@
 
 namespace App\Actions\Ecommerce\Checkout;
 
+use App\Data\Checkout\CartData;
+use App\Data\Checkout\CheckoutItemData;
 use App\Models\Product\ProductFlat;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
@@ -11,13 +13,9 @@ class ResolveShopGroupsAction
     /**
      * Groups checkout items by shop_id.
      */
-    public function handle(array $cartItems, array $selectedIds): array
+    public function handle(CartData $data): array
     {
-        $requestedQuantities = collect($cartItems)
-            ->filter(fn (mixed $item): bool => is_array($item) && isset($item['id'], $item['qty']))
-            ->mapWithKeys(fn (array $item): array => [(int) $item['id'] => min(100, max(1, (int) $item['qty']))]);
-
-        $requestedQuantities = $requestedQuantities->only($selectedIds);
+        $requestedQuantities = collect($data->items)->mapWithKeys(fn (CheckoutItemData $item): array => [$item->productFlatId => $item->quantity]);
 
         if ($requestedQuantities->isEmpty()) {
             return [];
