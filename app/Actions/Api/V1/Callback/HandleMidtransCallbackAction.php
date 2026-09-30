@@ -3,6 +3,7 @@
 namespace App\Actions\Api\V1\Callback;
 
 use App\Actions\Ecommerce\Payment\ReconcilePaymentStatusAction;
+use App\Data\Callbacks\MidtransCallbackData;
 use App\Enums\PaymentGatewayDriver;
 use App\Models\Payment\Payment;
 use App\Services\MidtransService;
@@ -12,21 +13,18 @@ use InvalidArgumentException;
 class HandleMidtransCallbackAction
 {
     public function __construct(
-        public readonly MidtransService $midtransService,
+        private readonly MidtransService $midtransService,
         private readonly ReconcilePaymentStatusAction $reconcilePaymentStatus,
         private readonly PaymentGatewayManager $paymentGatewayManager,
     ) {}
 
-    /** @param array<string, mixed> $payload */
-    public function handle(array $payload): Payment
+    public function handle(MidtransCallbackData $data): Payment
     {
-        $this->validatePayload($payload);
-
-        $orderId = (string) $payload['order_id'];
-        $statusCode = (string) $payload['status_code'];
-        $grossAmount = (string) $payload['gross_amount'];
-        $signatureKey = (string) $payload['signature_key'];
-        $transactionStatus = (string) $payload['transaction_status'];
+        $orderId = $data->orderId;
+        $statusCode = $data->statusCode;
+        $grossAmount = $data->grossAmount;
+        $signatureKey = $data->signatureKey;
+        $transactionStatus = $data->transactionStatus;
 
         if (! $this->midtransService->validateSignature($orderId, $statusCode, $grossAmount, $signatureKey)) {
             throw new \Exception('Invalid signature key', 403);
@@ -62,16 +60,6 @@ class HandleMidtransCallbackAction
             'expire',
         ], true)) {
             throw new InvalidArgumentException('Unsupported Midtrans transaction status.', 400);
-        }
-    }
-
-    /** @param array<string, mixed> $payload */
-    private function validatePayload(array $payload): void
-    {
-        foreach (['order_id', 'status_code', 'gross_amount', 'signature_key', 'transaction_status'] as $field) {
-            if (! isset($payload[$field]) || ! is_scalar($payload[$field])) {
-                throw new InvalidArgumentException("Missing Midtrans callback field: {$field}", 400);
-            }
         }
     }
 }

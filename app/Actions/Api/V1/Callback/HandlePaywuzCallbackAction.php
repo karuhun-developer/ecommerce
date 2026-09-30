@@ -3,10 +3,11 @@
 namespace App\Actions\Api\V1\Callback;
 
 use App\Actions\Ecommerce\Payment\ReconcilePaymentStatusAction;
+use App\Actions\Ecommerce\Payment\SendPaymentNotificationAction;
+use App\Data\Callbacks\PaywuzCallbackData;
 use App\Enums\PaymentGatewayDriver;
 use App\Models\Payment\Payment;
 use App\Services\Payments\PaymentGatewayManager;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -25,13 +26,14 @@ final class HandlePaywuzCallbackAction
     public function __construct(
         private readonly ReconcilePaymentStatusAction $reconcilePaymentStatus,
         private readonly PaymentGatewayManager $paymentGatewayManager,
+        private readonly SendPaymentNotificationAction $sendPaymentNotification,
     ) {}
 
-    public function handle(Request $request): Payment
+    public function handle(PaywuzCallbackData $data): Payment
     {
-        $signature = $this->requiredHeader($request, 'X-Paywuz-Signature');
-        $event = $this->requiredHeader($request, 'X-Paywuz-Event');
-        $deliveryId = $this->requiredHeader($request, 'X-Paywuz-Delivery');
+        $signature = $this->requiredHeader($data->signature, 'X-Paywuz-Signature');
+        $event = $this->requiredHeader($data->event, 'X-Paywuz-Event');
+        $deliveryId = $this->requiredHeader($data->deliveryId, 'X-Paywuz-Delivery');
 
         $apiKey = config('payment.drivers.paywuz.api_key');
 
@@ -39,7 +41,7 @@ final class HandlePaywuzCallbackAction
             throw new RuntimeException('Paywuz API key is not configured.', 500);
         }
 
-        $rawBody = $request->getContent();
+        $rawBody = $data->rawBody;
         $expectedSignature = 'sha256='.hash_hmac('sha256', $rawBody, $apiKey);
 
         if (! hash_equals($expectedSignature, $signature)) {
@@ -73,7 +75,7 @@ final class HandlePaywuzCallbackAction
                         ->findOrFail($payment->getKey());
 
                     if ($this->deliveryWasProcessed($lockedPayment, $deliveryHash)) {
-                        $this->reconcilePaymentStatus->retryNotificationAfterCommit($lockedPayment);
+                        $this->sendPaymentNotification->handle($lockedPayment);
 
                         return $lockedPayment;
                     }
@@ -91,10 +93,8 @@ final class HandlePaywuzCallbackAction
             });
     }
 
-    private function requiredHeader(Request $request, string $name): string
+    private function requiredHeader(mixed $value, string $name): string
     {
-        $value = $request->header($name);
-
         if (! is_string($value) || blank($value)) {
             throw new RuntimeException("Missing Paywuz callback header: {$name}", 401);
         }

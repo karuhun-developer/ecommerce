@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Callback;
 
 use App\Actions\Api\V1\Callback\HandleBiteshipCallbackAction;
+use App\Data\Callbacks\BiteshipCallbackData;
 use App\Http\Controllers\Controller;
 use App\Traits\WithReturnResponse;
 use Illuminate\Http\JsonResponse;
@@ -37,7 +38,7 @@ class BiteshipController extends Controller
         }
 
         try {
-            $action->handle($request->all());
+            $action->handle(BiteshipCallbackData::fromArray($request->all()));
         } catch (\Throwable $e) {
             Log::error('Biteship Callback Error', [
                 'exception' => $e::class,

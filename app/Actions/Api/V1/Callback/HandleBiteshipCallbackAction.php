@@ -2,6 +2,7 @@
 
 namespace App\Actions\Api\V1\Callback;
 
+use App\Data\Callbacks\BiteshipCallbackData;
 use App\Mail\OrderDelivered;
 use App\Models\Order\OrderShop;
 use App\Models\Order\OrderShopShipment;
@@ -12,32 +13,31 @@ use Illuminate\Support\Facades\Mail;
 
 class HandleBiteshipCallbackAction
 {
-    /** @param array<string, mixed> $payload */
-    public function handle(array $payload): ?OrderShopShipment
+    public function handle(BiteshipCallbackData $data): ?OrderShopShipment
     {
-        $event = $payload['event'] ?? null;
+        $event = $data->event;
 
         Log::info('Biteship callback received', [
             'event' => is_scalar($event) ? (string) $event : null,
-            'status' => is_scalar($payload['status'] ?? null) ? (string) $payload['status'] : null,
-            'courier_waybill_id' => $payload['courier_waybill_id'] ?? null,
-            'courier_tracking_id' => $payload['courier_tracking_id'] ?? null,
+            'status' => $data->status,
+            'courier_waybill_id' => $data->waybillId,
+            'courier_tracking_id' => $data->trackingId,
         ]);
 
         if ($event !== 'order.status') {
             return null;
         }
 
-        $waybillId = $this->nullableString($payload['courier_waybill_id'] ?? null);
-        $trackingId = $this->nullableString($payload['courier_tracking_id'] ?? null);
+        $waybillId = $data->waybillId;
+        $trackingId = $data->trackingId;
 
         if (! $waybillId && ! $trackingId) {
             throw new \Exception('Missing courier identification', 400);
         }
 
-        $providerEventKey = $this->providerEventKey($payload);
+        $providerEventKey = $this->providerEventKey($data->providerPayload);
 
-        return DB::transaction(function () use ($payload, $waybillId, $trackingId, $providerEventKey): OrderShopShipment {
+        return DB::transaction(function () use ($data, $waybillId, $trackingId, $providerEventKey): OrderShopShipment {
             $latestShipment = OrderShopShipment::query()
                 ->where(function (Builder $query) use ($waybillId, $trackingId): void {
                     if ($waybillId) {
@@ -76,7 +76,7 @@ class HandleBiteshipCallbackAction
                 return $existingShipment;
             }
 
-            $status = $this->nullableString($payload['status'] ?? null) ?? $latestShipment->status;
+            $status = $data->status ?? $latestShipment->status;
             $wasDelivered = $orderShop->shipping_status || OrderShopShipment::query()
                 ->where('order_shop_id', $orderShop->getKey())
                 ->where('status', 'delivered')
@@ -88,14 +88,14 @@ class HandleBiteshipCallbackAction
                 'provider_event_key' => $providerEventKey,
                 'courier_tracking_id' => $trackingId,
                 'courier_waybill_id' => $waybillId,
-                'courier_name' => $payload['courier_name'] ?? $latestShipment->courier_name,
-                'courier_company' => $payload['courier_company'] ?? $latestShipment->courier_company,
-                'courier_type' => $payload['courier_type'] ?? $latestShipment->courier_type,
-                'courier_driver_name' => $payload['courier_driver_name'] ?? null,
-                'courier_driver_phone' => $payload['courier_driver_phone'] ?? null,
-                'courier_driver_photo_url' => $payload['courier_driver_photo_url'] ?? null,
-                'courier_driver_plate_number' => $payload['courier_driver_plate_number'] ?? null,
-                'courier_link' => $payload['courier_link'] ?? null,
+                'courier_name' => $data->courier->name ?? $latestShipment->courier_name,
+                'courier_company' => $data->courier->company ?? $latestShipment->courier_company,
+                'courier_type' => $data->courier->type ?? $latestShipment->courier_type,
+                'courier_driver_name' => $data->courier->driverName ?? null,
+                'courier_driver_phone' => $data->courier->driverPhone ?? null,
+                'courier_driver_photo_url' => $data->courier->driverPhotoUrl ?? null,
+                'courier_driver_plate_number' => $data->courier->driverPlateNumber ?? null,
+                'courier_link' => $data->courier->link ?? null,
                 'status' => $status,
             ]);
 
@@ -148,10 +148,5 @@ class HandleBiteshipCallbackAction
         }
 
         return $payload;
-    }
-
-    private function nullableString(mixed $value): ?string
-    {
-        return is_scalar($value) && (string) $value !== '' ? (string) $value : null;
     }
 }

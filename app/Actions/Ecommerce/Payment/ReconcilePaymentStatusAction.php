@@ -6,27 +6,16 @@ use App\Data\Payments\PaymentTransactionData;
 use App\Enums\PaymentGatewayDriver;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
-use App\Mail\OrderPaid;
-use App\Mail\OrderPaymentFailed;
 use App\Models\Order\Order;
 use App\Models\Payment\Payment;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use Spatie\Activitylog\Models\Activity;
 use UnexpectedValueException;
 
 final class ReconcilePaymentStatusAction
 {
     private const string PROVIDER_STATUS_PREFIX = 'provider-status:';
 
-    private const string NOTIFICATION_LOG_NAME = 'payment';
-
-    private const string NOTIFICATION_LOG_EVENT = 'notification_sent';
-
-    private const string PAID_NOTIFICATION_DESCRIPTION = 'Order paid email sent';
-
-    private const string FAILED_NOTIFICATION_DESCRIPTION = 'Order payment failed email sent';
+    public function __construct(private readonly SendPaymentNotificationAction $sendPaymentNotification = new SendPaymentNotificationAction) {}
 
     public function handle(
         Payment $payment,
@@ -42,7 +31,7 @@ final class ReconcilePaymentStatusAction
             $this->validateTransaction($lockedPayment, $lockedOrder, $transaction, $mismatchMessage);
 
             if ($lockedPayment->paid_at !== null) {
-                $this->retryNotificationAfterCommit($lockedPayment, $lockedOrder);
+                $this->sendPaymentNotification->handle($lockedPayment, $lockedOrder);
 
                 return $lockedPayment;
             }
@@ -50,7 +39,7 @@ final class ReconcilePaymentStatusAction
             $providerTerminalStatus = $this->providerTerminalStatus($lockedPayment);
 
             if ($providerTerminalStatus !== null && $transaction->status !== PaymentStatus::Paid) {
-                $this->retryNotificationAfterCommit($lockedPayment, $lockedOrder);
+                $this->sendPaymentNotification->handle($lockedPayment, $lockedOrder);
 
                 return $lockedPayment;
             }
@@ -79,32 +68,13 @@ final class ReconcilePaymentStatusAction
 
             if ($transaction->status === PaymentStatus::Paid) {
                 $lockedOrder->update(['status' => true]);
-                $this->sendAfterCommit($lockedPayment, $lockedOrder, PaymentStatus::Paid);
+                $this->sendPaymentNotification->handle($lockedPayment, $lockedOrder);
             } elseif ($this->isProviderTerminalStatus($transaction->status)) {
-                $this->sendAfterCommit($lockedPayment, $lockedOrder, $transaction->status);
+                $this->sendPaymentNotification->handle($lockedPayment, $lockedOrder);
             }
 
             return $lockedPayment->refresh();
         }, attempts: 3);
-    }
-
-    public function retryNotificationAfterCommit(Payment $payment, ?Order $order = null): void
-    {
-        $status = $payment->paid_at !== null
-            ? PaymentStatus::Paid
-            : $this->providerTerminalStatus($payment);
-
-        if ($status === null) {
-            return;
-        }
-
-        $order ??= $this->lockedOrder($payment);
-
-        if ($order === null) {
-            return;
-        }
-
-        $this->sendAfterCommit($payment, $order, $status);
     }
 
     private function providerTerminalStatus(Payment $payment): ?PaymentStatus
@@ -246,77 +216,5 @@ final class ReconcilePaymentStatusAction
             ->with('user')
             ->lockForUpdate()
             ->find($payment->payable_id);
-    }
-
-    private function sendAfterCommit(Payment $payment, Order $order, PaymentStatus $status): void
-    {
-        $paymentId = $payment->getKey();
-        $orderId = $order->getKey();
-
-        DB::afterCommit(function () use ($paymentId, $orderId, $status): void {
-            $notificationType = $this->notificationType($status);
-
-            Cache::store('database')
-                ->lock('payment-notification:'.$paymentId.':'.$notificationType, 60)
-                ->block(30, function () use ($paymentId, $orderId, $status, $notificationType): void {
-                    $storedPayment = Payment::query()->find($paymentId);
-
-                    if ($storedPayment === null || $this->notificationWasSent($storedPayment, $notificationType)) {
-                        return;
-                    }
-
-                    $storedOrder = Order::query()->with('user')->find($orderId);
-
-                    if ($storedOrder === null) {
-                        return;
-                    }
-
-                    $email = $storedOrder->user?->email ?? data_get($storedOrder->guest_data, 'contact_email');
-
-                    if (blank($email)) {
-                        return;
-                    }
-
-                    $mail = $status === PaymentStatus::Paid
-                        ? new OrderPaid($storedOrder)
-                        : new OrderPaymentFailed($storedOrder);
-
-                    Mail::to($email)->send($mail);
-
-                    Activity::query()->create([
-                        'log_name' => self::NOTIFICATION_LOG_NAME,
-                        'description' => $this->notificationDescription($notificationType),
-                        'subject_type' => $storedPayment->getMorphClass(),
-                        'subject_id' => $storedPayment->getKey(),
-                        'event' => self::NOTIFICATION_LOG_EVENT,
-                        'properties' => [
-                            'notification' => $notificationType,
-                        ],
-                    ]);
-                });
-        });
-    }
-
-    private function notificationType(PaymentStatus $status): string
-    {
-        return $status === PaymentStatus::Paid ? 'paid' : 'failed';
-    }
-
-    private function notificationDescription(string $notificationType): string
-    {
-        return $notificationType === 'paid'
-            ? self::PAID_NOTIFICATION_DESCRIPTION
-            : self::FAILED_NOTIFICATION_DESCRIPTION;
-    }
-
-    private function notificationWasSent(Payment $payment, string $notificationType): bool
-    {
-        return Activity::query()
-            ->where('log_name', self::NOTIFICATION_LOG_NAME)
-            ->where('event', self::NOTIFICATION_LOG_EVENT)
-            ->where('description', $this->notificationDescription($notificationType))
-            ->where('subject_type', $payment->getMorphClass())
-            ->where('subject_id', $payment->getKey())
-            ->exists();
     }
 }

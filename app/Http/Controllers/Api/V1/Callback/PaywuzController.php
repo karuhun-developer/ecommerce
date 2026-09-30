@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Callback;
 
 use App\Actions\Api\V1\Callback\HandlePaywuzCallbackAction;
+use App\Data\Callbacks\PaywuzCallbackData;
 use App\Http\Controllers\Controller;
 use App\Traits\WithReturnResponse;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +16,12 @@ final class PaywuzController extends Controller
     public function callback(Request $request, HandlePaywuzCallbackAction $action): JsonResponse
     {
         try {
-            $action->handle($request);
+            $action->handle(new PaywuzCallbackData(
+                rawBody: $request->getContent(),
+                signature: $request->header('X-Paywuz-Signature'),
+                event: $request->header('X-Paywuz-Event'),
+                deliveryId: $request->header('X-Paywuz-Delivery'),
+            ));
         } catch (\Throwable $exception) {
             if (in_array($exception->getCode(), [400, 401, 403, 404], true)) {
                 return $this->responseWithError($exception->getMessage(), $exception->getCode());

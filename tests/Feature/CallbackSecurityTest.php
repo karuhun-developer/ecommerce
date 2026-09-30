@@ -499,7 +499,12 @@ $request = \Illuminate\Http\Request::create('/', 'POST', server: [
     'HTTP_X_PAYWUZ_DELIVERY' => 'same-concurrent-delivery',
 ], content: $rawBody);
 try {
-    app(\App\Actions\Api\V1\Callback\HandlePaywuzCallbackAction::class)->handle($request);
+    app(\App\Actions\Api\V1\Callback\HandlePaywuzCallbackAction::class)->handle(new \App\Data\Callbacks\PaywuzCallbackData(
+        $request->getContent(),
+        $request->header('X-Paywuz-Signature'),
+        $request->header('X-Paywuz-Event'),
+        $request->header('X-Paywuz-Delivery'),
+    ));
     echo "STATUS=200\n";
 } catch (\Throwable $exception) {
     echo "STATUS=500\n";
