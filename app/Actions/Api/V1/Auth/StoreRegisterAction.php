@@ -2,25 +2,23 @@
 
 namespace App\Actions\Api\V1\Auth;
 
+use App\Actions\Auth\CreateRegisteredUserAction;
+use App\Data\Auth\RegistrationData;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 
 class StoreRegisterAction
 {
-    /**
-     * Handle the action.
-     */
-    public function handle(array $data): User
-    {
-        $user = User::create($data);
+    public function __construct(private readonly CreateRegisteredUserAction $createUser) {}
 
-        // Assign as user by default
+    public function handle(RegistrationData $data): User
+    {
+        $user = $this->createUser->handle($data);
+
         $user->syncRoles(['user']);
 
-        // Confirm email if needed
         event(new Registered($user));
 
-        // Save activity
         activity()->performedOn($user)->causedBy($user)->event('Register')->log('Register');
 
         return $user;

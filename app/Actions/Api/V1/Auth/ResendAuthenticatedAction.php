@@ -2,22 +2,21 @@
 
 namespace App\Actions\Api\V1\Auth;
 
+use App\Models\User;
+
 class ResendAuthenticatedAction
 {
     /**
      * Handle the action.
      */
-    public function handle(): bool
+    public function handle(User $user): bool
     {
-        $user = auth()->user();
-
         if ($user->hasVerifiedEmail()) {
             return false;
         }
 
         $user->sendEmailVerificationNotification();
 
-        // Save activity
         activity()->performedOn($user)->causedBy($user)->log('Resend Verification Email');
 
         return true;

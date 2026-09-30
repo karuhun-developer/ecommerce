@@ -2,16 +2,17 @@
 
 namespace App\Actions\Api\V1\Auth;
 
+use App\Models\User;
+
 class DeleteAuthenticatedAction
 {
     /**
      * Handle the action.
      */
-    public function handle(): void
+    public function handle(User $user): void
     {
-        // Save activity
-        activity()->performedOn(auth()->user())->causedBy(auth()->user())->event('Login')->log('Logout');
+        activity()->performedOn($user)->causedBy($user)->event('Login')->log('Logout');
 
-        auth()->user()->tokens()->delete();
+        $user->tokens()->delete();
     }
 }

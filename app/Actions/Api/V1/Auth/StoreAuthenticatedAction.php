@@ -2,22 +2,19 @@
 
 namespace App\Actions\Api\V1\Auth;
 
+use App\Data\Auth\LoginData;
+use Illuminate\Contracts\Auth\StatefulGuard;
+
 class StoreAuthenticatedAction
 {
-    /**
-     * Handle the action.
-     */
-    public function handle(array $data): bool
+    public function handle(LoginData $data, StatefulGuard $guard): bool
     {
-        if (! auth()->attempt($data)) {
+        if (! $guard->attempt($data->credentials())) {
             return false;
         }
 
-        // Save activity
-        activity()->performedOn(auth()->user())->causedBy(auth()->user())->event('Login')->log('Login');
-
-        // Delete all previous tokens
-        // auth()->user()->tokens()->delete();
+        $user = $guard->user();
+        activity()->performedOn($user)->causedBy($user)->event('Login')->log('Login');
 
         return true;
     }

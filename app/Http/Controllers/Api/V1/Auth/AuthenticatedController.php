@@ -6,10 +6,14 @@ use App\Actions\Api\V1\Auth\DeleteAuthenticatedAction;
 use App\Actions\Api\V1\Auth\ResendAuthenticatedAction;
 use App\Actions\Api\V1\Auth\StoreAuthenticatedAction;
 use App\Actions\Api\V1\Auth\UpdateAuthenticatedAction;
+use App\Data\Auth\LoginData;
+use App\Data\Auth\ProfileData;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Auth\StoreAuthenticatedRequest;
 use App\Http\Requests\Api\V1\Auth\UpdateAuthenticatedRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 class AuthenticatedController extends Controller
@@ -17,9 +21,9 @@ class AuthenticatedController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreAuthenticatedRequest $request, StoreAuthenticatedAction $action)
+    public function store(StoreAuthenticatedRequest $request, StoreAuthenticatedAction $action): JsonResponse
     {
-        if (! $action->handle($request->validated())) {
+        if (! $action->handle(LoginData::fromArray($request->validated()), Auth::guard())) {
             return $this->responseWithError('Your credentials are incorrect', 422);
         }
 
@@ -32,7 +36,7 @@ class AuthenticatedController extends Controller
     /**
      * Display the authenticated user.
      */
-    public function me(Request $request)
+    public function me(Request $request): JsonResponse
     {
         $ttl = now()->addMinutes(10);
 
@@ -55,9 +59,9 @@ class AuthenticatedController extends Controller
     /**
      * Update the authenticated user.
      */
-    public function update(UpdateAuthenticatedRequest $request, UpdateAuthenticatedAction $action)
+    public function update(UpdateAuthenticatedRequest $request, UpdateAuthenticatedAction $action): JsonResponse
     {
-        $user = $action->handle($request->validated());
+        $user = $action->handle($request->user(), ProfileData::fromArray($request->validated()));
 
         return $this->responseWithSuccess($user);
     }
@@ -65,9 +69,9 @@ class AuthenticatedController extends Controller
     /**
      * Resend the email verification notification.
      */
-    public function resend(ResendAuthenticatedAction $action)
+    public function resend(Request $request, ResendAuthenticatedAction $action): JsonResponse
     {
-        if (! $action->handle()) {
+        if (! $action->handle($request->user())) {
             return $this->responseWithError('Email is already verified', 400);
         }
 
@@ -77,9 +81,9 @@ class AuthenticatedController extends Controller
     /**
      * Logout the authenticated user.
      */
-    public function delete(DeleteAuthenticatedAction $action)
+    public function delete(Request $request, DeleteAuthenticatedAction $action): JsonResponse
     {
-        $action->handle();
+        $action->handle($request->user());
 
         return $this->responseWithSuccess(message: 'Successfully logged out');
     }

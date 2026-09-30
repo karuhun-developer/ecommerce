@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Actions\Fortify;
+namespace App\Services\Fortify;
 
+use App\Actions\Auth\CreateRegisteredUserAction;
+use App\Data\Auth\RegistrationData;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -10,6 +12,8 @@ use Laravel\Fortify\Contracts\CreatesNewUsers;
 class CreateNewUser implements CreatesNewUsers
 {
     use PasswordValidationRules;
+
+    public function __construct(private readonly CreateRegisteredUserAction $createUser) {}
 
     /**
      * Validate and create a newly registered user.
@@ -36,11 +40,6 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::create([
-            'name' => $input['name'],
-            'email' => $input['email'],
-            'phone' => $input['phone'],
-            'password' => $input['password'],
-        ]);
+        return $this->createUser->handle(RegistrationData::fromArray($input));
     }
 }
