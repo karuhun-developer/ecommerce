@@ -10,28 +10,16 @@ use Illuminate\Support\Facades\Gate;
 
 class DeleteShopAction
 {
-    public function __construct(
-        public readonly DeleteLocationAction $deleteLocationAction,
-    ) {}
+    public function __construct(private readonly DeleteLocationAction $deleteLocationAction) {}
 
-    /**
-     * Handle the action.
-     */
-    public function handle(Shop $shop): bool
+    public function handle(Shop $shop, User $actor): bool
     {
-        Gate::authorize('delete'.Shop::class);
+        Gate::forUser($actor)->authorize('delete'.Shop::class);
+        $shop = Shop::query()->accessibleTo($actor)->with('location')->findOrFail($shop->getKey());
 
-        $user = auth()->user();
-        abort_unless($user instanceof User, 403);
-
-        $shop = Shop::query()
-            ->accessibleTo($user)
-            ->with('location')
-            ->findOrFail($shop->getKey());
-
-        return DB::transaction(function () use ($shop) {
+        return DB::transaction(function () use ($shop, $actor): bool {
             if ($shop->location) {
-                $this->deleteLocationAction->handle($shop->location);
+                $this->deleteLocationAction->handle($shop->location, $actor);
             }
 
             return $shop->delete();

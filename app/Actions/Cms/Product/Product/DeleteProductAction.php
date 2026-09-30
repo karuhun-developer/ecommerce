@@ -12,15 +12,12 @@ class DeleteProductAction
     /**
      * Handle the action.
      */
-    public function handle(Product $product): void
+    public function handle(Product $product, User $actor): void
     {
-        Gate::authorize('delete'.Product::class);
-
-        $user = auth()->user();
-        abort_unless($user instanceof User, 403);
+        Gate::forUser($actor)->authorize('delete'.Product::class);
 
         $product = Product::query()
-            ->accessibleTo($user)
+            ->accessibleTo($actor)
             ->with('productFlats')
             ->findOrFail($product->getKey());
 

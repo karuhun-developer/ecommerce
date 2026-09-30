@@ -2,6 +2,9 @@
 
 namespace App\Actions\Cms\Product\Product;
 
+use App\Data\Cms\ProductAttributeSelectionData;
+use App\Data\Cms\ProductFlatData;
+use App\Data\Cms\ProductUpdateData;
 use App\Models\Attribute\Attribute;
 use App\Models\Attribute\AttributeGroup;
 use App\Models\Product\Product;
@@ -21,28 +24,26 @@ class UpdateProductAction
 {
     use WithMediaCollection;
 
-    /**
-     * Handle the action.
-     */
-    public function handle(Product $product, Shop $shop, array $data, array $imagesData = []): Product
+    public function handle(Product $product, Shop $shop, ProductUpdateData $data, User $user): Product
     {
-        Gate::authorize('update'.Product::class);
-
-        $user = auth()->user();
-        abort_unless($user instanceof User, 403);
+        Gate::forUser($user)->authorize('update'.Product::class);
 
         $product = Product::query()->accessibleTo($user)->findOrFail($product->getKey());
         $shop = Shop::query()->accessibleTo($user)->findOrFail($shop->getKey());
 
-        $productFlats = $data['productFlats'] ?? [];
+        $productFlats = array_map(fn (ProductFlatData $flat): array => $flat->attributes(), $data->productFlats);
+        $imagesData = [];
+        foreach ($data->images as $image) {
+            $imagesData[$image->flat_id][$image->slot] = $image->delete ? 'delete' : $image->image;
+        }
         $this->ensureFlatIdsBelongToProduct($product, array_keys($productFlats));
         $this->ensureFlatIdsBelongToProduct($product, array_keys($imagesData));
 
         return DB::transaction(function () use ($product, $shop, $data, $productFlats, $imagesData): Product {
             $product->update([
                 'shop_id' => $shop->id,
-                'product_category_id' => $data['product_category_id'],
-                'status' => $data['status'] ?? $product->status,
+                'product_category_id' => $data->product_category_id,
+                'status' => $data->status ?? $product->status,
             ]);
 
             $product->productFlats()->update(['shop_id' => $shop->id]);
@@ -52,7 +53,7 @@ class UpdateProductAction
                 $flat->update($this->flatPayload($flat, $shop, $productFlats));
                 $this->processImages($flat, $imagesData[$flat->id] ?? []);
             } else {
-                $this->updateVariableProduct($product, $shop, $data['attributes'] ?? [], $productFlats, $imagesData);
+                $this->updateVariableProduct($product, $shop, array_map(fn (ProductAttributeSelectionData $selection): array => $selection->attributes(), $data->attributes), $productFlats, $imagesData);
             }
 
             return $product->fresh();

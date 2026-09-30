@@ -46,7 +46,7 @@ it('rejects deleting a foreign shop at the action boundary', function () {
     $deleteLocationAction = Mockery::mock(DeleteLocationAction::class);
     $deleteLocationAction->shouldNotReceive('handle');
 
-    expect(fn () => (new DeleteShopAction($deleteLocationAction))->handle($foreignShop))
+    expect(fn () => (new DeleteShopAction($deleteLocationAction))->handle($foreignShop, $shopowner))
         ->toThrow(ModelNotFoundException::class);
 
     expect($foreignShop->fresh())->not->toBeNull();

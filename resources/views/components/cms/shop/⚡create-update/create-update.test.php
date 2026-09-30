@@ -4,6 +4,8 @@ use App\Actions\Cms\Shop\StoreShopAction;
 use App\Actions\Cms\Shop\UpdateShopAction;
 use App\Actions\Ecommerce\Location\StoreLocationAction;
 use App\Actions\Ecommerce\Location\UpdateLocationAction;
+use App\Data\Cms\ShopData;
+use App\Data\Location\LocationData;
 use App\Models\Location\Location;
 use App\Models\Shop\Shop;
 use App\Models\Spatie\Permission;
@@ -18,6 +20,7 @@ beforeEach(function () {
     $shopownerRole = Role::findOrCreate('shopowner', 'api');
     $shopownerRole->givePermissionTo([
         Permission::findOrCreate('show'.Shop::class, 'api'),
+        Permission::findOrCreate('create'.Shop::class, 'api'),
         Permission::findOrCreate('update'.Shop::class, 'api'),
     ]);
 });
@@ -44,7 +47,7 @@ it('rejects a foreign shop at the update action boundary', function () {
     $updateLocationAction = Mockery::mock(UpdateLocationAction::class);
     $updateLocationAction->shouldNotReceive('handle');
 
-    expect(fn () => (new UpdateShopAction($updateLocationAction))->handle($foreignShop, []))
+    expect(fn () => (new UpdateShopAction($updateLocationAction))->handle($foreignShop, new ShopData('Shop', null, new LocationData('Warehouse', 'Owner', '08123456789', 'Street', null, '10110', -6.2, 106.8, 'area', 'Jakarta', 'origin')), $shopowner))
         ->toThrow(ModelNotFoundException::class);
 });
 
@@ -61,6 +64,21 @@ it('locks the selected shop identifier', function () {
 
     expect(fn () => $component->set('id', $foreignShop->id))
         ->toThrow(CannotUpdateLockedPropertyException::class);
+});
+
+it('loads and clears the description for the selected shop editor', function () {
+    $shopowner = User::factory()->create();
+    $shopowner->assignRole('shopowner');
+    $shop = Shop::factory()->for($shopowner)->create(['description' => '<p>Shop description.</p>']);
+
+    Livewire::actingAs($shopowner)
+        ->test('cms.shop.create-update')
+        ->call('setAction', $shop->id)
+        ->assertSet('form.description', $shop->description)
+        ->assertDispatched('update-jodit-content', editorId: 'shop-description', content: $shop->description)
+        ->call('setAction')
+        ->assertSet('form.description', null)
+        ->assertDispatched('update-jodit-content', editorId: 'shop-description', content: '');
 });
 
 it('does not expose raw provider errors while searching areas', function () {
@@ -94,25 +112,25 @@ it('derives shop ownership and sends an explicit location payload', function () 
     $storeLocationAction = Mockery::mock(StoreLocationAction::class);
     $storeLocationAction->shouldReceive('handle')
         ->once()
-        ->with(Mockery::on(function (array $payload): bool {
-            return $payload['location_name'] === 'Main Warehouse'
-                && $payload['contact_name'] === 'Shop Contact'
-                && $payload['contact_phone'] === '08123456789'
-                && $payload['address'] === 'Main Street'
-                && $payload['note'] === null
-                && $payload['postal_code'] === '10110'
-                && $payload['latitude'] === '-6.2'
-                && $payload['longitude'] === '106.8'
-                && $payload['biteship_area_id'] === 'area-id'
-                && $payload['area_string'] === 'Jakarta'
-                && is_int($payload['shop_id'])
-                && $payload['type'] === 'origin'
-                && ! array_key_exists('user_id', $payload)
-                && ! array_key_exists('unexpected', $payload);
-        }))
+        ->with(Mockery::on(function (LocationData $payload): bool {
+            return $payload->location_name === 'Main Warehouse'
+                && $payload->contact_name === 'Shop Contact'
+                && $payload->contact_phone === '08123456789'
+                && $payload->address === 'Main Street'
+                && $payload->note === null
+                && $payload->postal_code === '10110'
+                && $payload->latitude === -6.2
+                && $payload->longitude === 106.8
+                && $payload->biteship_area_id === 'area-id'
+                && $payload->area_string === 'Jakarta'
+                && is_int($payload->shop_id)
+                && $payload->type === 'origin'
+                && ! property_exists($payload, 'user_id')
+                && ! property_exists($payload, 'unexpected');
+        }), $shopowner)
         ->andReturn(new Location);
 
-    $shop = (new StoreShopAction($storeLocationAction))->handle([
+    $shop = (new StoreShopAction($storeLocationAction))->handle(ShopData::fromArray([
         'user_id' => $foreignUser->id,
         'name' => 'Secure Shop',
         'description' => 'Description',
@@ -127,7 +145,7 @@ it('derives shop ownership and sends an explicit location payload', function () 
         'biteship_area_id' => 'area-id',
         'area_string' => 'Jakarta',
         'unexpected' => 'must not pass through',
-    ]);
+    ]), $shopowner);
 
     expect($shop->user_id)->toBe($shopowner->id)
         ->and($shop->name)->toBe('Secure Shop');

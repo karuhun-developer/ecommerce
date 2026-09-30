@@ -63,6 +63,7 @@ new class extends BaseComponent
 
         $deleteAction->handle(
             shop: Shop::query()->accessibleTo($user)->findOrFail($id),
+            actor: $user,
         );
 
         // Toast message

@@ -2,6 +2,7 @@
 
 use App\Actions\Cms\Shop\StoreShopAction;
 use App\Actions\Cms\Shop\UpdateShopAction;
+use App\Livewire\Forms\Cms\ShopForm;
 use App\Models\Shop\Shop;
 use App\Models\User;
 use App\Services\BiteshipService;
@@ -19,203 +20,75 @@ new class extends Component
     #[Locked]
     public bool $isUpdate = false;
 
+    #[Locked]
+    public ?int $id = null;
+
+    public ShopForm $form;
+
+    public string $searchArea = '';
+
+    #[Locked]
+    public array $areas = [];
+
     #[On('set-action')]
     public function setAction(int|string|null $id = null): void
     {
         $this->resetValidation();
-
-        if ($id) {
-            $this->isUpdate = true;
-            $this->getRecordData($id);
-        } else {
-            $this->isUpdate = false;
-            $this->resetRecordData();
-        }
-    }
-
-    #[Locked]
-    public $id;
-
-    public $name;
-
-    public $description;
-
-    public $location_name;
-
-    public $contact_name;
-
-    public $contact_phone;
-
-    public $address;
-
-    public $note;
-
-    public $postal_code;
-
-    public $latitude;
-
-    public $longitude;
-
-    public $biteship_area_id;
-
-    public $area_string;
-
-    public $searchArea;
-
-    public array $areas = [];
-
-    public function getRecordData(int|string $id): void
-    {
-        Gate::authorize('show'.$this->modelInstance);
-
-        $user = auth()->user();
-        abort_unless($user instanceof User, 403);
-
-        $record = Shop::query()->accessibleTo($user)->findOrFail($id);
-        $this->fill(
-            $record->only(
-                'id',
-                'name',
-                'description',
-            )
-        );
-
-        // Set location details if available
-        if ($record->location) {
-            $this->location_name = $record->location->name;
-            $this->contact_name = $record->location->contact_name;
-            $this->contact_phone = $record->location->contact_phone;
-            $this->address = $record->location->address;
-            $this->note = $record->location->note;
-            $this->postal_code = $record->location->postal_code;
-            $this->latitude = $record->location->latitude;
-            $this->longitude = $record->location->longitude;
-            $this->biteship_area_id = $record->location->biteship_area_id;
-            $this->area_string = $record->location->area_string;
-            $this->searchArea = $record->location->area_string;
-        }
-
-        // Set jodit content
-        $this->dispatch('update-jodit-content', $this->description);
-    }
-
-    public function resetRecordData(): void
-    {
-        $this->reset([
-            'id', 'name', 'description', 'location_name', 'contact_name',
-            'contact_phone', 'address', 'note', 'postal_code',
-            'biteship_area_id', 'area_string', 'searchArea',
-        ]);
-        $this->latitude = null;
-        $this->longitude = null;
+        $this->form->reset();
         $this->areas = [];
-
-        // Set jodit content
-        $this->dispatch('update-jodit-content', '');
+        $this->id = $id ? (int) $id : null;
+        $this->isUpdate = $this->id !== null;
+        if ($this->id !== null) {
+            Gate::authorize('show'.Shop::class);
+            $this->form->setShop(Shop::query()->accessibleTo(auth()->user())->with('location')->findOrFail($this->id));
+        }
+        $this->searchArea = $this->form->area_string ?? '';
+        $this->dispatch('update-jodit-content', editorId: 'shop-description', content: $this->form->description ?? '');
     }
 
     public function searchBiteshipArea(BiteshipService $biteshipService): void
     {
-        $this->validate([
-            'searchArea' => 'required|string|min:3',
-        ]);
-
+        $this->validate(['searchArea' => ['required', 'string', 'min:3', 'max:255']]);
         try {
-            $res = $biteshipService->getMapsAreas([
-                'input' => $this->searchArea,
-            ]);
-            $this->areas = $res['areas'] ?? [];
+            $this->areas = $biteshipService->getMapsAreas(['input' => $this->searchArea])['areas'] ?? [];
         } catch (Throwable $exception) {
             report($exception);
-
-            $this->dispatch('toast',
-                type: 'error',
-                message: 'Unable to search areas right now. Please try again.',
-            );
+            $this->dispatch('toast', type: 'error', message: 'Unable to search areas right now. Please try again.');
         }
     }
 
     public function selectArea(string $id, string $name, string $postal_code): void
     {
-        $this->biteship_area_id = $id;
-        $this->area_string = $name;
-        $this->postal_code = $postal_code;
-        $this->searchArea = $name;
+        $area = collect($this->areas)->firstWhere('id', $id);
+        abort_unless($area, 422);
+        $this->form->biteship_area_id = $area['id'];
+        $this->form->area_string = $area['name'];
+        $this->form->postal_code = (string) ($area['postal_code'] ?? '');
+        $this->searchArea = $area['name'];
         $this->areas = [];
     }
 
     public function submit(StoreShopAction $storeAction, UpdateShopAction $updateAction): void
     {
-        Gate::authorize('update'.$this->modelInstance);
-
-        $this->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'location_name' => 'required|string|max:255',
-            'contact_name' => 'required|string|max:255',
-            'contact_phone' => 'required|string|max:20',
-            'address' => 'required|string',
-            'note' => 'nullable|string',
-            'postal_code' => 'required|numeric',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'biteship_area_id' => 'required|string',
-        ]);
-
-        $shop = null;
-
-        if ($this->isUpdate) {
-            $user = auth()->user();
-            abort_unless($user instanceof User, 403);
-            $shop = Shop::query()->accessibleTo($user)->findOrFail($this->id);
-        }
-
+        $actor = auth()->user();
+        abort_unless($actor instanceof User, 403);
+        Gate::authorize(($this->isUpdate ? 'update' : 'create').Shop::class);
+        $data = $this->form->shopData();
+        $shop = $this->isUpdate ? Shop::query()->accessibleTo($actor)->findOrFail($this->id) : null;
         try {
             if ($shop) {
-                $updateAction->handle(shop: $shop, data: $this->shopPayload());
+                $updateAction->handle($shop, $data, $actor);
             } else {
-                $storeAction->handle(data: $this->shopPayload());
+                $storeAction->handle($data, $actor);
             }
         } catch (Throwable $exception) {
             report($exception);
-
-            $this->dispatch(
-                'toast',
-                type: 'error',
-                message: 'Unable to save the shop right now. Please try again.',
-            );
+            $this->dispatch('toast', type: 'error', message: 'Unable to save the shop right now. Please try again.');
 
             return;
         }
-
-        // Toast message
-        $this->dispatch('toast',
-            type: 'success',
-            message: $this->isUpdate ? 'Shop updated successfully.' : 'Shop created successfully.',
-        );
-
-        // Reset data table
+        $this->dispatch('toast', type: 'success', message: $this->isUpdate ? 'Shop updated successfully.' : 'Shop created successfully.');
         $this->dispatch('reset-parent-page');
-
-        // Close modal
         Flux::modal('defaultModal')->close();
-    }
-
-    private function shopPayload(): array
-    {
-        return [
-            'name' => $this->name,
-            'description' => $this->description,
-            'location_name' => $this->location_name,
-            'contact_name' => $this->contact_name,
-            'contact_phone' => $this->contact_phone,
-            'address' => $this->address,
-            'note' => $this->note,
-            'postal_code' => $this->postal_code,
-            'latitude' => $this->latitude,
-            'longitude' => $this->longitude,
-            'biteship_area_id' => $this->biteship_area_id,
-            'area_string' => $this->area_string,
-        ];
     }
 };

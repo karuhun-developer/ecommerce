@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Cms\Product\Product\UpdateProductAction;
+use App\Data\Cms\ProductUpdateData;
 use App\Models\Product\Product;
 use App\Models\Product\ProductCategory;
 use App\Models\Product\ProductFlat;
@@ -70,7 +71,7 @@ it('rejects foreign nested product flat identifiers in the component', function 
 
     $component = Livewire::actingAs($shopowner)
         ->test('cms.product.product.edit', ['product' => $product])
-        ->set("productFlats.{$foreignFlat->id}", productFlatPayload());
+        ->set("form.productFlats.{$foreignFlat->id}", productFlatPayload());
 
     expect(fn () => $component->call('submit'))
         ->toThrow(ModelNotFoundException::class);
@@ -100,14 +101,15 @@ it('rejects foreign nested product flat identifiers in the action', function () 
     expect(fn () => app(UpdateProductAction::class)->handle(
         product: $product,
         shop: $ownedShop,
-        data: [
+        data: ProductUpdateData::fromArray([
             'product_category_id' => $category->id,
             'productFlats' => [
                 $ownedFlat->id => productFlatPayload(),
                 $foreignFlat->id => productFlatPayload(),
             ],
             'attributes' => [],
-        ],
+        ]),
+        user: $shopowner,
     ))->toThrow(ModelNotFoundException::class);
 });
 

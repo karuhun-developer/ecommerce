@@ -2,6 +2,8 @@
 
 namespace App\Actions\Cms\Product\Product;
 
+use App\Data\Cms\ProductAttributeSelectionData;
+use App\Data\Cms\ProductCreateData;
 use App\Models\Attribute\Attribute;
 use App\Models\Attribute\AttributeGroup;
 use App\Models\Product\Product;
@@ -17,32 +19,26 @@ use Illuminate\Validation\ValidationException;
 
 class StoreProductAction
 {
-    /**
-     * Handle the action.
-     */
-    public function handle(Shop $shop, array $data): Product
+    public function handle(Shop $shop, ProductCreateData $data, User $user): Product
     {
-        Gate::authorize('create'.Product::class);
-
-        $user = auth()->user();
-        abort_unless($user instanceof User, 403);
+        Gate::forUser($user)->authorize('create'.Product::class);
 
         $shop = Shop::query()->accessibleTo($user)->findOrFail($shop->getKey());
 
         return DB::transaction(function () use ($shop, $data) {
             $product = Product::create([
-                'product_category_id' => $data['product_category_id'],
+                'product_category_id' => $data->product_category_id,
                 'shop_id' => $shop->id,
-                'type' => $data['type'],
-                'name' => $data['name'],
-                'description' => $data['description'] ?? null,
-                'price' => $data['price'] ?? 0,
-                'weight' => $data['weight'] ?? 0,
-                'length' => $data['length'] ?? 0,
-                'width' => $data['width'] ?? 0,
-                'height' => $data['height'] ?? 0,
-                'is_unlimited_stock' => $data['is_unlimited_stock'] ?? false,
-                'status' => $data['status'] ?? true,
+                'type' => $data->type,
+                'name' => $data->name,
+                'description' => $data->description ?? null,
+                'price' => $data->price ?? 0,
+                'weight' => $data->weight ?? 0,
+                'length' => $data->length ?? 0,
+                'width' => $data->width ?? 0,
+                'height' => $data->height ?? 0,
+                'is_unlimited_stock' => $data->is_unlimited_stock ?? false,
+                'status' => $data->status ?? true,
                 'stock' => 0,
             ]);
 
@@ -62,18 +58,18 @@ class StoreProductAction
                     'stock' => 0,
                 ]);
             } else {
-                $groups = collect($data['attributes'] ?? [])->filter(fn (array $group): bool => ! empty($group['attributes']));
+                $groups = collect($data->attributes ?? [])->filter(fn (ProductAttributeSelectionData $group): bool => $group->attributes !== []);
 
                 $attributePools = [];
 
                 foreach ($groups as $groupData) {
-                    $attributeGroup = $this->resolveAttributeGroup($shop, $groupData);
+                    $attributeGroup = $this->resolveAttributeGroup($shop, $groupData->attributes());
                     $group = ProductAttributeGroup::create([
                         'product_id' => $product->id,
                         'attribute_group_id' => $attributeGroup->id,
                     ]);
 
-                    $attributes = $this->resolveAttributes($shop, $attributeGroup, $groupData['attributes']);
+                    $attributes = $this->resolveAttributes($shop, $attributeGroup, $groupData->attributes);
                     $attributePools[] = $attributes->map(function (Attribute $attribute) use ($group): array {
                         return [
                             'attribute' => $attribute,

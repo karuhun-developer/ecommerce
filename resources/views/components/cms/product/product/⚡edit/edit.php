@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Cms\Product\Product\UpdateProductAction;
+use App\Livewire\Forms\Cms\ProductEditForm;
 use App\Models\Attribute\AttributeGroup;
 use App\Models\Product\Product;
 use App\Models\Product\ProductCategory;
@@ -42,7 +43,7 @@ new class extends Component
 
     private function initializeState(): void
     {
-        $this->fill(
+        $this->form->fill(
             $this->product->only([
                 'shop_id',
                 'product_category_id',
@@ -50,7 +51,7 @@ new class extends Component
         );
 
         foreach ($this->product->productFlats as $flat) {
-            $this->productFlats[$flat->id] = [
+            $this->form->productFlats[$flat->id] = [
                 'name' => $flat->name,
                 'description' => $flat->description,
                 'price' => numberToCurrency($flat->price),
@@ -61,14 +62,11 @@ new class extends Component
                 'is_unlimited_stock' => $flat->is_unlimited_stock,
                 'stock' => $flat->stock,
             ];
-            $this->dispatch('update-jodit-content', [
-                'description-'.$flat->id,
-                $flat->description,
-            ]);
+            $this->dispatch('update-jodit-content', editorId: 'description-'.$flat->id, content: $flat->description);
         }
 
         foreach ($this->attributeGroups as $group) {
-            $this->selectedAttributes[$group->id] = [];
+            $this->form->selectedAttributes[$group->id] = [];
         }
 
         if ($this->product->type === 'variable') {
@@ -80,7 +78,7 @@ new class extends Component
                     ->unique()
                     ->toArray();
 
-                $this->selectedAttributes[$group->attribute_group_id] = array_values($attrIds);
+                $this->form->selectedAttributes[$group->attribute_group_id] = array_values($attrIds);
             }
         }
     }
@@ -125,122 +123,39 @@ new class extends Component
         return ProductCategory::all();
     }
 
-    public $shop_id;
-
-    public $product_category_id;
-
-    public array $productFlats = [];
-
-    public array $selectedAttributes = [];
-
-    public array $images = [];
-
-    public array $deletedImages = [];
+    public ProductEditForm $form;
 
     public function removeExistingImage(int|string $flatId, int $slotIndex): void
     {
+        Gate::authorize('update'.$this->modelInstance);
         $flat = $this->resolveFlat($flatId);
         abort_unless(in_array($slotIndex, [0, 1, 2, 3], true), 404);
 
-        $this->deletedImages[$flat->id][$slotIndex] = true;
+        $this->form->deletedImages[$flat->id][$slotIndex] = true;
     }
 
     public function removeImage(int|string $flatId, int $slotIndex): void
     {
+        Gate::authorize('update'.$this->modelInstance);
         $flat = $this->resolveFlat($flatId);
         abort_unless(in_array($slotIndex, [0, 1, 2, 3], true), 404);
 
-        unset($this->images[$flat->id][$slotIndex]);
+        unset($this->form->images[$flat->id][$slotIndex]);
     }
 
     public function submit(UpdateProductAction $updateAction): void
     {
         Gate::authorize('update'.$this->modelInstance);
 
-        $this->ensureFlatPayloadIsScoped($this->productFlats, requireAllFlats: true);
-        $this->ensureFlatPayloadIsScoped($this->images);
-        $this->ensureFlatPayloadIsScoped($this->deletedImages);
+        $this->ensureFlatPayloadIsScoped($this->form->productFlats, requireAllFlats: true);
+        $this->ensureFlatPayloadIsScoped($this->form->images);
+        $this->ensureFlatPayloadIsScoped($this->form->deletedImages);
 
-        foreach ($this->productFlats as $index => $flat) {
-            $this->productFlats[$index]['price'] = currencyToNumber($flat['price']);
-        }
-
-        $this->validate([
-            'shop_id' => 'required|integer',
-            'product_category_id' => 'required|exists:product_categories,id',
-            'productFlats' => 'required|array',
-            'productFlats.*.name' => 'required|string|max:255',
-            'productFlats.*.description' => 'nullable|string',
-            'productFlats.*.price' => 'required|numeric|min:0',
-            'productFlats.*.weight' => 'required|numeric|min:0',
-            'productFlats.*.length' => 'required|numeric|min:0',
-            'productFlats.*.width' => 'required|numeric|min:0',
-            'productFlats.*.height' => 'required|numeric|min:0',
-            'productFlats.*.stock' => 'required|integer|min:0',
-            'productFlats.*.is_unlimited_stock' => 'required|boolean',
-            'images.*.*' => 'nullable|image|max:2048', // Validate each uploaded image
-            'deletedImages.*.*' => 'nullable|boolean', // Validate deleted images flags
-            'selectedAttributes' => 'array',
-            'selectedAttributes.*' => 'array',
-            'selectedAttributes.*.*' => 'integer',
-        ]);
-
+        $data = $this->form->data($this->product);
         $shop = $this->selectedShop() ?? abort(404);
-
-        // Attributes validation for variable products
-        $attributesData = [];
-        if ($this->product->type === 'variable') {
-            foreach ($this->selectedAttributes as $groupId => $attrIds) {
-                if (! empty($attrIds)) {
-                    $attributesData[] = [
-                        'group_id' => $groupId,
-                        'attributes' => $attrIds,
-                    ];
-                }
-            }
-            if (empty($attributesData)) {
-                $this->addError('selectedAttributes', 'Please select at least one attribute for variable product.');
-
-                return;
-            }
-        }
-
-        $imagesData = [];
-        foreach ($this->product->productFlats as $flat) {
-            $slots = [];
-            for ($i = 0; $i < 4; $i++) {
-                if (isset($this->images[$flat->id][$i])) {
-                    $slots[$i] = $this->images[$flat->id][$i];
-                } elseif (isset($this->deletedImages[$flat->id][$i]) && $this->deletedImages[$flat->id][$i] === true) {
-                    $slots[$i] = 'delete';
-                }
-            }
-            if (! empty($slots)) {
-                $imagesData[$flat->id] = $slots;
-            }
-        }
-
-        $updateAction->handle(
-            product: $this->product,
-            shop: $shop,
-            data: [
-                'product_category_id' => $this->product_category_id,
-                'productFlats' => $this->productFlats,
-                'attributes' => $attributesData,
-            ],
-            imagesData: $imagesData,
-        );
-
-        // Toast message
-        $this->dispatch('toast',
-            type: 'success',
-            message: 'Product updated successfully.',
-        );
-
-        // Reset images
-        $this->images = [];
-
-        // Reset page
+        $updateAction->handle($this->product, $shop, $data, auth()->user());
+        $this->dispatch('toast', type: 'success', message: 'Product updated successfully.');
+        $this->form->images = [];
         $this->redirectRoute('cms.product.edit', ['product_id' => $this->product->id], navigate: true);
     }
 
@@ -249,13 +164,13 @@ new class extends Component
         $user = auth()->user();
         abort_unless($user instanceof User, 403);
 
-        if (! $this->shop_id) {
+        if (! $this->form->shop_id) {
             return null;
         }
 
         return Shop::query()
             ->accessibleTo($user)
-            ->find((int) $this->shop_id);
+            ->find((int) $this->form->shop_id);
     }
 
     private function resolveFlat(int|string $flatId): ProductFlat
@@ -278,7 +193,7 @@ new class extends Component
 
         if ($submittedFlatIds->sort()->values()->all() !== $ownedFlatIds->sort()->values()->all()) {
             throw ValidationException::withMessages([
-                'productFlats' => 'The product variant data is incomplete.',
+                'form.productFlats' => 'The product variant data is incomplete.',
             ]);
         }
     }

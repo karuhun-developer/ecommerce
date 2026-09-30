@@ -55,7 +55,7 @@ it('rejects deleting a foreign product at the action boundary', function () {
 
     $foreignProduct = Product::factory()->create();
 
-    expect(fn () => app(DeleteProductAction::class)->handle($foreignProduct))
+    expect(fn () => app(DeleteProductAction::class)->handle($foreignProduct, auth()->user()))
         ->toThrow(ModelNotFoundException::class);
 
     expect($foreignProduct->fresh())->not->toBeNull();

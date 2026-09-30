@@ -13,37 +13,37 @@
                 <flux:field>
                     <flux:label badge="Required">Location / Branch Name</flux:label>
                     <flux:text>Name of the specific shop location or branch, e.g. "Apotek Gambir Branch"</flux:text>
-                    <flux:input wire:model="location_name" type="text" placeholder="e.g. Apotek Gambir" />
-                    <flux:error name="location_name" />
+                    <flux:input wire:model="form.location_name" type="text" placeholder="e.g. Apotek Gambir" />
+                    <flux:error name="form.location_name" />
                 </flux:field>
 
                 <div class="grid grid-cols-2 gap-4">
                     <flux:field>
                         <flux:label badge="Required">Contact Name</flux:label>
                         <flux:text>Name of the contact person for this shop location.</flux:text>
-                        <flux:input wire:model="contact_name" type="text" />
-                        <flux:error name="contact_name" />
+                        <flux:input wire:model="form.contact_name" type="text" />
+                        <flux:error name="form.contact_name" />
                     </flux:field>
                     <flux:field>
                         <flux:label badge="Required">Contact Phone</flux:label>
                         <flux:text>Phone number of the contact person for this shop location.</flux:text>
-                        <flux:input wire:model="contact_phone" type="text" />
-                        <flux:error name="contact_phone" />
+                        <flux:input wire:model="form.contact_phone" type="text" />
+                        <flux:error name="form.contact_phone" />
                     </flux:field>
                 </div>
 
                 <flux:field>
                     <flux:label badge="Required">Address</flux:label>
                     <flux:text>Full address of the shop location.</flux:text>
-                    <flux:textarea wire:model="address" />
-                    <flux:error name="address" />
+                    <flux:textarea wire:model="form.address" />
+                    <flux:error name="form.address" />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>Note (Patokan)</flux:label>
                     <flux:text>Additional note or reference for the shop location, e.g. "Near Gambir Station"</flux:text>
-                    <flux:input wire:model="note" type="text" />
-                    <flux:error name="note" />
+                    <flux:input wire:model="form.note" type="text" />
+                    <flux:error name="form.note" />
                 </flux:field>
             </div>
 
@@ -54,18 +54,18 @@
                 <flux:field>
                     <flux:label badge="Required">Shop Name</flux:label>
                     <flux:text>Name of the shop, e.g. "Apotek Gambir"</flux:text>
-                    <flux:input wire:model="name" type="text" />
-                    <flux:error name="name" />
+                    <flux:input wire:model="form.name" type="text" />
+                    <flux:error name="form.name" />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>Description</flux:label>
                     <flux:text>Optional description for the shop.</flux:text>
                     <livewire:jodit-text-editor
-                        wire:model="description"
+                        wire:model="form.description" identifier="single-shop-description"
                         :buttons="['bold', 'italic', 'underline', 'strikeThrough']"
                     />
-                    <flux:error name="description" />
+                    <flux:error name="form.description" />
                 </flux:field>
             </div>
         </div>
@@ -93,7 +93,7 @@
                         <div class="border rounded-lg bg-gray-50 shadow-sm max-h-60 overflow-y-auto mt-2">
                             <ul class="divide-y divide-gray-200">
                                 @foreach($areas as $area)
-                                    <li>
+                                    <li wire:key="area-{{ $area['id'] }}">
                                         <button 
                                             type="button"
                                             wire:click="selectArea('{{ $area['id'] }}', '{{ $area['name'] }}', '{{ $area['postal_code'] ?? '' }}')"
@@ -108,18 +108,18 @@
                         </div>
                     @endif
 
-                    @if($area_string)
-                        <div class="p-4 bg-green-50 text-green-800 rounded-md text-sm border border-green-200 mt-2">
-                            <span class="font-bold">Selected Area:</span> {{ $area_string }} ({{ $postal_code }})
+                    @if($form->area_string)
+                        <div class="p-4 bg-zinc-50 text-zinc-800 rounded-md text-sm border border-zinc-200 mt-2">
+                            <span class="font-bold">Selected Area:</span> {{ $form->area_string }} ({{ $form->postal_code }})
                         </div>
                     @endif
-                    <flux:error name="biteship_area_id" />
+                    <flux:error name="form.biteship_area_id" />
                 </div>
 
                 <!-- Leaflet Map -->
                 <div x-data="{
-                    lat: $wire.entangle('latitude'),
-                    lng: $wire.entangle('longitude'),
+                    lat: $wire.entangle('form.latitude'),
+                    lng: $wire.entangle('form.longitude'),
                     map: null,
                     marker: null,
                     loadLeaflet() {

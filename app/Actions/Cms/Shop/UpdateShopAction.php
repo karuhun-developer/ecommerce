@@ -3,6 +3,7 @@
 namespace App\Actions\Cms\Shop;
 
 use App\Actions\Ecommerce\Location\UpdateLocationAction;
+use App\Data\Cms\ShopData;
 use App\Models\Shop\Shop;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -10,55 +11,19 @@ use Illuminate\Support\Facades\Gate;
 
 class UpdateShopAction
 {
-    public function __construct(
-        public readonly UpdateLocationAction $updateLocationAction,
-    ) {}
+    public function __construct(private readonly UpdateLocationAction $updateLocationAction) {}
 
-    /**
-     * Handle the action.
-     */
-    public function handle(Shop $shop, array $data): Shop
+    public function handle(Shop $shop, ShopData $data, User $actor): Shop
     {
-        Gate::authorize('update'.Shop::class);
+        Gate::forUser($actor)->authorize('update'.Shop::class);
+        $shop = Shop::query()->accessibleTo($actor)->with('location')->findOrFail($shop->getKey());
 
-        $user = auth()->user();
-        abort_unless($user instanceof User, 403);
-
-        $shop = Shop::query()
-            ->accessibleTo($user)
-            ->with('location')
-            ->findOrFail($shop->getKey());
-
-        return DB::transaction(function () use ($shop, $data) {
-            $shop->update([
-                'name' => $data['name'],
-                'description' => $data['description'] ?? null,
-            ]);
-
+        return DB::transaction(function () use ($shop, $data, $actor): Shop {
             abort_unless($shop->location, 404);
-
-            $this->updateLocationAction->handle($shop->location, $this->locationPayload($data));
+            $shop->update(['name' => $data->name, 'description' => $data->description]);
+            $this->updateLocationAction->handle($shop->location, $data->location->forShop($shop->id), $actor);
 
             return $shop->fresh();
         });
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function locationPayload(array $data): array
-    {
-        return [
-            'location_name' => $data['location_name'],
-            'contact_name' => $data['contact_name'],
-            'contact_phone' => $data['contact_phone'],
-            'address' => $data['address'],
-            'note' => $data['note'] ?? null,
-            'postal_code' => $data['postal_code'],
-            'latitude' => $data['latitude'],
-            'longitude' => $data['longitude'],
-            'biteship_area_id' => $data['biteship_area_id'],
-            'area_string' => $data['area_string'] ?? null,
-        ];
     }
 }
