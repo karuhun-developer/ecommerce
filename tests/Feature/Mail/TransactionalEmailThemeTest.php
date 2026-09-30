@@ -199,11 +199,12 @@ test('transactional email render paths use the neutral theme and black call to a
             ->each->toBeIn([
                 '#000',
                 '#000000',
-                '#18181b',
-                '#52525b',
-                '#a1a1aa',
-                '#e4e4e7',
-                '#f4f4f5',
+                '#171717',
+                '#262626',
+                '#525252',
+                '#737373',
+                '#e5e5e5',
+                '#f5f5f5',
                 '#fafafa',
                 '#fff',
                 '#ffffff',
@@ -223,15 +224,15 @@ test('transactional email render paths use the neutral theme and black call to a
         expect($buttons)->not->toBeFalse()
             ->and($buttons->length)->toBe(1)
             ->and($buttons->item(0)->getAttribute('style'))
-            ->toContain('background-color: #18181b')
+            ->toContain('background-color: #262626')
             ->toContain('color: #ffffff');
     }
 
     foreach ($this->renderedOrderEmails as $html) {
         expect($html)
-            ->toContain('background-color: #f4f4f5')
-            ->toContain('border: 1px solid #e4e4e7')
-            ->toContain('color: #18181b');
+            ->toContain('background-color: #f5f5f5')
+            ->toContain('border: 1px solid #e5e5e5')
+            ->toContain('color: #171717');
     }
 });
 
@@ -282,6 +283,6 @@ test('shared notification button aliases stay black and white', function (string
         ->and($buttons)->not->toBeFalse()
         ->and($buttons->length)->toBe(1)
         ->and($buttons->item(0)->getAttribute('style'))
-        ->toContain('background-color: #18181b')
+        ->toContain('background-color: #262626')
         ->toContain('color: #ffffff');
 })->with(['primary', 'success', 'error']);

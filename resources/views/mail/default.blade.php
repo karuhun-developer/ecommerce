@@ -11,7 +11,7 @@ body *:not(html):not(style):not(br):not(tr):not(code) {
 body {
     -webkit-text-size-adjust: none;
     background-color: #ffffff;
-    color: #52525b;
+    color: #525252;
     height: 100%;
     line-height: 1.4;
     margin: 0;
@@ -28,7 +28,7 @@ blockquote {
 }
 
 a {
-    color: #18181b;
+    color: #171717;
 }
 
 a img {
@@ -38,7 +38,7 @@ a img {
 /* Typography */
 
 h1 {
-    color: #18181b;
+    color: #171717;
     font-size: 18px;
     font-weight: bold;
     margin-top: 0;
@@ -103,7 +103,7 @@ img {
 }
 
 .header a {
-    color: #18181b;
+    color: #171717;
     font-size: 19px;
     font-weight: bold;
     text-decoration: none;
@@ -138,7 +138,7 @@ img {
     -premailer-cellspacing: 0;
     -premailer-width: 570px;
     background-color: #ffffff;
-    border-color: #e4e4e7;
+    border-color: #e5e5e5;
     border-radius: 4px;
     border-width: 1px;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
@@ -154,7 +154,7 @@ img {
 /* Subcopy */
 
 .subcopy {
-    border-top: 1px solid #e4e4e7;
+    border-top: 1px solid #e5e5e5;
     margin-top: 25px;
     padding-top: 25px;
 }
@@ -176,13 +176,13 @@ img {
 }
 
 .footer p {
-    color: #a1a1aa;
+    color: #737373;
     font-size: 12px;
     text-align: center;
 }
 
 .footer a {
-    color: #a1a1aa;
+    color: #737373;
     text-decoration: underline;
 }
 
@@ -197,13 +197,13 @@ img {
 }
 
 .table th {
-    border-bottom: 1px solid #e4e4e7;
+    border-bottom: 1px solid #e5e5e5;
     margin: 0;
     padding-bottom: 8px;
 }
 
 .table td {
-    color: #52525b;
+    color: #525252;
     font-size: 15px;
     line-height: 18px;
     margin: 0;
@@ -241,28 +241,28 @@ img {
 .button-primary,
 .button-success,
 .button-error {
-    background-color: #18181b;
-    border-bottom: 8px solid #18181b;
-    border-left: 18px solid #18181b;
-    border-right: 18px solid #18181b;
-    border-top: 8px solid #18181b;
+    background-color: #262626;
+    border-bottom: 8px solid #262626;
+    border-left: 18px solid #262626;
+    border-right: 18px solid #262626;
+    border-top: 8px solid #262626;
 }
 
 /* Panels */
 
 .panel {
-    border-left: #18181b solid 4px;
+    border-left: #171717 solid 4px;
     margin: 21px 0;
 }
 
 .panel-content {
     background-color: #fafafa;
-    color: #52525b;
+    color: #525252;
     padding: 16px;
 }
 
 .panel-content p {
-    color: #52525b;
+    color: #525252;
 }
 
 .panel-item {
