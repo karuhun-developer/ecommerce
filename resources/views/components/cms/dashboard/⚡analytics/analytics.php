@@ -1,167 +1,57 @@
 <?php
 
-use App\Models\Order\OrderShop;
-use App\Models\User;
-use App\Traits\WithFilterDateRange;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use App\Actions\Cms\Dashboard\GetDashboardAction;
+use App\Data\Dashboard\DashboardData;
+use App\Data\Dashboard\DashboardFilterData;
+use App\Livewire\Forms\Cms\DashboardFilterForm;
+use App\Models\Shop\Shop;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 new class extends Component
 {
-    use WithFilterDateRange;
+    public DashboardFilterForm $form;
 
-    public function mount()
+    #[Locked]
+    public string $appliedStart = '';
+
+    #[Locked]
+    public string $appliedEnd = '';
+
+    #[Locked]
+    public ?int $appliedShopId = null;
+
+    public function mount(): void
     {
-        $this->startDateFilter = Carbon::now()->subDays(30)->toDateString();
-        $this->endDateFilter = Carbon::now()->toDateString();
+        abort_unless(auth()->user()->hasAnyRole(['superadmin', 'shopowner']), 403);
+        $this->form->defaults();
+        $this->apply();
     }
 
-    public function updated($property)
+    public function apply(): void
     {
-        if (in_array($property, ['startDateFilter', 'endDateFilter'])) {
-            $this->dispatch('update-chart', data: $this->chartData);
+        $data = $this->form->data();
+        if ($data->shopId !== null) {
+            Shop::query()->accessibleTo(auth()->user())->findOrFail($data->shopId);
         }
-    }
-
-    #[Computed]
-    public function isSuperadmin()
-    {
-        return auth()->user()->hasRole('superadmin');
-    }
-
-    #[Computed]
-    public function userStats()
-    {
-        if (! $this->isSuperadmin) {
-            return null;
-        }
-
-        $totalUsers = User::whereHas('roles', function ($q) {
-            $q->where('name', 'user');
-        })->count();
-
-        $totalShopOwners = 0;
-        if (! isSingleShop()) {
-            $totalShopOwners = User::whereHas('roles', function ($q) {
-                $q->where('name', 'shopowner');
-            })->count();
-        }
-
-        return [
-            'users' => $totalUsers,
-            'shopowners' => $totalShopOwners,
-        ];
+        $this->appliedStart = $data->start->toDateString();
+        $this->appliedEnd = $data->end->toDateString();
+        $this->appliedShopId = $data->shopId;
+        unset($this->dashboard);
     }
 
     #[Computed]
-    public function orderStats()
+    public function shops(): Collection
     {
-        $query = OrderShop::query();
-
-        if (! $this->isSuperadmin) {
-            $query->whereHas('shop', function ($q) {
-                $q->where('user_id', auth()->id());
-            });
-        }
-
-        $paidQuery = clone $query;
-        $paidQuery->whereHas('order', function ($q) {
-            $q->where('status', true);
-        })->whereBetween('created_at', [
-            Carbon::parse($this->startDateFilter)->startOfDay(),
-            Carbon::parse($this->endDateFilter)->endOfDay(),
-        ]);
-
-        $totalRevenue = $paidQuery->sum('total');
-        $totalPaidSales = $paidQuery->count();
-
-        $unpaidQuery = clone $query;
-        $unpaidQuery->whereHas('order', function ($q) {
-            $q->where('status', false)
-                ->whereHas('latestPayment', function ($sq) {
-                    $sq->whereNull('expired_at')->orWhere('expired_at', '>', now());
-                });
-        })->whereBetween('created_at', [
-            Carbon::parse($this->startDateFilter)->startOfDay(),
-            Carbon::parse($this->endDateFilter)->endOfDay(),
-        ]);
-
-        $totalUnpaidSales = $unpaidQuery->count();
-
-        return [
-            'revenue' => $totalRevenue,
-            'paid_sales' => $totalPaidSales,
-            'unpaid_sales' => $totalUnpaidSales,
-        ];
+        return Shop::query()->accessibleTo(auth()->user())->orderBy('name')->get();
     }
 
     #[Computed]
-    public function recentTransactions()
+    public function dashboard(): DashboardData
     {
-        $query = OrderShop::with(['order', 'shop', 'order.user'])
-            ->latest()
-            ->take(10);
-
-        if (! $this->isSuperadmin) {
-            $query->whereHas('shop', function ($q) {
-                $q->where('user_id', auth()->id());
-            });
-        }
-
-        return $query->get();
-    }
-
-    #[Computed]
-    public function chartData()
-    {
-        $start = Carbon::parse($this->startDateFilter)->startOfDay();
-        $end = Carbon::parse($this->endDateFilter)->endOfDay();
-
-        $query = OrderShop::query();
-        if (! $this->isSuperadmin) {
-            $query->whereHas('shop', function ($q) {
-                $q->where('user_id', auth()->id());
-            });
-        }
-
-        $paidOrders = clone $query;
-        $paidOrders = $paidOrders->whereHas('order', function ($q) {
-            $q->where('status', true);
-        })->whereBetween('created_at', [$start, $end])
-            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))
-            ->groupBy('date')
-            ->pluck('total', 'date')->toArray();
-
-        $unpaidOrders = clone $query;
-        $unpaidOrders = $unpaidOrders->whereHas('order', function ($q) {
-            $q->where('status', false)
-                ->whereHas('latestPayment', function ($sq) {
-                    $sq->whereNull('expired_at')->orWhere('expired_at', '>', now());
-                });
-        })->whereBetween('created_at', [$start, $end])
-            ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))
-            ->groupBy('date')
-            ->pluck('total', 'date')->toArray();
-
-        $dates = [];
-        $paidSeries = [];
-        $unpaidSeries = [];
-
-        $current = $start->copy();
-        while ($current <= $end) {
-            $dateStr = $current->format('Y-m-d');
-            $dates[] = $current->format('d M');
-            $paidSeries[] = $paidOrders[$dateStr] ?? 0;
-            $unpaidSeries[] = $unpaidOrders[$dateStr] ?? 0;
-            $current->addDay();
-        }
-
-        return [
-            'categories' => $dates,
-            'paid' => $paidSeries,
-            'unpaid' => $unpaidSeries,
-        ];
+        return app(GetDashboardAction::class)->handle(new DashboardFilterData(CarbonImmutable::parse($this->appliedStart)->startOfDay(), CarbonImmutable::parse($this->appliedEnd)->endOfDay(), $this->appliedShopId), auth()->user());
     }
 };
