@@ -5,6 +5,32 @@
         activeFlatProduct: @js($product->productFlats->first()->id),
         activeImage: 0,
         qty: 1,
+        sharing: false,
+        shareMessage: '',
+        shareUrl: @js(route('product.detail', ['slug' => $product->slug])),
+        shareTitle: @js($product->name),
+        async shareProduct() {
+            if (this.sharing) return;
+            this.sharing = true;
+            this.shareMessage = '';
+            try {
+                if (typeof navigator.share === 'function') {
+                    await navigator.share({ title: this.shareTitle, url: this.shareUrl });
+                    this.shareMessage = 'Produk berhasil dibagikan.';
+                } else if (navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(this.shareUrl);
+                    this.shareMessage = 'Link produk berhasil disalin.';
+                } else {
+                    this.shareMessage = 'Salin link produk di bawah ini untuk membagikannya.';
+                }
+            } catch (error) {
+                if (error?.name !== 'AbortError') {
+                    this.shareMessage = 'Gagal membagikan produk. Salin link di bawah ini.';
+                }
+            } finally {
+                this.sharing = false;
+            }
+        },
         maximumQuantities: {
             @foreach ($product->productFlats as $flat)
                 @js($flat->id): @js($flat->is_unlimited_stock ? 100 : min(100, max(1, (int) $flat->stock))),
@@ -67,7 +93,15 @@
             <!-- Left: Images -->
             <div class="w-full lg:w-[30%] flex flex-col gap-4">
                 <div class="aspect-square rounded-2xl overflow-hidden border">
-                    <img :src="images[activeImage].url" x-bind:alt="images[activeImage].alt" class="w-full h-full object-cover" lazy>
+                    <template x-if="images[activeImage]" data-product-image>
+                        <img :src="images[activeImage].url" x-bind:alt="images[activeImage].alt" class="w-full h-full object-cover" loading="lazy">
+                    </template>
+                    <template x-if="!images[activeImage]" data-product-image-placeholder>
+                        <div class="flex h-full flex-col items-center justify-center gap-3 bg-gray-50 px-4 text-center text-gray-500">
+                            <flux:icon.photo class="size-12 text-gray-400" />
+                            <span class="text-sm">Foto produk belum tersedia.</span>
+                        </div>
+                    </template>
                 </div>
                 <div class="w-full max-h-20 overflow-hidden">
                     <div class="flex gap-2 overflow-x-auto pb-2 hide-scrollbar flex-nowrap items-center overscroll-contain">
@@ -270,32 +304,13 @@
                             </flux:button>
                         </div>
 
-                        <!-- Chat | Wishlist | Share -->
-                        {{-- justify-between --}}
-                        <div class="flex items-center justify-center mt-5 pt-4 border-t text-sm font-bold text-gray-600">
-                            {{-- <button class="flex items-center gap-1.5 hover:text-gray-600 transition cursor-pointer">
-                                <flux:icon.chat-bubble-left-ellipsis class="w-5 h-5"/> Chat
+                        <div class="mt-5 border-t pt-4 flex flex-col gap-2">
+                            <button data-product-share type="button" x-on:click="shareProduct()" x-bind:disabled="sharing" class="min-h-10 flex items-center justify-center gap-2 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-800 disabled:opacity-50 transition">
+                                <flux:icon.share class="size-5" />
+                                <span x-text="sharing ? 'Membagikan...' : 'Bagikan Produk'">Bagikan Produk</span>
                             </button>
-                            <div class="w-px h-4 bg-gray-300"></div>
-                            <button class="flex items-center gap-1.5 hover:text-gray-600 transition cursor-pointer">
-                                <flux:icon.heart class="w-5 h-5"/> Wishlist
-                            </button>
-                            <div class="w-px h-4 bg-gray-300"></div> --}}
-                            <button type="button" class="flex items-center gap-1.5 hover:text-gray-600 transition cursor-pointer" @click="
-                                navigator.clipboard.writeText(window.location.href).then(() => {
-                                    $wire.dispatch('toast', {
-                                        type: 'success',
-                                        message: 'Link produk berhasil disalin ke clipboard.'
-                                    })
-                                }).catch(err => {
-                                    $wire.dispatch('toast', {
-                                        type: 'error',
-                                        message: 'Gagal menyalin link produk. Silakan coba lagi.'
-                                    })
-                                });
-                            ">
-                                <flux:icon.share class="w-5 h-5"/> Share
-                            </button>
+                            <p role="status" aria-live="polite" x-text="shareMessage" class="text-center text-xs text-gray-500"></p>
+                            <input x-show="shareMessage.includes('di bawah')" x-cloak readonly x-bind:value="shareUrl" aria-label="Link produk untuk dibagikan" x-on:focus="$event.target.select()" class="w-full rounded-lg border-gray-200 text-xs text-gray-600" />
                         </div>
                     </div>
                 @endforeach

@@ -6,8 +6,8 @@ use App\Models\Product\ProductFlat;
 use App\Models\Shop\Shop;
 use App\Models\User;
 use Dom\HTMLDocument;
-use Illuminate\Support\Js;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Js;
 use Livewire\Livewire;
 use Sqids\Sqids;
 
@@ -358,4 +358,107 @@ it('does not buy an out of stock variant', function () {
             type: 'error',
             message: 'Produk sedang tidak tersedia.',
         );
+});
+
+it('renders a safe gallery placeholder until a product image is available', function () {
+    $owner = User::factory()->create();
+    $shop = Shop::factory()->for($owner)->create();
+    Location::factory()->for($owner)->create(['shop_id' => $shop->id, 'type' => 'origin']);
+    $product = Product::factory()->for($shop)->create();
+    ProductFlat::factory()->for($product)->create(['shop_id' => $shop->id]);
+    $html = Livewire::test('ecommerce.product.detail', ['product' => $product])->html(true);
+    $document = HTMLDocument::createFromString($html, LIBXML_NOERROR);
+    $root = $document->querySelector('[x-data*="activeFlatProduct"]');
+    $imageTemplate = $document->querySelector('[data-product-image]');
+    $placeholderTemplate = $document->querySelector('[data-product-image-placeholder]');
+
+    expect($imageTemplate)->not->toBeNull()
+        ->and($placeholderTemplate)->not->toBeNull()
+        ->and($html)->toContain('Foto produk belum tersedia.');
+
+    $image = HTMLDocument::createFromString($imageTemplate->innerHTML, LIBXML_NOERROR)->querySelector('img');
+    $expressions = base64_encode(json_encode([
+        'data' => $root->getAttribute('x-data'),
+        'image' => $imageTemplate->getAttribute('x-if'),
+        'placeholder' => $placeholderTemplate->getAttribute('x-if'),
+        'src' => $image->getAttribute(':src'),
+        'alt' => $image->getAttribute('x-bind:alt'),
+    ], JSON_THROW_ON_ERROR));
+    $script = <<<JS
+const expressions = JSON.parse(Buffer.from('{$expressions}', 'base64').toString('utf8'));
+const scope = new Function('return (' + expressions.data + ');')();
+const evaluate = expression => new Function('scope', 'with (scope) { return (' + expression + '); }')(scope);
+const render = () => {
+    const showImage = Boolean(evaluate(expressions.image));
+    return {
+        showImage,
+        showPlaceholder: Boolean(evaluate(expressions.placeholder)),
+        src: showImage ? evaluate(expressions.src) : null,
+        alt: showImage ? evaluate(expressions.alt) : null,
+    };
+};
+const empty = render();
+scope.images = [{ url: '/first.jpg', alt: 'Foto pertama' }, { url: '/second.jpg', alt: 'Foto kedua' }];
+scope.activeImage = 1;
+console.log(JSON.stringify({ empty, selected: render() }));
+JS;
+
+    $result = Process::path(base_path())->run(['node', '--input-type=module', '--eval', $script]);
+
+    if ($result->failed()) {
+        $this->fail($result->errorOutput() ?: $result->output());
+    }
+
+    expect(json_decode(trim($result->output()), true, flags: JSON_THROW_ON_ERROR))->toBe([
+        'empty' => ['showImage' => false, 'showPlaceholder' => true, 'src' => null, 'alt' => null],
+        'selected' => ['showImage' => true, 'showPlaceholder' => false, 'src' => '/second.jpg', 'alt' => 'Foto kedua'],
+    ]);
+});
+
+it('shares the canonical product link with browser fallbacks', function () {
+    $owner = User::factory()->create();
+    $shop = Shop::factory()->for($owner)->create();
+    Location::factory()->for($owner)->create(['shop_id' => $shop->id, 'type' => 'origin']);
+    $product = Product::factory()->for($shop)->create(['name' => 'Produk "Pilihan"']);
+    ProductFlat::factory()->for($product)->create(['shop_id' => $shop->id]);
+    $html = Livewire::test('ecommerce.product.detail', ['product' => $product])->html(true);
+    $document = HTMLDocument::createFromString($html, LIBXML_NOERROR);
+    $root = $document->querySelector('[x-data*="shareProduct"]');
+    $button = $document->querySelector('[data-product-share]');
+    expect($button?->getAttribute('type'))->toBe('button')
+        ->and($button?->textContent)->toContain('Bagikan Produk')
+        ->and($html)->toContain('aria-live="polite"');
+    $expression = base64_encode($root->getAttribute('x-data'));
+    $script = <<<JS
+const source = Buffer.from('{$expression}', 'base64').toString('utf8');
+const outcomes = [];
+for (const mode of ['native', 'clipboard', 'abort', 'failure', 'manual']) {
+    const calls = [];
+    const navigator = mode === 'clipboard' ? { clipboard: { writeText: async url => calls.push(url) } }
+        : mode === 'manual' ? {}
+        : { share: async payload => {
+            calls.push(payload);
+            if (mode === 'abort') throw Object.assign(new Error(), { name: 'AbortError' });
+            if (mode === 'failure') throw new Error('denied');
+        } };
+    const scope = new Function('navigator', 'return (' + source + ')')(navigator);
+    await scope.shareProduct();
+    outcomes.push({ mode, calls, sharing: scope.sharing, message: scope.shareMessage });
+}
+console.log(JSON.stringify(outcomes));
+JS;
+    $result = Process::path(base_path())->run(['node', '--input-type=module', '--eval', $script]);
+    expect($result->successful())->toBeTrue($result->errorOutput());
+    $outcomes = json_decode(trim($result->output()), true, flags: JSON_THROW_ON_ERROR);
+    $url = route('product.detail', ['slug' => $product->slug]);
+    expect($outcomes[0]['calls'])->toBe([['title' => $product->name, 'url' => $url]])
+        ->and($outcomes[0]['message'])->toBe('Produk berhasil dibagikan.')
+        ->and($outcomes[1]['calls'])->toBe([$url])
+        ->and($outcomes[1]['message'])->toBe('Link produk berhasil disalin.')
+        ->and($outcomes[2]['message'])->toBe('')
+        ->and($outcomes[3]['message'])->toContain('Salin link')
+        ->and($outcomes[4]['message'])->toContain('Salin link');
+    foreach ($outcomes as $outcome) {
+        expect($outcome['sharing'])->toBeFalse();
+    }
 });
