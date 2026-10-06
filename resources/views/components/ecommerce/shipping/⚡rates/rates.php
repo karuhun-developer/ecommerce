@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Ecommerce\Shipping\GetShippingRatesAction;
+use App\Data\Checkout\ShippingRateData;
 use App\Data\Checkout\ShippingRatesData;
 use App\Models\Location\Location;
 use Livewire\Attributes\Locked;
@@ -148,9 +149,10 @@ new class extends Component
     {
         $rate = collect($this->rates)->first(fn (array $rate): bool => $rate['courier_code'] === $courierCode && $rate['courier_service_code'] === $serviceCode);
         abort_unless($rate, 422);
-        $price = (int) $rate['price'];
-        $name = $rate['name'];
-        $etd = $rate['etd'] ?? '';
+        $selectedRate = ShippingRateData::fromArray($rate);
+        $price = (int) $selectedRate->price;
+        $name = $selectedRate->name;
+        $etd = $selectedRate->etd ?? '';
         $this->selectedCourierCode = $courierCode;
         $this->selectedServiceCode = $serviceCode;
         $this->selectedPrice = $price;

@@ -23,9 +23,9 @@ it('does not expose unexpected shipping provider failures', function () {
         ->assertDontSee('provider-secret-detail');
 });
 
-it('uses provider values when a client submits a forged shipping price', function () {
+it('uses provider values when a client submits forged shipping details', function (array $rate) {
     mock(GetShippingRatesAction::class)->shouldReceive('handle')->once()->andReturn([
-        ['courier_code' => 'jne', 'courier_service_code' => 'reg', 'price' => 23000, 'name' => 'JNE Regular', 'etd' => '2-3 days'],
+        $rate,
     ]);
 
     Livewire::test('ecommerce.shipping.rates', ['shopId' => 1, 'items' => [1 => 2]])
@@ -34,8 +34,31 @@ it('uses provider values when a client submits a forged shipping price', functio
         ->assertSet('selectedPrice', 23000)
         ->assertSet('selectedName', 'JNE Regular')
         ->assertSet('selectedEtd', '2-3 days')
-        ->assertDispatched('shipping-rate-selected', fn (string $event, array $params): bool => $params[0]['price'] === 23000 && $params[0]['shopId'] === 1);
-});
+        ->assertDispatched('shipping-rate-selected', fn (string $event, array $params): bool => $params[0] === [
+            'shopId' => 1,
+            'courier_code' => 'jne',
+            'courier_service_code' => 'reg',
+            'price' => 23000,
+            'name' => 'JNE Regular',
+            'etd' => '2-3 days',
+        ]);
+})->with([
+    'normalized rate' => [[
+        'courier_code' => 'jne',
+        'courier_service_code' => 'reg',
+        'price' => 23000,
+        'name' => 'JNE Regular',
+        'etd' => '2-3 days',
+    ]],
+    'Biteship pricing without name and etd' => [[
+        'courier_code' => 'jne',
+        'courier_service_code' => 'reg',
+        'price' => 23000,
+        'courier_name' => 'JNE',
+        'courier_service_name' => 'Regular',
+        'duration' => '2-3 days',
+    ]],
+]);
 
 it('rejects unknown shipping services', function () {
     Livewire::test('ecommerce.shipping.rates', ['shopId' => 1])

@@ -8,6 +8,9 @@ final readonly class ShippingRateData
 
     public static function fromArray(array $rate): self
     {
+        $rate['name'] ??= trim(($rate['courier_name'] ?? '').' '.($rate['courier_service_name'] ?? ''));
+        $rate['etd'] = $rate['duration'] ?? $rate['etd'] ?? null;
+
         $data = validator($rate, ['courier_code' => ['required', 'string'], 'courier_service_code' => ['required', 'string'], 'price' => ['required', 'numeric', 'min:0'], 'name' => ['required', 'string'], 'etd' => ['nullable', 'string']])->validate();
 
         return new self($data['courier_code'], $data['courier_service_code'], (float) $data['price'], $data['name'], $data['etd'] ?? null);

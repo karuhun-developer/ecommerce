@@ -12,6 +12,7 @@ use App\Models\Product\Product;
 use App\Models\Product\ProductFlat;
 use App\Models\Shop\Shop;
 use App\Models\User;
+use App\Services\BiteshipService;
 use Dom\HTMLDocument;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -634,6 +635,59 @@ it('persists the canonical maximum quantity through checkout', function () {
 
     expect($order->items()->firstOrFail()->quantity)->toBe(100)
         ->and((float) $order->total_checkout)->toBe(1_000_000.0);
+});
+
+it('selects Biteship pricing and persists its shipping details through checkout', function () {
+    Mail::fake();
+
+    $user = User::factory()->create();
+    $location = Location::factory()->for($user)->create();
+    $shop = Shop::factory()->create();
+    Location::factory()->for($shop)->create(['type' => 'origin']);
+    $product = Product::factory()->for($shop)->create();
+    $productFlat = ProductFlat::factory()->for($product)->create(['shop_id' => $shop->id]);
+
+    $this->mock(BiteshipService::class)->shouldReceive('getRates')->once()->andReturn([
+        'pricing' => [[
+            'courier_code' => 'jne',
+            'courier_service_code' => 'reg',
+            'courier_name' => 'JNE',
+            'courier_service_name' => 'Regular',
+            'price' => 23000,
+            'duration' => '2-3 days',
+        ]],
+    ]);
+
+    $shipping = Livewire::actingAs($user)
+        ->test('ecommerce.shipping.rates', ['shopId' => $shop->id, 'items' => [$productFlat->id => 1]])
+        ->call('fetchRates')
+        ->assertSee('JNE Regular')
+        ->call('selectRate', 'jne', 'reg', 1, 'Fake', 'Instant')
+        ->assertSet('selectedName', 'JNE Regular')
+        ->assertSet('selectedEtd', '2-3 days');
+
+    Livewire::actingAs($user)
+        ->test('ecommerce.checkout.checkout', ['selectedIds' => (new Sqids)->encode([$productFlat->id])])
+        ->call('resolveShopGroups', [['id' => $productFlat->id, 'qty' => 1]])
+        ->set('form.selectedLocationId', $location->id)
+        ->call('onRateSelected', [
+            'shopId' => $shop->id,
+            'courier_code' => $shipping->get('selectedCourierCode'),
+            'courier_service_code' => $shipping->get('selectedServiceCode'),
+            'price' => $shipping->get('selectedPrice'),
+            'name' => $shipping->get('selectedName'),
+            'etd' => $shipping->get('selectedEtd'),
+        ])
+        ->assertSet('totalShippingCost', 23000)
+        ->call('submit', null)
+        ->assertHasNoErrors()
+        ->assertDispatched('remove-cart-items', ids: [$productFlat->id]);
+
+    $orderShop = Order::query()->sole()->orderShops()->sole();
+
+    expect($orderShop->shipping_data['name'])->toBe('JNE Regular')
+        ->and($orderShop->shipping_data['etd'])->toBe('2-3 days')
+        ->and((float) $orderShop->total_shipping)->toBe(23000.0);
 });
 
 it('clears the saved guest address only after successful checkout', function () {
