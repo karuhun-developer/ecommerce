@@ -20,8 +20,8 @@
 
             setTimeout(() => {
                 const data = this.loadGuestDestination();
-                if (data && data.biteship_area_id) {
-                    $wire.setGuestDestination(data.biteship_area_id, data.postal_code ?? '');
+                if (data) {
+                    $wire.setGuestDestination(data.biteship_area_id ?? '', data.postal_code ?? '', data.latitude ?? null, data.longitude ?? null);
                 }
             }, 500); // wait to be ready
         }
@@ -31,7 +31,7 @@
     <div class="border-t pt-5">
         <div class="flex items-center justify-between mb-3">
             <h3 class="font-bold text-gray-900 text-sm">Pilih Pengiriman</h3>
-            @if(blank($destinationAreaId))
+            @if(!$this->destinationReady)
                 <span class="text-xs text-amber-600 font-medium">Lengkapi alamat dulu</span>
             @else
                 <flux:button
@@ -70,7 +70,7 @@
         </div>
 
         {{-- Empty / before fetch --}}
-        @if(empty($rates) && !$loading && blank($error) && !blank($destinationAreaId))
+        @if(empty($rates) && !$loading && blank($error) && $this->destinationReady)
             <button
                 wire:click="fetchRates"
                 class="w-full border border-dashed border-gray-300 rounded-xl p-4 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-600 transition flex items-center justify-center gap-2"

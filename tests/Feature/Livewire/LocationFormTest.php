@@ -3,8 +3,10 @@
 use App\Actions\Ecommerce\Location\UpdateLocationAction;
 use App\Data\Location\LocationData;
 use App\Models\Location\Location;
+use App\Models\Setting\Setting;
 use App\Models\User;
 use App\Services\BiteshipService;
+use App\Services\CourierSettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
@@ -52,4 +54,26 @@ it('rejects another users address before touching the provider', function () {
 
     expect(fn () => (new UpdateLocationAction($provider))->handle($location, $data, $user))
         ->toThrow(HttpException::class);
+});
+
+it('saves and edits a destination without selecting an area in coordinates mode', function () {
+    $user = User::factory()->create();
+    $this->mock(BiteshipService::class)->shouldReceive('createLocation')->once()
+        ->with(Mockery::on(fn (array $data): bool => $data['latitude'] === -6.2 && $data['longitude'] === 106.8))
+        ->andReturn(['id' => 'destination-id']);
+    $component = Livewire::actingAs($user)->test('ecommerce.shipping.create-update')
+        ->assertSet('requiresArea', false)
+        ->set('form.location_name', 'Rumah')->set('form.contact_name', 'Penerima')
+        ->set('form.contact_phone', '08123456789')->set('form.address', 'Jalan Utama')
+        ->set('form.postal_code', '10110')->set('form.latitude', '-6.2')->set('form.longitude', '106.8')
+        ->call('submit')->assertHasNoErrors();
+    $location = Location::query()->sole();
+    expect($location->biteship_area_id)->toBeNull()->and($location->area_string)->toBeNull();
+    $component->call('loadForEdit', $location->id)->assertSet('form.biteship_area_id', null);
+});
+
+it('requires an area selection when CMS uses area IDs', function () {
+    Setting::query()->create(['key' => CourierSettingsService::KEY, 'data' => ['rate_method' => 'area_id']]);
+    Livewire::actingAs(User::factory()->create())->test('ecommerce.shipping.create-update')
+        ->assertSet('requiresArea', true)->call('submit')->assertHasErrors(['form.biteship_area_id']);
 });

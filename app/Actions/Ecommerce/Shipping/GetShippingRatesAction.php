@@ -7,13 +7,12 @@ use App\Data\Checkout\ShippingRatesData;
 use App\Models\Product\ProductFlat;
 use App\Models\Shop\Shop;
 use App\Services\BiteshipService;
+use App\Services\CourierSettingsService;
 use Exception;
 
 class GetShippingRatesAction
 {
-    private const COURIERS = 'jne,tiki,lion,ninja,jnt,sicepat';
-
-    public function __construct(private BiteshipService $biteshipService) {}
+    public function __construct(private BiteshipService $biteshipService, private CourierSettingsService $courierSettings) {}
 
     public function handle(ShippingRatesData $data): array
     {
@@ -27,11 +26,17 @@ class GetShippingRatesAction
         }
         $shop = Shop::with('location')->find($shopId);
 
-        if (! $shop || ! $shop->location || ! $shop->location->biteship_area_id) {
+        if (! $shop || ! $shop->location) {
             throw new Exception('Informasi lokasi toko belum lengkap.');
         }
 
-        if (blank($destinationAreaId)) {
+        $usesAreaIds = $this->courierSettings->usesAreaIds();
+
+        if ($usesAreaIds && blank($shop->location->biteship_area_id)) {
+            throw new Exception('Informasi lokasi toko belum lengkap.');
+        }
+
+        if ($usesAreaIds && blank($destinationAreaId)) {
             throw new Exception('Pilih alamat pengiriman terlebih dahulu.');
         }
 
@@ -57,21 +62,50 @@ class GetShippingRatesAction
             'height' => max(1, (int) ($flat->height ?? 1)),
         ])->values()->toArray();
 
+        $couriers = $this->courierSettings->enabledCodes();
+        if ($couriers === []) {
+            throw new Exception('Belum ada kurir pengiriman yang diaktifkan.');
+        }
+
+        $hasInstantCouriers = array_intersect($couriers, CourierSettingsService::COORDINATE_COURIERS) !== [];
         $requestPayload = [
-            'origin_area_id' => $shop->location->biteship_area_id,
-            'destination_area_id' => $destinationAreaId,
-            'couriers' => self::COURIERS,
+            'couriers' => implode(',', $couriers),
             'items' => $biteshipItems,
         ];
 
+        if ($usesAreaIds) {
+            $requestPayload['origin_area_id'] = $shop->location->biteship_area_id;
+            $requestPayload['destination_area_id'] = $destinationAreaId;
+        } else {
+            $coordinates = [
+                'origin_latitude' => $shop->location->latitude,
+                'origin_longitude' => $shop->location->longitude,
+                'destination_latitude' => $data->destinationLatitude,
+                'destination_longitude' => $data->destinationLongitude,
+            ];
+            $validator = validator($coordinates, [
+                'origin_latitude' => ['required', 'numeric', 'between:-90,90'],
+                'origin_longitude' => ['required', 'numeric', 'between:-180,180'],
+                'destination_latitude' => ['required', 'numeric', 'between:-90,90'],
+                'destination_longitude' => ['required', 'numeric', 'between:-180,180'],
+            ]);
+
+            if ($validator->fails()) {
+                throw new Exception('Lengkapi titik lokasi toko dan alamat pengiriman di peta.');
+            }
+
+            $requestPayload = array_merge($requestPayload, array_map(fn ($coordinate): float => (float) $coordinate, $coordinates));
+        }
+
         $cacheKey = 'biteship_rates_'.md5(json_encode($requestPayload));
 
-        $response = cache()->remember($cacheKey, now()->addHours(24), function () use ($requestPayload) {
-            return $this->biteshipService->getRates($requestPayload);
-        });
+        $response = $hasInstantCouriers
+            ? $this->biteshipService->getRates($requestPayload)
+            : cache()->remember($cacheKey, now()->addHours(24), fn (): array => $this->biteshipService->getRates($requestPayload));
 
         $rates = collect($response['pricing'] ?? [])
             ->filter(fn ($rate) => ($rate['available'] ?? true) && ! ($rate['error'] ?? false))
+            ->filter(fn (array $rate): bool => in_array($rate['courier_code'] ?? '', $couriers, true))
             ->sortBy('price')
             ->values()
             ->toArray();

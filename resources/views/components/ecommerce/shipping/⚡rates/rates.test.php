@@ -1,6 +1,11 @@
 <?php
 
 use App\Actions\Ecommerce\Shipping\GetShippingRatesAction;
+use App\Data\Checkout\ShippingRatesData;
+use App\Models\Location\Location;
+use App\Models\Setting\Setting;
+use App\Models\User;
+use App\Services\CourierSettingsService;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
@@ -75,3 +80,38 @@ it('locks shipping data against client hydration', function (string $property, m
     'items' => ['items', [99 => 1]],
     'rates' => ['rates', [['price' => 0]]],
 ]);
+
+it('checks guest rates from coordinates without an area selection', function () {
+    mock(GetShippingRatesAction::class)->shouldReceive('handle')->once()
+        ->with(Mockery::on(fn (ShippingRatesData $data): bool => $data->destinationAreaId === ''
+            && $data->destinationLatitude === -6.2 && $data->destinationLongitude === 106.8))
+        ->andReturn([]);
+    Livewire::test('ecommerce.shipping.rates', ['shopId' => 1, 'items' => [1 => 2]])
+        ->assertSet('destinationReady', false)
+        ->dispatch('guest-address-updated', areaId: '', postalCode: '10110', latitude: -6.2, longitude: 106.8)
+        ->assertSet('destinationReady', true)->call('fetchRates')->assertHasNoErrors();
+});
+
+it('loads saved coordinates and resets the rate when an authenticated address changes', function () {
+    $user = User::factory()->create();
+    $first = Location::factory()->for($user)->create(['biteship_area_id' => null, 'latitude' => '-6.2', 'longitude' => '106.8']);
+    $second = Location::factory()->for($user)->create(['biteship_area_id' => null, 'latitude' => '-6.21', 'longitude' => '106.81']);
+    Livewire::actingAs($user)->test('ecommerce.shipping.rates', ['shopId' => 1])
+        ->assertSet('destinationAreaId', '')->assertSet('destinationReady', true)
+        ->call('onAddressSelected', $second->id)->assertSet('destinationLatitude', -6.21)
+        ->set('selectedPrice', 5000)->call('onAddressSelected', $first->id)
+        ->assertSet('destinationLatitude', -6.2)->assertSet('selectedPrice', 0);
+});
+
+it('requires an area in area mode even when destination coordinates exist', function () {
+    Setting::query()->create(['key' => CourierSettingsService::KEY, 'data' => ['rate_method' => 'area_id']]);
+    Livewire::test('ecommerce.shipping.rates', ['shopId' => 1])
+        ->call('setGuestDestination', '', '10110', -6.2, 106.8)->assertSet('destinationReady', false)
+        ->call('setGuestDestination', 'destination-area', '10110')->assertSet('destinationReady', true);
+});
+
+it('rejects selecting an address belonging to another user', function () {
+    $location = Location::factory()->create();
+    expect(fn () => Livewire::actingAs(User::factory()->create())->test('ecommerce.shipping.rates', ['shopId' => 1])
+        ->call('onAddressSelected', $location->id))->toThrow(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+});

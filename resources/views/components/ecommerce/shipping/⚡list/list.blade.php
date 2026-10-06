@@ -82,6 +82,7 @@
             class="px-6 pt-5 pb-4 border-b"
             x-data="{
                 lsKey: 'checkout_guest_address',
+                destinationKey: '',
 
                 save() {
                     localStorage.setItem(this.lsKey, JSON.stringify({
@@ -96,6 +97,18 @@
                         latitude: $wire.guest_latitude,
                         longitude: $wire.guest_longitude,
                     }));
+
+                    const destination = {
+                        areaId: $wire.guest_biteship_area_id,
+                        postalCode: $wire.guest_postal_code ?? '',
+                        latitude: $wire.guest_latitude,
+                        longitude: $wire.guest_longitude,
+                    };
+                    const key = JSON.stringify(destination);
+                    if (this.destinationKey !== key) {
+                        this.destinationKey = key;
+                        $dispatch('guest-address-updated', destination);
+                    }
                 },
 
                 async restore() {
@@ -117,6 +130,7 @@
                 $watch('$wire.guest_address', () => save());
                 $watch('$wire.guest_note', () => save());
                 $watch('$wire.guest_biteship_area_id', () => save());
+                $watch('$wire.guest_postal_code', () => save());
                 $watch('$wire.guest_latitude', () => save());
                 $watch('$wire.guest_longitude', () => save());
             "
@@ -167,7 +181,7 @@
 
             <!-- Biteship area search -->
             <flux:field>
-                <flux:label badge="Wajib">Cari Area / Kecamatan</flux:label>
+                <flux:label :badge="$this->requiresArea ? 'Wajib' : 'Opsional'">Cari Area / Kecamatan</flux:label>
                 <div class="flex gap-2">
                     <flux:input wire:model="guest_searchArea" type="text" placeholder="contoh: Gambir" class="flex-1" />
                     <flux:button wire:click="searchGuestArea" type="button" icon="magnifying-glass">Cari</flux:button>
@@ -200,6 +214,12 @@
                     <span><span class="font-bold">Area terpilih:</span> {{ $guest_area_string }} ({{ $guest_postal_code }})</span>
                 </div>
             @endif
+
+            <flux:field>
+                <flux:label badge="Wajib">Kode Pos</flux:label>
+                <flux:input wire:model="guest_postal_code" type="text" placeholder="contoh: 10110" />
+                <flux:error name="guest_postal_code" />
+            </flux:field>
 
             <!-- Leaflet Map for guest -->
             <div

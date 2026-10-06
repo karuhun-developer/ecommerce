@@ -13,7 +13,7 @@ final readonly class LocationData
         public string $postal_code,
         public float $latitude,
         public float $longitude,
-        public string $biteship_area_id,
+        public ?string $biteship_area_id,
         public ?string $area_string,
         public string $type = 'destination',
         public ?int $shop_id = null,
@@ -23,7 +23,7 @@ final readonly class LocationData
         }
     }
 
-    /** @param array{location_name: string, contact_name: string, contact_phone: string, address: string, note?: ?string, postal_code: string|int, latitude: int|float|string, longitude: int|float|string, biteship_area_id: string, area_string?: ?string} $data */
+    /** @param array{location_name: string, contact_name: string, contact_phone: string, address: string, note?: ?string, postal_code: string|int, latitude: int|float|string, longitude: int|float|string, biteship_area_id?: ?string, area_string?: ?string} $data */
     public static function fromArray(array $data, string $type = 'destination', ?int $shopId = null): self
     {
         return new self(
@@ -35,7 +35,7 @@ final readonly class LocationData
             postal_code: (string) $data['postal_code'],
             latitude: (float) $data['latitude'],
             longitude: (float) $data['longitude'],
-            biteship_area_id: $data['biteship_area_id'],
+            biteship_area_id: filled($data['biteship_area_id'] ?? null) ? $data['biteship_area_id'] : null,
             area_string: $data['area_string'] ?? null,
             type: $type,
             shop_id: $shopId,
@@ -63,7 +63,7 @@ final readonly class LocationData
         ];
     }
 
-    /** @return array{name: string, contact_name: string, contact_phone: string, address: string, note: ?string, postal_code: string, latitude: float, longitude: float, type: string, biteship_area_id: string, area_string: ?string} */
+    /** @return array{name: string, contact_name: string, contact_phone: string, address: string, note: ?string, postal_code: string, latitude: float, longitude: float, type: string, biteship_area_id: ?string, area_string: ?string} */
     public function attributes(): array
     {
         return [...$this->providerPayload(), 'biteship_area_id' => $this->biteship_area_id, 'area_string' => $this->area_string];

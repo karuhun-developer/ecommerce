@@ -149,7 +149,13 @@ new class extends Component
 
             try {
                 $availableRates = $getShippingRatesAction->handle(
-                    ShippingRatesData::fromArray($shopId, $destinationAreaId ?? '', $group['items']),
+                    ShippingRatesData::fromArray(
+                        $shopId,
+                        $destinationAreaId ?? '',
+                        $group['items'],
+                        auth()->check() ? (is_numeric($location?->latitude) ? (float) $location->latitude : null) : $guest?->latitude,
+                        auth()->check() ? (is_numeric($location?->longitude) ? (float) $location->longitude : null) : $guest?->longitude,
+                    ),
                 );
             } catch (Exception $e) {
                 Log::error('Failed to get shipping rates.', [

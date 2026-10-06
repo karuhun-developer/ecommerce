@@ -54,7 +54,7 @@
             <div class="space-y-3">
                 <flux:heading size="sm">Area & Kode Pos (Biteship)</flux:heading>
                 <flux:field>
-                    <flux:label badge="Wajib">Cari Area / Kecamatan</flux:label>
+                    <flux:label :badge="$this->requiresArea ? 'Wajib' : 'Opsional'">Cari Area / Kecamatan</flux:label>
                     <div class="flex gap-2">
                         <flux:input wire:model="searchArea" type="text" placeholder="contoh: Gambir" class="flex-1" />
                         <flux:button wire:click="searchBiteshipArea" type="button" icon="magnifying-glass">Cari</flux:button>
@@ -89,6 +89,12 @@
                 @endif
 
                 <flux:error name="form.biteship_area_id" />
+
+                <flux:field>
+                    <flux:label badge="Wajib">Kode Pos</flux:label>
+                    <flux:input wire:model="form.postal_code" type="text" placeholder="contoh: 10110" />
+                    <flux:error name="form.postal_code" />
+                </flux:field>
             </div>
 
             <hr class="border-gray-100">

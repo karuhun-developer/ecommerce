@@ -4,6 +4,8 @@ use App\Actions\Ecommerce\Shipping\GetShippingRatesAction;
 use App\Data\Checkout\ShippingRateData;
 use App\Data\Checkout\ShippingRatesData;
 use App\Models\Location\Location;
+use App\Services\CourierSettingsService;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -39,6 +41,10 @@ new class extends Component
 
     public string $destinationPostalCode = '';
 
+    public ?float $destinationLatitude = null;
+
+    public ?float $destinationLongitude = null;
+
     /** @var array<int, array<string, mixed>> */
     #[Locked]
     public array $rates = [];
@@ -57,14 +63,19 @@ new class extends Component
 
     public string $selectedEtd = '';
 
-    /** Supported couriers */
-    private const COURIERS = 'jne,tiki,lion,ninja,jnt,sicepat';
-
     public function mount(): void
     {
         if (auth()->check()) {
             $this->resolveAuthDestination();
         }
+    }
+
+    #[Computed]
+    public function destinationReady(): bool
+    {
+        return app(CourierSettingsService::class)->usesAreaIds()
+            ? filled($this->destinationAreaId)
+            : $this->destinationLatitude !== null && $this->destinationLongitude !== null;
     }
 
     private function resolveAuthDestination(): void
@@ -74,9 +85,11 @@ new class extends Component
             ->latest()
             ->first();
 
-        if ($location && $location->biteship_area_id) {
-            $this->destinationAreaId = $location->biteship_area_id;
+        if ($location) {
+            $this->destinationAreaId = $location->biteship_area_id ?? '';
             $this->destinationPostalCode = $location->postal_code ?? '';
+            $this->destinationLatitude = is_numeric($location->latitude) ? (float) $location->latitude : null;
+            $this->destinationLongitude = is_numeric($location->longitude) ? (float) $location->longitude : null;
         }
     }
 
@@ -87,11 +100,14 @@ new class extends Component
     #[On('shipping-address-selected')]
     public function onAddressSelected(int $locationId): void
     {
-        $location = Location::where('user_id', auth()->id())->find($locationId);
+        abort_unless(auth()->check(), 403);
+        $location = Location::where('user_id', auth()->id())->where('type', 'destination')->findOrFail($locationId);
 
-        if ($location && $location->biteship_area_id) {
-            $this->destinationAreaId = $location->biteship_area_id;
+        if ($location) {
+            $this->destinationAreaId = $location->biteship_area_id ?? '';
             $this->destinationPostalCode = $location->postal_code ?? '';
+            $this->destinationLatitude = is_numeric($location->latitude) ? (float) $location->latitude : null;
+            $this->destinationLongitude = is_numeric($location->longitude) ? (float) $location->longitude : null;
             $this->rates = [];
             $this->selectedCourierCode = null;
             $this->selectedPrice = 0;
@@ -104,10 +120,21 @@ new class extends Component
      * so we expose this as a public action callable from x-init.
      */
     #[On('guest-address-updated')]
-    public function setGuestDestination(string $areaId, string $postalCode): void
+    public function setGuestDestination(string $areaId, string $postalCode, ?float $latitude = null, ?float $longitude = null): void
     {
+        if (auth()->check()) {
+            return;
+        }
+
+        validator(['latitude' => $latitude, 'longitude' => $longitude], [
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+        ])->validate();
+
         $this->destinationAreaId = $areaId;
         $this->destinationPostalCode = $postalCode;
+        $this->destinationLatitude = $latitude;
+        $this->destinationLongitude = $longitude;
         $this->rates = [];
         $this->selectedCourierCode = null;
         $this->selectedPrice = 0;
@@ -124,7 +151,7 @@ new class extends Component
         $this->loading = true;
         try {
             $this->rates = $getShippingRatesAction->handle(
-                ShippingRatesData::fromArray($this->shopId, $this->destinationAreaId, $this->items),
+                ShippingRatesData::fromArray($this->shopId, $this->destinationAreaId, $this->items, $this->destinationLatitude, $this->destinationLongitude),
             );
         } catch (Throwable $exception) {
             $knownErrors = [
@@ -132,6 +159,8 @@ new class extends Component
                 'Pilih alamat pengiriman terlebih dahulu.',
                 'Item tidak ditemukan.',
                 'Tidak ada layanan kurir yang tersedia untuk rute ini.',
+                'Belum ada kurir pengiriman yang diaktifkan.',
+                'Lengkapi titik lokasi toko dan alamat pengiriman di peta.',
             ];
 
             if (in_array($exception->getMessage(), $knownErrors, true)) {

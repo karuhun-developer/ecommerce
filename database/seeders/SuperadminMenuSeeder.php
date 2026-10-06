@@ -25,6 +25,7 @@ class SuperadminMenuSeeder extends Seeder
         $this->reviewMenu();
         $this->productMenu();
         $this->attributeMenu();
+        $this->courierMenu();
         $this->managementMenu();
     }
 
@@ -134,6 +135,19 @@ class SuperadminMenuSeeder extends Seeder
             'url' => 'cms.attribute.attribute',
             'order' => 2,
             'active_pattern' => 'cms.attribute.attribute',
+            'status' => 1,
+        ]);
+    }
+
+    public function courierMenu(): void
+    {
+        Menu::create([
+            'role_id' => $this->role->id,
+            'name' => 'Couriers',
+            'url' => 'cms.shipping.courier',
+            'icon' => 'truck',
+            'order' => 350,
+            'active_pattern' => 'cms.shipping.courier',
             'status' => 1,
         ]);
     }

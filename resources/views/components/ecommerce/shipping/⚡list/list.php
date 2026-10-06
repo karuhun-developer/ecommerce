@@ -3,6 +3,7 @@
 use App\Actions\Ecommerce\Location\DeleteLocationAction;
 use App\Models\Location\Location;
 use App\Services\BiteshipService;
+use App\Services\CourierSettingsService;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -39,6 +40,12 @@ new class extends Component
 
     /** @var array<int, array<string, mixed>> */
     public $guest_areas = [];
+
+    #[Computed]
+    public function requiresArea(): bool
+    {
+        return app(CourierSettingsService::class)->usesAreaIds();
+    }
 
     /**
      * Called from Alpine x-init to restore all guest fields from localStorage.
@@ -132,8 +139,10 @@ new class extends Component
         if (! $this->selectedLocationId) {
             $first = $this->addresses->first();
             if ($first) {
-                $this->selectedLocationId = $first->id;
+                $this->selectAddress($first->id);
             }
+        } else {
+            $this->dispatch('shipping-address-selected', locationId: $this->selectedLocationId);
         }
     }
 
@@ -161,7 +170,5 @@ new class extends Component
         $this->guest_postal_code = $postalCode;
         $this->guest_searchArea = $name;
         $this->guest_areas = [];
-
-        $this->dispatch('guest-address-updated', areaId: $id, postalCode: $postalCode);
     }
 };

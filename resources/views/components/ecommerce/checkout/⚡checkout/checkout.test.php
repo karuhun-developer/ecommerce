@@ -641,13 +641,16 @@ it('selects Biteship pricing and persists its shipping details through checkout'
     Mail::fake();
 
     $user = User::factory()->create();
-    $location = Location::factory()->for($user)->create();
+    $location = Location::factory()->for($user)->create(['biteship_area_id' => null, 'area_string' => null, 'latitude' => '-6.21', 'longitude' => '106.81']);
     $shop = Shop::factory()->create();
-    Location::factory()->for($shop)->create(['type' => 'origin']);
+    Location::factory()->for($shop)->create(['type' => 'origin', 'biteship_area_id' => null, 'area_string' => null, 'latitude' => '-6.2', 'longitude' => '106.8']);
     $product = Product::factory()->for($shop)->create();
     $productFlat = ProductFlat::factory()->for($product)->create(['shop_id' => $shop->id]);
 
-    $this->mock(BiteshipService::class)->shouldReceive('getRates')->once()->andReturn([
+    $this->mock(BiteshipService::class)->shouldReceive('getRates')->once()
+        ->with(Mockery::on(fn (array $payload): bool => $payload['origin_latitude'] === -6.2 && $payload['destination_longitude'] === 106.81
+            && ! isset($payload['origin_area_id'], $payload['destination_area_id'])))
+        ->andReturn([
         'pricing' => [[
             'courier_code' => 'jne',
             'courier_service_code' => 'reg',
@@ -719,18 +722,20 @@ it('clears the saved guest address only after successful checkout', function () 
         'address' => 'Guest address',
         'note' => null,
         'postal_code' => '12345',
-        'area_string' => 'Jakarta',
-        'biteship_area_id' => 'IDNP6IDNC148IDND1198IDZ12950',
         'latitude' => -6.2,
         'longitude' => 106.8,
     ];
 
     $shippingRatesAction = Mockery::mock(GetShippingRatesAction::class);
-    $shippingRatesAction->shouldReceive('handle')->once()->andReturn([$selectedRate]);
+    $shippingRatesAction->shouldReceive('handle')->once()
+        ->with(Mockery::on(fn (ShippingRatesData $data): bool => $data->destinationAreaId === '' && $data->destinationLatitude === -6.2 && $data->destinationLongitude === 106.8))
+        ->andReturn([$selectedRate]);
     app()->instance(GetShippingRatesAction::class, $shippingRatesAction);
 
     $storeCheckoutAction = Mockery::mock(StoreCheckoutAction::class);
-    $storeCheckoutAction->shouldReceive('handle')->once()->andReturn($checkout);
+    $storeCheckoutAction->shouldReceive('handle')->once()
+        ->with(Mockery::on(fn (CheckoutData $data): bool => $data->guest->areaId === null && $data->guest->areaString === null), null)
+        ->andReturn($checkout);
     app()->instance(StoreCheckoutAction::class, $storeCheckoutAction);
 
     Livewire::test('ecommerce.checkout.checkout', [

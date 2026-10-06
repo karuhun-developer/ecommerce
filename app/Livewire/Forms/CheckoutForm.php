@@ -3,6 +3,7 @@
 namespace App\Livewire\Forms;
 
 use App\Data\Checkout\GuestCheckoutData;
+use App\Services\CourierSettingsService;
 use Livewire\Form;
 
 class CheckoutForm extends Form
@@ -19,6 +20,6 @@ class CheckoutForm extends Form
 
     public function guestData(?array $data): ?GuestCheckoutData
     {
-        return $data === null ? null : GuestCheckoutData::fromArray($data);
+        return $data === null ? null : GuestCheckoutData::fromArray($data, app(CourierSettingsService::class)->usesAreaIds());
     }
 }
