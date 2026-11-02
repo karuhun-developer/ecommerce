@@ -195,7 +195,68 @@ Form Livewire yang dipisahkan berada di `app/Livewire/Forms`. Komponen CMS mengi
 
 ## 🚀 Instalasi
 
-### Persyaratan Sistem
+### Docker (Recommended / Direkomendasikan)
+
+Cara install yang direkomendasikan adalah **Docker Compose**. Cukup install Git, Docker Engine / Docker Desktop, dan Docker Compose v2 atau lebih baru. PHP, Composer, Node.js, dan MySQL disiapkan di dalam container. Jalankan perintah Bash di Linux/macOS atau WSL dengan integrasi Docker Desktop aktif.
+
+```bash
+git clone https://github.com/karuhun-developer/ecommerce.git
+cd ecommerce
+bash deploy/setup.sh
+```
+
+Script membuat `.env.docker`, men-generate password database dan `APP_KEY` jika masih kosong, membangun dependency PHP serta asset frontend, lalu menjalankan stack. MySQL ditunggu sampai siap, migrasi dijalankan, dan database baru diisi dengan akun, role, toko, sidebar, serta konten default sebelum aplikasi menerima request. Penanda inisialisasi disimpan di volume storage sehingga restart dan pembaruan tidak menjalankan ulang seeder penuh.
+
+Buka `http://localhost:8080`. Akun admin bawaan: `superadmin@superadmin.com` / `password`. Login melalui `/login`, lalu buka `/cms/dashboard`; ganti password sebelum dipakai publik.
+
+Untuk menyesuaikan port, domain, gateway pembayaran, pengiriman, atau email sebelum instalasi:
+
+```bash
+cp .env.docker.example .env.docker
+# Edit .env.docker sesuai kebutuhan, lalu jalankan setup.
+bash deploy/setup.sh
+```
+
+Gunakan `DB_HOST=db` dan `DB_PORT=3306` untuk MySQL bawaan. `APP_PORT` mengatur port web di host; samakan dengan port pada `APP_URL`. Akses dibatasi ke localhost secara bawaan (`APP_BIND_ADDRESS=127.0.0.1`); gunakan `0.0.0.0` jika aplikasi perlu diakses dari mesin lain. Untuk server publik, pasang reverse proxy dengan HTTPS, gunakan `APP_ENV=production`, `APP_DEBUG=false`, dan `APP_URL=https://domain-toko`. Aplikasi memaksa URL HTTPS pada environment production.
+
+| Service | Fungsi |
+| ------- | ------ |
+| `web` | Nginx untuk storefront, CMS, dan asset statis |
+| `app` | PHP 8.4 FPM dengan dependency Composer |
+| `db` | MySQL 8.4 dengan volume database persisten |
+| `migrate` | Migrasi sebelum startup dan seeding sekali pada instalasi baru |
+| `worker` | Memproses email dan background jobs |
+| `scheduler` | Menjalankan scheduler Laravel |
+
+Upload, log, dan penanda inisialisasi disimpan di volume `app_storage`; database disimpan di `mysql_data`. Symlink `public/storage` dan build frontend sudah disiapkan dalam image. `.env.docker` terpisah dari `.env` instalasi manual dan tidak masuk Git atau image Docker. Simpan backup file environment serta kedua volume, dan pertahankan `APP_KEY` saat memperbarui instalasi.
+
+Perintah harian:
+
+```bash
+bash deploy/compose.sh ps
+bash deploy/compose.sh logs -f web app worker scheduler
+bash deploy/compose.sh exec app php artisan migrate:status --no-interaction
+bash deploy/compose.sh down
+bash deploy/compose.sh up -d --wait
+```
+
+`down` mempertahankan data. `down -v` menghapus volume database dan storage beserta seluruh isinya.
+
+Setelah mengambil perubahan kode atau mengedit `.env.docker`:
+
+```bash
+bash deploy/compose.sh build
+bash deploy/compose.sh up -d --force-recreate --wait
+bash deploy/compose.sh exec app php artisan db:seed --class=WebsiteContentSeeder --force --no-interaction
+```
+
+Migrasi berjalan sebelum service aplikasi, worker, dan scheduler dimulai. Asset dibangun ulang di dalam image; perubahan kode pada host membutuhkan build ulang. Gunakan seeder konten spesifik di atas untuk pembaruan tanpa mereset menu admin. Driver email bawaan menulis ke log; isi konfigurasi SMTP di `.env.docker` untuk mengirim email sungguhan.
+
+### Instalasi Tanpa Docker
+
+Langkah berikut tersedia jika ingin menjalankan PHP dan dependency langsung di host.
+
+#### Persyaratan Sistem
 
 - PHP >= 8.4.1 sesuai dependency di `composer.lock`
 - Composer
@@ -203,7 +264,7 @@ Form Livewire yang dipisahkan berada di `app/Livewire/Forms`. Komponen CMS mengi
 - SQLite (bawaan) atau MySQL/PostgreSQL
 - Redis (opsional, untuk optimasi cache/queue)
 
-### Setup Cepat
+#### Setup Cepat
 
 ```bash
 # 1. Clone repositori
@@ -231,7 +292,7 @@ composer run dev
 
 `composer run dev` menyalakan server Laravel, queue listener, Pail, dan Vite. Akun admin bawaan dari `UserSeeder`: `superadmin@superadmin.com` dengan password `password`. Login melalui `/login`, lalu buka `/cms/dashboard`. Ganti password akun bawaan sebelum aplikasi dipakai publik.
 
-### Setup Manual
+#### Setup Manual
 
 ```bash
 cp .env.example .env
@@ -246,7 +307,7 @@ php artisan storage:link --no-interaction
 composer run dev
 ```
 
-### Pembaruan Instalasi yang Sudah Ada
+#### Pembaruan Instalasi yang Sudah Ada
 
 Setelah mengambil perubahan kode, jalankan:
 
