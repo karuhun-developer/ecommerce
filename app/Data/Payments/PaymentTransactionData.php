@@ -21,6 +21,9 @@ final readonly class PaymentTransactionData
         public ?CarbonImmutable $expiresAt = null,
         public ?CarbonImmutable $createdAt = null,
         public ?string $providerCode = null,
+        public ?string $providerToken = null,
+        public ?CarbonImmutable $paidAt = null,
+        public ?string $providerPaymentId = null,
     ) {
         if (blank($this->id) || blank($this->orderId)) {
             throw new InvalidArgumentException('Payment transaction identifiers are required.');

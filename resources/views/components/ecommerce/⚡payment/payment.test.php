@@ -497,10 +497,10 @@ it('polls pending payments and delegates refresh through the stored driver', fun
 
     Livewire::actingAs($user)
         ->test('ecommerce.payment', ['order' => $order])
-        ->assertSee('wire:poll.10s="refreshPaymentStatus"', false)
+        ->assertSee('wire:poll.15s="refreshPaymentStatus"', false)
         ->call('refreshPaymentStatus')
         ->assertSet('isPaid', true)
-        ->assertDontSee('wire:poll.10s="refreshPaymentStatus"', false);
+        ->assertDontSee('wire:poll.15s="refreshPaymentStatus"', false);
 });
 
 it('does not poll a paid payment', function () {
@@ -514,7 +514,7 @@ it('does not poll a paid payment', function () {
     Livewire::actingAs($user)
         ->test('ecommerce.payment', ['order' => $order])
         ->assertSee('Dibayar')
-        ->assertDontSee('wire:poll.10s="refreshPaymentStatus"', false);
+        ->assertDontSee('wire:poll.15s="refreshPaymentStatus"', false);
 });
 
 it('performs one final refresh for a locally expired payment without enabling polling', function () {
@@ -535,7 +535,7 @@ it('performs one final refresh for a locally expired payment without enabling po
         ->test('ecommerce.payment', ['order' => $order])
         ->assertSet('hasPerformedFinalExpiryRefresh', true)
         ->assertSee('Gagal atau kedaluwarsa')
-        ->assertDontSee('wire:poll.10s="refreshPaymentStatus"', false)
+        ->assertDontSee('wire:poll.15s="refreshPaymentStatus"', false)
         ->call('refreshPaymentStatus')
         ->assertSet('hasPerformedFinalExpiryRefresh', true);
 });
@@ -569,7 +569,7 @@ it('lets an authoritative paid refresh override stale local expiry', function ()
         ->assertDontSeeHtml('data-payment-total-copy')
         ->assertDontSeeHtml('data-payment-countdown')
         ->assertDontSee('Batas pembayaran')
-        ->assertDontSee('wire:poll.10s="refreshPaymentStatus"', false)
+        ->assertDontSee('wire:poll.15s="refreshPaymentStatus"', false)
         ->call('refreshPaymentStatus')
         ->assertSet('isPaid', true);
 });
@@ -585,7 +585,7 @@ it('handles a nullable expiry without starting a countdown interval', function (
     Livewire::actingAs($user)
         ->test('ecommerce.payment', ['order' => $order])
         ->assertOk()
-        ->assertSee('wire:poll.10s="refreshPaymentStatus"', false)
+        ->assertSee('wire:poll.15s="refreshPaymentStatus"', false)
         ->assertDontSeeHtml('data-payment-countdown');
 });
 

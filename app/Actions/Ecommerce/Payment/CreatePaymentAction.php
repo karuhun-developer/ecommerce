@@ -174,7 +174,9 @@ class CreatePaymentAction
                 'payment_type' => $method->type,
                 'account_number' => '',
                 'channel' => $method->providerCode,
-                'expired_at' => now()->addDay(),
+                'expired_at' => $driver === PaymentGatewayDriver::KaruhunQris
+                    ? now()->addMinutes(15)
+                    : now()->addDay(),
                 'amount' => $amount,
                 'fee' => $fee,
                 'total' => $amount + $fee,
@@ -184,6 +186,10 @@ class CreatePaymentAction
 
     private function storedPaymentMethod(Payment $payment): ?PaymentMethod
     {
+        if ($payment->driver === PaymentGatewayDriver::KaruhunQris->value) {
+            return PaymentMethod::Qris;
+        }
+
         $channel = trim((string) $payment->channel);
         $paymentMethod = PaymentMethod::tryFrom(strtolower($channel))
             ?? PaymentMethod::fromProviderCode($channel);

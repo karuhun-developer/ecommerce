@@ -47,7 +47,7 @@ final class ReconcilePaymentStatusAction
             $attributes = $this->transactionAttributes($lockedPayment, $transaction);
 
             if ($transaction->status === PaymentStatus::Paid) {
-                $attributes['paid_at'] = now();
+                $attributes['paid_at'] = $transaction->paidAt ?? now();
 
                 if ($providerTerminalStatus !== null) {
                     $attributes['account_code'] = null;
@@ -117,7 +117,7 @@ final class ReconcilePaymentStatusAction
         $hasTotalConflict = $payment->driver === PaymentGatewayDriver::Midtrans->value
             ? $transaction->totalPayment !== $storedTotal
             : filled($payment->transaction_id)
-                && $payment->driver === PaymentGatewayDriver::Paywuz->value
+                && in_array($payment->driver, [PaymentGatewayDriver::Paywuz->value, PaymentGatewayDriver::KaruhunQris->value], true)
                 && $transaction->totalPayment !== $storedTotal;
         $transactionBelongsToAnotherPayment = Payment::query()
             ->where('transaction_id', $transaction->id)
@@ -143,6 +143,10 @@ final class ReconcilePaymentStatusAction
 
     private function storedPaymentMethod(Payment $payment): ?PaymentMethod
     {
+        if ($payment->driver === PaymentGatewayDriver::KaruhunQris->value) {
+            return PaymentMethod::Qris;
+        }
+
         $channel = trim((string) $payment->channel);
         $paymentMethod = PaymentMethod::tryFrom(strtolower($channel))
             ?? PaymentMethod::fromProviderCode($channel);
@@ -197,13 +201,23 @@ final class ReconcilePaymentStatusAction
         $principal = (int) round((float) $payment->amount);
         $destination = $transaction->paymentNumber ?? $transaction->paymentUrl;
 
-        return [
+        $attributes = [
             'transaction_id' => $transaction->id,
             'account_number' => $destination ?? $payment->account_number,
             'expired_at' => $transaction->expiresAt ?? $payment->expired_at,
             'fee' => $transaction->totalPayment - $principal,
             'total' => $transaction->totalPayment,
         ];
+
+        if ($transaction->providerToken !== null) {
+            $attributes['provider_token'] = $transaction->providerToken;
+        }
+
+        if ($transaction->providerPaymentId !== null) {
+            $attributes['provider_payment_id'] = $transaction->providerPaymentId;
+        }
+
+        return $attributes;
     }
 
     private function lockedOrder(Payment $payment): ?Order

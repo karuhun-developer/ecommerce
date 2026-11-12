@@ -1,6 +1,6 @@
 <div
     class="w-full {{ $this->canSubmitPayment() ? 'pb-28 lg:pb-8' : 'pb-8' }}"
-    @if ($this->isPaymentPending()) wire:poll.10s="refreshPaymentStatus" @endif
+    @if ($this->isPaymentPending()) wire:poll.15s="refreshPaymentStatus" @endif
 >
     <div class="mb-6">
         @if ($order->user_id === null)

@@ -2,6 +2,7 @@
 
 use App\Contracts\Payments\PaymentGateway;
 use App\Enums\PaymentGatewayDriver;
+use App\Services\Payments\KaruhunQrisPaymentGateway;
 use App\Services\Payments\MidtransPaymentGateway;
 use App\Services\Payments\PaymentGatewayManager;
 use App\Services\Payments\PaywuzPaymentGateway;
@@ -19,6 +20,12 @@ it('selects the configured gateway without retaining stale configuration', funct
     expect($manager->defaultDriver())->toBe(PaymentGatewayDriver::Paywuz)
         ->and($manager->driver())->toBeInstanceOf(PaywuzPaymentGateway::class)
         ->and(app(PaymentGateway::class))->toBeInstanceOf(PaywuzPaymentGateway::class);
+
+    config()->set('payment.default', 'karuhunqris');
+
+    expect($manager->defaultDriver())->toBe(PaymentGatewayDriver::KaruhunQris)
+        ->and($manager->driver())->toBeInstanceOf(KaruhunQrisPaymentGateway::class)
+        ->and(app(PaymentGateway::class))->toBeInstanceOf(KaruhunQrisPaymentGateway::class);
 });
 
 it('rejects unsupported configured gateways', function () {

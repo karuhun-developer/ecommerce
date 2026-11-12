@@ -19,6 +19,9 @@ class Payment extends Model
         'payable_id',
         'order_id',
         'transaction_id',
+        'provider_token',
+        'provider_payment_id',
+        'last_checked_at',
         'payment_type',
         'account_number',
         'account_code',
@@ -31,6 +34,8 @@ class Payment extends Model
     ];
 
     protected $casts = [
+        'provider_token' => 'encrypted',
+        'last_checked_at' => 'datetime',
         'expired_at' => 'datetime',
         'paid_at' => 'datetime',
         'amount' => 'decimal:2',
@@ -38,11 +43,14 @@ class Payment extends Model
         'total' => 'decimal:2',
     ];
 
+    protected $hidden = ['provider_token'];
+
     // Get the activity log options.
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['*']);
+            ->logOnly(['*'])
+            ->logExcept(['provider_token', 'last_checked_at']);
     }
 
     public function payable()

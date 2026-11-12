@@ -43,6 +43,7 @@ class PaymentGatewayManager
         return match ($driver) {
             PaymentGatewayDriver::Midtrans => $this->container->make(MidtransPaymentGateway::class),
             PaymentGatewayDriver::Paywuz => $this->container->make(PaywuzPaymentGateway::class),
+            PaymentGatewayDriver::KaruhunQris => $this->container->make(KaruhunQrisPaymentGateway::class),
         };
     }
 }
