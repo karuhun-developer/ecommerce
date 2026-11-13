@@ -26,6 +26,7 @@ class SuperadminMenuSeeder extends Seeder
         $this->productMenu();
         $this->attributeMenu();
         $this->courierMenu();
+        $this->call(IntegrationSettingsMenuSeeder::class);
         $this->managementMenu();
     }
 

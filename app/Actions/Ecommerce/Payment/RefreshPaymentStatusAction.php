@@ -5,6 +5,7 @@ namespace App\Actions\Ecommerce\Payment;
 use App\Enums\PaymentGatewayDriver;
 use App\Models\Payment\Payment;
 use App\Services\Payments\PaymentGatewayManager;
+use App\Services\Payments\PaymentGatewaySettingsService;
 use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 
@@ -13,6 +14,7 @@ final class RefreshPaymentStatusAction
     public function __construct(
         private readonly PaymentGatewayManager $paymentGatewayManager,
         private readonly ReconcilePaymentStatusAction $reconcilePaymentStatus,
+        private readonly PaymentGatewaySettingsService $settings,
     ) {}
 
     public function handle(Payment $payment): Payment
@@ -20,7 +22,7 @@ final class RefreshPaymentStatusAction
         $storedPayment = Payment::query()->findOrFail($payment->getKey());
 
         if ($storedPayment->driver === PaymentGatewayDriver::KaruhunQris->value) {
-            $lockSeconds = max(30, (int) config('dynamic-qris.timeout', 30) + 15);
+            $lockSeconds = max(30, $this->settings->karuhunQrisConfiguration()['timeout'] + 15);
             $result = Cache::lock('qris-payment-check:'.$storedPayment->getKey(), $lockSeconds)
                 ->get(function () use ($storedPayment): Payment {
                     $storedPayment->refresh();

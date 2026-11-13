@@ -15,9 +15,12 @@ class BiteshipService
 
     public string $apiKey;
 
+    private array $configuration;
+
     public function __construct(?string $apiKey = null)
     {
-        $this->apiKey = $apiKey ?? config('services.biteship.key');
+        $this->configuration = app(BiteshipSettingsService::class)->configuration();
+        $this->apiKey = (string) ($apiKey ?? $this->configuration['api_key']);
     }
 
     /** @return array<string, string> */
@@ -81,9 +84,9 @@ class BiteshipService
     private function request(): PendingRequest
     {
         return Http::withHeaders($this->getHeaders())
-            ->connectTimeout(5)
-            ->timeout(15)
-            ->retry(3, 200, throw: false);
+            ->connectTimeout($this->configuration['connect_timeout'])
+            ->timeout($this->configuration['timeout'])
+            ->retry($this->configuration['retries'], 200, throw: false);
     }
 
     // ==========================================

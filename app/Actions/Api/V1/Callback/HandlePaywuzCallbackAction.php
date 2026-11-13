@@ -8,6 +8,7 @@ use App\Data\Callbacks\PaywuzCallbackData;
 use App\Enums\PaymentGatewayDriver;
 use App\Models\Payment\Payment;
 use App\Services\Payments\PaymentGatewayManager;
+use App\Services\Payments\PaymentGatewaySettingsService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -27,6 +28,7 @@ final class HandlePaywuzCallbackAction
         private readonly ReconcilePaymentStatusAction $reconcilePaymentStatus,
         private readonly PaymentGatewayManager $paymentGatewayManager,
         private readonly SendPaymentNotificationAction $sendPaymentNotification,
+        private readonly PaymentGatewaySettingsService $settings,
     ) {}
 
     public function handle(PaywuzCallbackData $data): Payment
@@ -35,7 +37,7 @@ final class HandlePaywuzCallbackAction
         $event = $this->requiredHeader($data->event, 'X-Paywuz-Event');
         $deliveryId = $this->requiredHeader($data->deliveryId, 'X-Paywuz-Delivery');
 
-        $apiKey = config('payment.drivers.paywuz.api_key');
+        $apiKey = $this->settings->paywuzConfiguration()['api_key'];
 
         if (! is_string($apiKey) || blank($apiKey)) {
             throw new RuntimeException('Paywuz API key is not configured.', 500);

@@ -89,32 +89,20 @@ Konfigurasi: [.env.example](.env.example). Default: SQLite.
 
 ## Integrasi
 
-`PAYMENT_GATEWAY`: `midtrans` / `paywuz` / `karuhunqris`. Email: `MAIL_*`. Mode toko: `SINGLE_SHOP`.
+Atur kredensial pembayaran dan Biteship melalui **CMS → Pengaturan Integrasi**. `PAYMENT_GATEWAY` menjadi default sebelum pengaturan CMS disimpan. Email: `MAIL_*`. Mode toko: `SINGLE_SHOP`.
 
-| Provider | Environment                              | Webhook / verifikasi              |
+| Provider | Pengaturan                               | Webhook / verifikasi              |
 | -------- | ---------------------------------------- | --------------------------- |
-| Midtrans | `MIDTRANS_*`                             | `/api/v1/midtrans/callback` |
-| Paywuz   | `PAYWUZ_*`                               | `/api/v1/paywuz/callback`   |
-| KaruhunQRIS | `DYNAMIC_QRIS_*`                       | Polling backend setiap 15 detik; scheduler tiap menit |
-| Biteship | `BITESHIP_API_KEY`, `BITESHIP_WEBHOOK_*` | `/api/v1/biteship/callback` |
+| Midtrans | CMS → Pengaturan Integrasi              | `/api/v1/midtrans/callback` |
+| Paywuz   | CMS → Pengaturan Integrasi              | `/api/v1/paywuz/callback`   |
+| KaruhunQRIS | CMS → Pengaturan Integrasi           | Scheduler tiap menit       |
+| Biteship | CMS → Pengaturan Integrasi              | `/api/v1/biteship/callback` |
 
 ### KaruhunQRIS
 
-Daftar dan dapatkan API key merchant di [KaruhunQRIS](https://qris.karuhundeveloper.com). Integrasi memakai package [Dynamic QRIS PHP Client](https://github.com/bayurifkialghifari/dynamic-qris-php-client) yang sudah terpasang melalui Composer.
+Ambil API key merchant dari [KaruhunQRIS](https://qris.karuhundeveloper.com), lalu isi dan pilih Karuhun QRIS di **CMS → Pengaturan Integrasi**.
 
-```env
-PAYMENT_GATEWAY=karuhunqris
-DYNAMIC_QRIS_API_KEY=your-merchant-api-key
-DYNAMIC_QRIS_BASE_URL=https://qris.karuhundeveloper.com
-DYNAMIC_QRIS_TIMEOUT=10
-DYNAMIC_QRIS_CONNECT_TIMEOUT=3
-```
-
-Jalankan `php artisan migrate --no-interaction` setelah update. Pilih QRIS GoPay atau QRIS ShopeePay di halaman pembayaran; akun provider harus sudah dikonfigurasi di KaruhunQRIS. Bayar **nominal final yang ditampilkan**, termasuk kode unik. Biaya pembuatan QRIS dipotong dari saldo merchant.
-
-Pembayaran disimpan di database dengan token terenkripsi dan idempotency key tetap untuk retry. Halaman mengecek status setiap **15 detik** selama pending. Batas pembayaran maksimal **15 menit** sejak percobaan dibuat, atau lebih singkat sesuai expiry provider. Status sukses mengonfirmasi pesanan dan mengirim notifikasi sekali.
-
-Scheduler menjalankan `payments:reconcile-qris` setiap menit, termasuk pemeriksaan terakhir saat kedaluwarsa. Gangguan API mempertahankan status terakhir dan dicoba kembali; tidak dianggap sebagai pembayaran gagal. Docker sudah menjalankan scheduler. Untuk instalasi manual, jalankan `php artisan schedule:work` saat development atau pasang cron `* * * * * cd /path/to/ecommerce && php artisan schedule:run >> /dev/null 2>&1` di production.
+**Scheduler wajib aktif** untuk mengecek status pembayaran otomatis: jalankan `php artisan schedule:work` saat development, atau atur cron `php artisan schedule:run` setiap menit di production. Docker sudah menjalankan scheduler.
 
 ## Development
 

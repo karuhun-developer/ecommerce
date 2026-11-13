@@ -17,6 +17,13 @@ use UnexpectedValueException;
 
 final class PaywuzPaymentGateway implements PaymentGateway
 {
+    private array $configuration;
+
+    public function __construct(PaymentGatewaySettingsService $settings)
+    {
+        $this->configuration = $settings->paywuzConfiguration();
+    }
+
     public function paymentMethods(): array
     {
         $payload = $this->request()->get('payment-methods')->throw()->json('data');
@@ -46,11 +53,11 @@ final class PaywuzPaymentGateway implements PaymentGateway
             'paymentMethod' => $data->providerCode ?? $this->providerCode($data->paymentMethod),
         ];
 
-        $this->addOptional($payload, 'expiryMinutes', $data->expiryMinutes ?? config('payment.drivers.paywuz.expiry_minutes'));
-        $this->addOptional($payload, 'redirectUrl', $data->redirectUrl ?? config('payment.drivers.paywuz.redirect_url'));
-        $this->addOptional($payload, 'feeByMerchant', $data->feeByMerchant ?? config('payment.drivers.paywuz.fee_by_merchant'));
+        $this->addOptional($payload, 'expiryMinutes', $data->expiryMinutes ?? $this->configuration['expiry_minutes']);
+        $this->addOptional($payload, 'redirectUrl', $data->redirectUrl ?? $this->configuration['redirect_url']);
+        $this->addOptional($payload, 'feeByMerchant', $data->feeByMerchant ?? $this->configuration['fee_by_merchant']);
         $this->addOptional($payload, 'metadata', $data->metadata);
-        $this->addOptional($payload, 'paymentReminderEnabled', $data->paymentReminderEnabled ?? config('payment.drivers.paywuz.payment_reminder_enabled'));
+        $this->addOptional($payload, 'paymentReminderEnabled', $data->paymentReminderEnabled ?? $this->configuration['payment_reminder_enabled']);
 
         $response = $this->request()->post('transactions', $payload)->throw()->json('data');
 
@@ -76,8 +83,8 @@ final class PaywuzPaymentGateway implements PaymentGateway
 
     private function request(): PendingRequest
     {
-        $apiKey = config('payment.drivers.paywuz.api_key');
-        $baseUrl = config('payment.drivers.paywuz.base_url');
+        $apiKey = $this->configuration['api_key'];
+        $baseUrl = $this->configuration['base_url'];
 
         if (! is_string($apiKey) || blank($apiKey)) {
             throw new InvalidArgumentException('Paywuz API key is not configured.');
@@ -98,8 +105,8 @@ final class PaywuzPaymentGateway implements PaymentGateway
             ->acceptJson()
             ->asJson()
             ->withoutRedirecting()
-            ->connectTimeout((float) config('payment.drivers.paywuz.connect_timeout', 3))
-            ->timeout((float) config('payment.drivers.paywuz.timeout', 10));
+            ->connectTimeout((float) $this->configuration['connect_timeout'])
+            ->timeout((float) $this->configuration['timeout']);
     }
 
     private function normalizePaymentMethod(mixed $payload): PaymentMethodData
@@ -188,7 +195,7 @@ final class PaywuzPaymentGateway implements PaymentGateway
     {
         $value = array_key_exists('feeByMerchant', $payload)
             ? $payload['feeByMerchant']
-            : config('payment.drivers.paywuz.fee_by_merchant', false);
+            : $this->configuration['fee_by_merchant'];
 
         if ($value === null || $value === '') {
             return false;

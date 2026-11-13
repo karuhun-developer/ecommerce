@@ -6,6 +6,9 @@ use App\Services\Payments\KaruhunQrisPaymentGateway;
 use App\Services\Payments\MidtransPaymentGateway;
 use App\Services\Payments\PaymentGatewayManager;
 use App\Services\Payments\PaywuzPaymentGateway;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 
 it('selects the configured gateway without retaining stale configuration', function () {
     $manager = app(PaymentGatewayManager::class);

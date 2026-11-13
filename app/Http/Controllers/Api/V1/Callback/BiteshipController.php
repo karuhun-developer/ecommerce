@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Callback;
 use App\Actions\Api\V1\Callback\HandleBiteshipCallbackAction;
 use App\Data\Callbacks\BiteshipCallbackData;
 use App\Http\Controllers\Controller;
+use App\Services\BiteshipSettingsService;
 use App\Traits\WithReturnResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,10 +15,11 @@ class BiteshipController extends Controller
 {
     use WithReturnResponse;
 
-    public function callback(Request $request, HandleBiteshipCallbackAction $action): JsonResponse
+    public function callback(Request $request, HandleBiteshipCallbackAction $action, BiteshipSettingsService $settings): JsonResponse
     {
-        $headerKey = config('services.biteship.webhook.header_key');
-        $headerSecret = config('services.biteship.webhook.header_secret');
+        $configuration = $settings->configuration();
+        $headerKey = $configuration['header_key'];
+        $headerSecret = $configuration['header_secret'];
 
         if (blank($headerKey) || blank($headerSecret)) {
             Log::warning('Biteship webhook authentication rejected', [

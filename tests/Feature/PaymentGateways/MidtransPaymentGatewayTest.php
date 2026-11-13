@@ -5,8 +5,11 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Services\Payments\MidtransPaymentGateway;
 use App\Services\Payments\PaymentTransactionNotFoundException;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Http::preventStrayRequests();

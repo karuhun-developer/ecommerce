@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Services\Payments\PaymentGatewaySettingsService;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Throwable;
@@ -10,15 +11,23 @@ class MidtransService
 {
     public string $baseUrl;
 
+    private array $configuration;
+
     public function __construct(
         public ?string $serverKey = null,
         public ?string $clientKey = null,
         public ?bool $isProduction = null,
     ) {
-        $this->serverKey = $this->serverKey ?? config('midtrans.server_key');
-        $this->clientKey = $this->clientKey ?? config('midtrans.client_key');
-        $this->isProduction = $this->isProduction ?? config('midtrans.is_production', false);
+        $this->configuration = app(PaymentGatewaySettingsService::class)->midtransConfiguration();
+        $this->serverKey = $this->serverKey ?? $this->configuration['server_key'];
+        $this->clientKey = $this->clientKey ?? $this->configuration['client_key'];
+        $this->isProduction = $this->isProduction ?? (bool) $this->configuration['is_production'];
         $this->baseUrl = $this->isProduction ? 'https://api.midtrans.com' : 'https://api.sandbox.midtrans.com';
+    }
+
+    public function timezone(): string
+    {
+        return $this->configuration['timezone'];
     }
 
     /**
@@ -70,9 +79,9 @@ class MidtransService
 
         // Response
         $response = Http::withBasicAuth((string) $this->serverKey, '')
-            ->connectTimeout((float) config('midtrans.connect_timeout', 5))
-            ->timeout((float) config('midtrans.timeout', 15))
-            ->retry((int) config('midtrans.retries', 3), 200, throw: false)
+            ->connectTimeout((float) $this->configuration['connect_timeout'])
+            ->timeout((float) $this->configuration['timeout'])
+            ->retry((int) $this->configuration['retries'], 200, throw: false)
             ->post($this->baseUrl.'/v2/charge', $params);
         $responseJson = $response->json();
         $responseJson = is_array($responseJson) ? $responseJson : [];
@@ -118,9 +127,9 @@ class MidtransService
 
         // Response
         $response = Http::withBasicAuth((string) $this->serverKey, '')
-            ->connectTimeout((float) config('midtrans.connect_timeout', 5))
-            ->timeout((float) config('midtrans.timeout', 15))
-            ->retry((int) config('midtrans.retries', 3), 200, throw: false)
+            ->connectTimeout((float) $this->configuration['connect_timeout'])
+            ->timeout((float) $this->configuration['timeout'])
+            ->retry((int) $this->configuration['retries'], 200, throw: false)
             ->post($this->baseUrl.'/v2/charge', $params);
         $responseJson = $response->json();
         $responseJson = is_array($responseJson) ? $responseJson : [];
@@ -172,9 +181,9 @@ class MidtransService
 
         // Response
         $response = Http::withBasicAuth((string) $this->serverKey, '')
-            ->connectTimeout((float) config('midtrans.connect_timeout', 5))
-            ->timeout((float) config('midtrans.timeout', 15))
-            ->retry((int) config('midtrans.retries', 3), 200, throw: false)
+            ->connectTimeout((float) $this->configuration['connect_timeout'])
+            ->timeout((float) $this->configuration['timeout'])
+            ->retry((int) $this->configuration['retries'], 200, throw: false)
             ->post($this->baseUrl.'/v2/charge', $params);
         $responseJson = $response->json();
         $responseJson = is_array($responseJson) ? $responseJson : [];
@@ -193,10 +202,10 @@ class MidtransService
     public function paymentStatus(string $orderId): array
     {
         $response = Http::withBasicAuth((string) $this->serverKey, '')
-            ->connectTimeout((float) config('midtrans.connect_timeout', 5))
-            ->timeout((float) config('midtrans.timeout', 15))
+            ->connectTimeout((float) $this->configuration['connect_timeout'])
+            ->timeout((float) $this->configuration['timeout'])
             ->retry(
-                (int) config('midtrans.retries', 3),
+                (int) $this->configuration['retries'],
                 200,
                 fn (Throwable $exception): bool => ! ($exception instanceof RequestException)
                     || $exception->response->serverError(),

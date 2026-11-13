@@ -1,10 +1,13 @@
 <?php
 
 use App\Services\BiteshipService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
     // Inisialisasi service dengan fake API Key

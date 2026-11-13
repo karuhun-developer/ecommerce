@@ -184,7 +184,7 @@ final class MidtransPaymentGateway implements PaymentGateway
         $date = CarbonImmutable::createFromFormat(
             'Y-m-d H:i:s',
             $value,
-            (string) config('midtrans.timezone', 'Asia/Jakarta'),
+            $this->midtransService->timezone(),
         );
 
         if ($date->format('Y-m-d H:i:s') !== $value) {

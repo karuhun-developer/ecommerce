@@ -11,11 +11,12 @@ class PaymentGatewayManager
 {
     public function __construct(
         private readonly Container $container,
+        private readonly PaymentGatewaySettingsService $settings,
     ) {}
 
     public function defaultDriver(): PaymentGatewayDriver
     {
-        $driver = config('payment.default');
+        $driver = $this->settings->defaultDriver();
 
         if (! is_string($driver) || PaymentGatewayDriver::tryFrom($driver) === null) {
             $name = is_scalar($driver) ? (string) $driver : get_debug_type($driver);
